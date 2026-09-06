@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.3 — 情境 AI 判讀版</title>
+<title>觀卜 v1.4 — 情境 AI 判讀版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -177,7 +177,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.3 情境 AI</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.4 更有人味</p>
   </div>
 
   <div class="tabs">
@@ -232,7 +232,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.3 情境 AI 判讀｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.4｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -259,10 +259,11 @@ function hexFromBits(bits){
 function classifyQuestion(q){
   q=(q||'').toLowerCase();
   const groups=[
-    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣']],
-    ['工作',['工作','職場','公司','升遷','轉職','主管','同事','事業','退休']],
-    ['感情',['感情','愛情','老婆','老公','伴侶','結婚','分手','復合','關係']],
-    ['健康',['健康','身體','睡眠','恢復','訓練','運動','疾病','醫療']],
+    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣','貸款','房貸','存款','基金','理財','現金','負債','還款']],
+    ['工作',['工作','職場','公司','升遷','轉職','主管','同事','事業','退休','調薪','加薪','薪水','薪資','年薪','月薪','獎金','考核','績效','裁員','離職','面試','求職','創業','接案']],
+    ['感情',['感情','愛情','老婆','老公','伴侶','結婚','分手','復合','關係','暗戀','追求','表白','桃花','吵架','冷戰']],
+    ['健康',['健康','身體','睡眠','恢復','訓練','運動','疾病','醫療','焦慮','壓力','失眠']],
+    ['學業',['考試','學業','功課','研究所','證照','升學','成績']],
     ['時間',['什麼時候','何時','多久','幾月','幾年','今年','明年','時間']],
     ['選擇',['要不要','是否','該不該','可以嗎','選哪個','哪一個']]
   ];
@@ -271,18 +272,22 @@ function classifyQuestion(q){
   return hits.length?hits:['一般'];
 }
 function intentAdvice(tags){
-  if(tags.includes('財務')) return '把象徵訊息落到現金流、利率、還款順序與可執行數字；占卜不替代財務試算。';
-  if(tags.includes('工作')) return '把訊息落到職務變化、權責、人際與可控行動，不把單一象徵視為必然事件。';
-  if(tags.includes('健康')) return '只把牌義當作自我觀察提示；症狀、用藥與治療仍以醫療專業為準。';
-  if(tags.includes('感情')) return '優先看溝通、界線與雙方行動，不把牌義當作對方內心的事實。';
-  return '把結果當作整理問題的框架，再用現實資訊驗證。';
+  if(tags.includes('財務')) return '數字要落地：現金流、利率、還款順序。占卜是整理思緒用的，不能取代試算。';
+  if(tags.includes('工作')) return '工作題請對準可控的部分：表現、溝通、準備度；環境變數往往不在你手上。';
+  if(tags.includes('健康')) return '身體訊號請以醫療為準；這裡只適合當自我觀察的提醒。';
+  if(tags.includes('感情')) return '感情題看的是溝通、界線與雙方行動，牌義不能當成對方心裡的事實。';
+  if(tags.includes('學業')) return '學業題把「準備量」和「時間分配」放在前面，比等一個結果更實用。';
+  return '把結果當整理問題的框架，再用現實資訊驗證。';
 }
 
 function analyzeIntent(q){
   q=(q||'').trim();
-  const out={type:'trend',label:'趨勢',horizon:'未指定'};
+  const out={type:'trend',label:'趨勢',horizon:'未指定',tone:'neutral'};
+  if(/擔心|害怕|焦慮|不安|煩惱|難過|痛苦/.test(q)) out.tone='anxious';
+  else if(/希望|期待|想要|會不會有|能不能/.test(q)) out.tone='hopeful';
+  else if(/該怎麼|怎麼辦|如何是好/.test(q)) out.tone='seeking';
   if(/什麼時候|何時|多久|幾月|幾年|何年|時間/.test(q)){out.type='when';out.label='時間';}
-  else if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有/.test(q)){out.type='yesno';out.label='是非・傾向';}
+  else if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有|嗎[？?]?$/.test(q)){out.type='yesno';out.label='是非・傾向';}
   else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){out.type='how';out.label='方法・建議';}
   else if(/哪一個|哪個|選擇|選哪/.test(q)){out.type='choice';out.label='選擇';}
   if(/今天|今日/.test(q)) out.horizon='今日';
@@ -301,6 +306,32 @@ function confidenceLabel(v){
   if(v>=40) return '中';
   return '偏低';
 }
+function horizonReason(intent){
+  if(!intent || intent.horizon==='未指定') return null;
+  return `你問的時間範圍是「${intent.horizon}」；節奏會對齊這個範圍，但不會保證某一個月、某一天一定發生。`;
+}
+
+/** 把結構化判讀寫成比較像人的口吻，避免整段都是「偏向／不宜／定局」套話。 */
+function humanLead(intent, direction){
+  const anxious = intent && intent.tone==='anxious';
+  const hopeful = intent && intent.tone==='hopeful';
+  if(anxious){
+    if(direction.includes('正向')||direction.includes('有利')||direction.includes('可以')) return '先鬆一口氣：';
+    if(direction.includes('阻')||direction.includes('守')) return '你的擔心不是沒來由，';
+    return '這題目前還摸不清全貌，';
+  }
+  if(hopeful){
+    if(direction.includes('正向')||direction.includes('有利')||direction.includes('可以')) return '方向大致站在你這邊，';
+    if(direction.includes('阻')||direction.includes('守')) return '期待可以留著，但節奏要放慢：';
+    return '還沒到能拍板的時候，';
+  }
+  return '';
+}
+function softenPace(pace){
+  return String(pace||'').replace(/^偏穩｜/,'目前較穩，').replace(/^偏快｜/,'節奏偏快，').replace(/^偏慢｜/,'節奏偏慢，')
+    .replace(/^中期｜/,'中期來看，').replace(/^近期｜/,'近期，').replace(/｜/g,'，');
+}
+
 function answerCardHTML(a){
   const reasons=(a.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join('');
   return `<div class="answer-card">
@@ -508,31 +539,44 @@ function tarotAnswer(picks,q){
   confidence=Math.round(Math.max(28,Math.min(92,confidence)));
   let direction=score>=2.2?'偏正向':score<=-2.2?'偏阻滯':'未完全定局';
   let window=timingFromTarot(picks);
+  const lead=humanLead(intent,direction);
+  const paceH=softenPace(window);
+  const names=picks.map(p=>TAROT[p.idx][0]+(p.reversed?'（逆）':''));
+  const focus=picks.length===3?names[2]:names[0];
+  const meaning=picks.length===3
+    ? (picks[2].reversed?TAROT_REVERSED[picks[2].idx]:TAROT[picks[2].idx][1])
+    : (picks[0].reversed?TAROT_REVERSED[picks[0].idx]:TAROT[picks[0].idx][1]);
   let answer='';
   if(intent.type==='when'){
-    answer = score>1 ? `有機會往完成方向走，但不是立刻；${window.replace('｜','，')}` :
-             score<-1 ? `時間點偏延後，先處理卡住的條件；${window.replace('｜','，')}` :
-             `目前還看不出單一明確日期，較像邊調整邊推進；${window.replace('｜','，')}`;
+    answer = score>1 ? `${lead}有機會往前推進，但不是立刻定案。${paceH}「${focus}」提醒：${meaning}` :
+             score<-1 ? `${lead}時間容易往後挪。${paceH}先處理卡住的條件；「${focus}」的訊息是：${meaning}` :
+             `${lead}還看不出單一日期，比較像邊調整邊走。${paceH}`;
   }else if(intent.type==='yesno'){
-    answer = score>=2.2?'目前牌勢偏向「可以／會」，但仍要靠後續行動落地。':
-             score<=-2.2?'目前牌勢偏向「不宜急進／容易延後」，先處理阻力。':
-             '目前是「有條件、尚未定局」，關鍵在接下來的選擇與執行。';
+    answer = score>=2.2 ? `${lead}目前較像「可以／會」，但仍要靠你後續把事情做實。牌面核心是「${focus}」：${meaning}` :
+             score<=-2.2 ? `${lead}目前較像「先別急／容易延後」。先看阻力，「${focus}」說的是：${meaning}` :
+             `${lead}有條件、還沒定局。關鍵在你下一步怎麼選；「${focus}」指向：${meaning}`;
   }else if(intent.type==='how'){
-    answer = agency>1 ? '重點不是等結果，而是主動處理；越早把可控項目做實，局勢越容易轉好。' :
-             agency<-1 ? '此刻更適合先停、整理與拆解問題，不宜用力硬推。' :
-             '先把問題拆成可控與不可控兩部分，逐步調整比一次翻盤更有效。';
+    answer = agency>1 ? `${lead}別空等結果，先動手處理可控的部分。「${focus}」的提示是：${meaning}` :
+             agency<-1 ? `${lead}此刻更適合先停、拆解，不宜硬推。「${focus}」提醒：${meaning}` :
+             `${lead}把問題分成「你能控制」和「你不能控制」，一步一步調。牌面重點：「${focus}」—${meaning}`;
+  }else if(intent.type==='choice'){
+    answer = score>=1 ? `${lead}較能對齊「${focus}」精神、也比較不折磨自己的選項，通常比較站得住。` :
+             score<=-1 ? `${lead}現在比選對更急的是別選錯；條件未明時，先保留退路。` :
+             `${lead}優劣還沒完全浮現。對照「${focus}」：${meaning}，看哪條路比較不違背這層提醒。`;
   }else{
-    answer = score>=2.2?'整體趨勢偏向改善與推進，但不是無條件順利。':
-             score<=-2.2?'整體趨勢偏向受阻或延後，先處理根本問題會比較有利。':
-             '整體趨勢正在轉換中，現在比「結果」更重要的是下一步怎麼做。';
+    answer = score>=2.2 ? `${lead}整體偏往改善，但不是無條件順利。「${focus}」：${meaning}` :
+             score<=-2.2 ? `${lead}整體偏受阻或延後，先處理根本問題會比較有利。「${focus}」：${meaning}` :
+             `${lead}還在轉換中。現在比「結果」更重要的是下一步；「${focus}」說：${meaning}`;
   }
   const reasons=[];
   if(picks.length===3){
-    reasons.push(`現在牌「${TAROT[picks[1].idx][0]}」代表當下主軸，未來牌「${TAROT[picks[2].idx][0]}」決定後續方向。`);
-    reasons.push(`未來牌呈現${vs[2].tone>0?'較正向':'較保守'}訊號，速度屬${vs[2].pace>0?'推進型':vs[2].pace<0?'延後型':'中性'}。`);
-  }else reasons.push(`核心牌「${TAROT[picks[0].idx][0]}」的主題是「${vs[0].key}」。`);
-  if(tags.includes('財務')) reasons.push('財務題真正的落地變數仍是現金流、利率、還款紀律與是否新增負債。');
-  if(tags.includes('工作')) reasons.push('工作題要同步觀察職務、權責、人際與公司環境，而不是只看單一象徵。');
+    reasons.push(`過去「${names[0]}」、現在「${names[1]}」、未來「${names[2]}」串成一條路徑，未來牌權重最高。`);
+    reasons.push(`未來牌偏${vs[2].tone>0?'開放推進':'收斂保守'}，節奏屬${vs[2].pace>0?'偏快':vs[2].pace<0?'偏慢':'中性'}。`);
+  }else reasons.push(`核心牌「${names[0]}」主題是「${vs[0].key}」。`);
+  if(tags.includes('財務')) reasons.push('財務落地仍看現金流、利率與還款紀律。');
+  if(tags.includes('工作')) reasons.push('工作題請對準職務、權責與人際，不要只看單張牌。');
+  if(tags.includes('感情')) reasons.push('感情題看溝通與界線，牌義不是對方的內心獨白。');
+  const hr1=horizonReason(intent); if(hr1) reasons.push(hr1);
   return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
 }
 function tarotSynthesis(picks,labels,q){
@@ -575,30 +619,41 @@ function hexAnswer(hexNum,changedNum,moving,q){
     else if(pos>3.5) pace += '，結果偏後段';
     else pace += '，轉折落在過程中段';
   }
+  const direction = future>0?'往有利方向':future<0?'先守後調整':'中性轉化';
+  const lead = humanLead(intent, direction);
+  const paceHuman = softenPace(pace);
+  const fromName = HEX_NAMES[hexNum], toName = HEX_NAMES[changedNum];
   let answer='';
   if(intent.type==='when'){
-    answer = future>0 ? `有轉機，但時間不是「立刻」；${pace.replace('｜','，')}。` :
-             future<0 ? `時間點偏延後；${pace.replace('｜','，')}，先處理阻力會更重要。` :
-             `目前卦象較難壓成單一日期；${pace.replace('｜','，')}。`;
+    answer = future>0 ? `${lead}有轉機，但不是立刻見效。${paceHuman}本卦「${fromName}」走到「${toName}」的過程，比某個特定日期更值得盯。` :
+             future<0 ? `${lead}時間點容易往後拖。${paceHuman}先把「${fromName}」裡卡住的條件理清楚，再談什麼時候。` :
+             `${lead}這題還壓不成一個明確日期。${paceHuman}先看「${fromName}」怎麼轉成「${toName}」，節奏會比較清楚。`;
   }else if(intent.type==='yesno'){
-    answer = score>.7?'卦勢偏向「有機會／可成」，但要順勢而做，不宜硬推。':
-             score<-.7?'卦勢偏向「不宜急進／容易受阻」，先調整條件再行動。':
-             '卦勢屬「未完全定局」，關鍵在動爻所代表的轉折與後續選擇。';
+    answer = score>.7 ? `${lead}目前較像「有機會／可以」，但要順著「${toName}」的方向做，硬推反而容易走樣。` :
+             score<-.7 ? `${lead}目前較像「先別急／容易受阻」。在「${fromName}」這段先調整條件，比硬點頭或硬拒絕都重要。` :
+             `${lead}還不到能一錘定音的時候。關鍵在動爻：看「${fromName}」怎麼往「${toName}」轉，你的選擇會影響收尾。`;
   }else if(intent.type==='how'){
-    answer = future>0?'做法上宜順著之卦的方向推進，把眼前問題拆小並逐步處理。':
-             future<0?'做法上先守、先修正，再求突破；現在不是硬碰硬的好時機。':
-             '做法上先觀察局勢與動爻位置，確認真正變動點再出手。';
+    answer = future>0 ? `${lead}做法上，把問題拆小，順著「${toName}」一點一點推進會比較順。` :
+             future<0 ? `${lead}先守、先修正，再求突破。現在硬碰硬，不如先把「${fromName}」裡的阻力拆開。` :
+             `${lead}先觀察真正的變動點在哪一爻、哪一步，確認後再出手，會比一次押全部更穩。`;
+  }else if(intent.type==='choice'){
+    answer = future>0 ? `${lead}兩條路裡，較能配合「${toName}」走向、也比較不勉強自己的那條，勝算通常高一些。` :
+             future<0 ? `${lead}現在比「選對」更急的是「先別選錯」。條件未明時，保留彈性比一次鎖死好。` :
+             `${lead}選擇還沒完全浮現優劣。先對照「${fromName}→${toName}」看哪條路阻力較小、也較符合你的底線。`;
   }else{
-    answer = future>0?'整體趨勢由現況往較有利方向移動，但仍要經過中間轉折。':
-             future<0?'整體趨勢顯示後續仍有阻力，保守調整比急著定局更合適。':
-             '整體趨勢仍在轉化中，現在較適合看變化方向，不宜硬下結論。';
+    answer = future>0 ? `${lead}整體由「${fromName}」往「${toName}」移動，方向偏有利，但仍要過中間那一段轉折。` :
+             future<0 ? `${lead}後續仍有阻力。保守調整、把基礎顧好，比急著定局更合適。` :
+             `${lead}局勢還在轉。現在比較適合看「往哪轉」，不宜硬下結論。`;
   }
   const reasons=[
-    `本卦「${HEX_NAMES[hexNum]}」代表目前背景；之卦「${HEX_NAMES[changedNum]}」代表變化後的主題。`,
-    moving.length?`共有 ${moving.length} 個動爻，位置在 ${moving.map(lineLabel).join('、')}。`:'此卦無動爻，代表目前局勢相對穩定。'
+    `本卦「${fromName}」是當下背景，之卦「${toName}」是變化後的主題。`,
+    moving.length?`動爻在 ${moving.map(lineLabel).join('、')}，這些位置最能說明「真正在動的是什麼」。`:'此卦無動爻，代表目前相對穩定，重點仍在本卦。'
   ];
-  if(tags.includes('財務')) reasons.push('財務問題仍需用現金流、負債成本與實際數字驗證。');
-  return {tags,intent,answer,direction:future>0?'往有利方向':future<0?'先守後調整':'中性轉化',window:pace,confidence,clarity:confidenceLabel(confidence),reasons};
+  if(tags.includes('財務')) reasons.push('財務題請回到現金流、利率與還款能力，卦象只提示節奏。');
+  if(tags.includes('工作')) reasons.push('工作／薪資仍看考核、表現與公司環境；卦象不保證結果。');
+  if(tags.includes('感情')) reasons.push('感情題請對準溝通與界線，不要把卦義直接當成對方的想法。');
+  const hr2=horizonReason(intent); if(hr2) reasons.push(hr2);
+  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons};
 }
 // ================= I CHING =================
 const HEX_NAMES = {
@@ -712,14 +767,14 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
   let directHex = hexAnswer(hexNum,changedNum,moving,question);
    directHex = blendAnswer(directHex,'yijing',question);
   html += answerCardHTML({
-    answer:directHex.answer, sub:`依本卦、動爻、之卦與問題語意做本機綜合判讀；不是保證事件。`,
+    answer:directHex.answer, sub:`依本卦、動爻、之卦與你的問題整理出的方向，供參考；不是對事件的保證。`,
     direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
     confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
   });
   html += realityHTML('yijing',question);
   const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
-  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.3 會先辨識問題意圖、需要的現實資料與可計算項目，再把象徵訊息與現實條件合併；不是連線模型，也不保證預測。</div>`;
+  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.4 會先辨識問題意圖、需要的現實資料與可計算項目，再把象徵訊息與現實條件合併；不是連線模型，也不保證預測。</div>`;
 
   document.getElementById('yijing-result').innerHTML = html;
 });
@@ -783,7 +838,7 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
    direct = blendAnswer(direct,'tarot',question);
   html += answerCardHTML({
     answer:direct.answer,
-    sub:`這是依牌陣、正逆位、問題類型與時間語意做出的本機綜合回答；不是保證日期或結果。`,
+    sub:`依牌陣、正逆位與你的問題整理出的方向，供參考；不是對日期或結果的保證。`,
     direction:direct.direction, window:direct.window, intent:direct.intent.label,
     confidence:direct.confidence, clarity:direct.clarity, reasons:direct.reasons
   });
@@ -847,45 +902,57 @@ function timingFromRunes(picks){
 function runeAnswer(picks,q){
   const tags=classifyQuestion(q), intent=analyzeIntent(q);
   const vs=picks.map(idx=>RUNES_AI[idx]);
-  const weights=picks.length===3?[0.8,0.6,1.1]:[1.2]; // 現況・阻力・建議：建議的方向權重最高
+  const weights=picks.length===3?[0.8,0.6,1.1]:[1.2];
   let score=0, agency=0;
   vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
   const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
   const same=signs.length>1 && signs.every(s=>s===signs[0]);
   let confidence=46+(same?20:0)+Math.min(18,Math.abs(score)*5);
-  if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6; // 阻力被建議化解，判讀更清楚
+  if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6;
   confidence=Math.round(Math.max(28,Math.min(90,confidence)));
   let direction=score>=2?'偏正向':score<=-2?'偏阻滯':'未完全定局';
   let window=timingFromRunes(picks);
+  const lead=humanLead(intent,direction);
+  const paceH=softenPace(window);
+  const tipIdx=picks.length===3?picks[2]:picks[0];
+  const tipName=RUNES[tipIdx][1];
+  const tipText=RUNES[tipIdx][2];
   let answer='';
   if(intent.type==='when'){
-    answer = score>1 ? `有機會往推進方向走，但不是立刻；${window.replace('｜','，')}` :
-             score<-1 ? `時間點偏延後，先處理卡住的條件；${window.replace('｜','，')}` :
-             `目前還看不出單一明確日期，較像邊調整邊推進；${window.replace('｜','，')}`;
+    answer = score>1 ? `${lead}有機會往前走，但不是立刻。${paceH}建議符文「${tipName}」：${tipText}` :
+             score<-1 ? `${lead}時間點偏延後，先處理卡住的條件。${paceH}` :
+             `${lead}還看不出單一日期，較像邊調整邊推進。${paceH}`;
   }else if(intent.type==='yesno'){
-    answer = score>=2?'目前符文偏向「可以／會」，但仍要靠後續行動落地。':
-             score<=-2?'目前符文偏向「不宜急進／容易延後」，先處理阻力。':
-             '目前是「有條件、尚未定局」，關鍵在接下來的選擇與執行。';
+    answer = score>=2 ? `${lead}目前較像「可以／會」，但仍要靠行動落地。「${tipName}」提醒：${tipText}` :
+             score<=-2 ? `${lead}目前較像「不宜急進／容易延後」。先看阻力，「${tipName}」：${tipText}` :
+             `${lead}有條件、尚未定局。關鍵在接下來的選擇；「${tipName}」：${tipText}`;
   }else if(intent.type==='how'){
-    answer = agency>0.8?'重點不是等結果，而是主動處理；越早把可控項目做實，局勢越容易轉好。':
-             agency<-0.8?'此刻更適合先停、整理與拆解問題，不宜用力硬推。':
-             '先把問題拆成可控與不可控兩部分，逐步調整比一次翻盤更有效。';
+    answer = agency>0.8 ? `${lead}別空等，主動把可控項目做實。「${tipName}」：${tipText}` :
+             agency<-0.8 ? `${lead}先停、整理與拆解，不宜硬推。「${tipName}」：${tipText}` :
+             `${lead}把問題拆成可控與不可控，逐步調。「${tipName}」：${tipText}`;
+  }else if(intent.type==='choice'){
+    answer = score>=1 ? `${lead}較能呼應「${tipName}」、也比較不勉強的那條路，通常較站得住。` :
+             score<=-1 ? `${lead}現在比選對更急的是別選錯；條件未明時先留彈性。` :
+             `${lead}優劣未全浮現。對照「${tipName}」：${tipText}`;
   }else{
-    answer = score>=2?'整體趨勢偏向改善與推進，但不是無條件順利。':
-             score<=-2?'整體趨勢偏向受阻或延後，先處理根本問題會比較有利。':
-             '整體趨勢正在轉換中，現在比「結果」更重要的是下一步怎麼做。';
+    answer = score>=2 ? `${lead}整體偏向改善與推進，但不是無條件順利。「${tipName}」：${tipText}` :
+             score<=-2 ? `${lead}整體偏向受阻或延後，先處理根本問題。「${tipName}」：${tipText}` :
+             `${lead}還在轉換中，下一步比「結果」更重要。「${tipName}」：${tipText}`;
   }
   const reasons=[];
   if(picks.length===3){
-    reasons.push(`「現況」符文「${RUNES[picks[0]][1]}」定調此刻背景，「阻力」符文「${RUNES[picks[1]][1]}」點出真正卡住的地方。`);
-    reasons.push(`「建議」符文「${RUNES[picks[2]][1]}」傾向${vs[2].tone>0?'正面可行':'保守收斂'}，行動步調屬${vs[2].pace>0?'推進型':vs[2].pace<0?'放緩型':'中性'}。`);
+    reasons.push(`「現況」${RUNES[picks[0]][1]}、「阻力」${RUNES[picks[1]][1]}、「建議」${RUNES[picks[2]][1]} 串成一條路徑。`);
+    reasons.push(`建議符文偏${vs[2].tone>0?'可行推進':'保守收斂'}，步調屬${vs[2].pace>0?'推進型':vs[2].pace<0?'放緩型':'中性'}。`);
   }else{
-    reasons.push(`核心符文「${RUNES[picks[0]][1]}」的主題是「${vs[0].key}」。`);
+    reasons.push(`核心符文「${RUNES[picks[0]][1]}」主題是「${vs[0].key}」。`);
   }
-  if(tags.includes('財務')) reasons.push('財務題真正的落地變數仍是現金流、利率、還款紀律與是否新增負債。');
-  if(tags.includes('工作')) reasons.push('工作題要同步觀察職務、權責、人際與公司環境，而不是只看單一象徵。');
+  if(tags.includes('財務')) reasons.push('財務落地仍看現金流、利率與還款紀律。');
+  if(tags.includes('工作')) reasons.push('工作題請對準職務、權責與環境，不要只看單枚符文。');
+  if(tags.includes('感情')) reasons.push('感情題看溝通與界線，符文不是對方的心證。');
+  const hr3=horizonReason(intent); if(hr3) reasons.push(hr3);
   return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
 }
+
 function runeSynthesis(picks,labels,q){
   const tags=classifyQuestion(q);
   let core='';
@@ -912,7 +979,7 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
   runeDirect = blendAnswer(runeDirect,'runes',question);
   html += answerCardHTML({
     answer:runeDirect.answer,
-    sub:`這是依符文陣、位置意義（現況／阻力／建議）、問題類型與時間語意做出的本機綜合回答；不是保證日期或結果。`,
+    sub:`依符文位置（現況／阻力／建議）與你的問題整理出的方向，供參考；不是對日期或結果的保證。`,
     direction:runeDirect.direction, window:runeDirect.window, intent:runeDirect.intent.label,
     confidence:runeDirect.confidence, clarity:runeDirect.clarity, reasons:runeDirect.reasons
   });
@@ -938,16 +1005,16 @@ function seededRandom(seed){
   };
 }
 const DAILY_MSGS = [
-  "今天適合放慢腳步，把手邊累積的小事一件件收尾。",
-  "會有意外的好消息，留意身邊人捎來的訊息。",
-  "財運平穩，不適合衝動的大額決定，穩紮穩打就好。",
-  "人際互動順暢，適合主動聯繫許久未聯絡的人。",
-  "身體發出的訊號要多留意，早點休息會更有效率。",
-  "靈感特別活躍，適合處理需要創意的事情。",
-  "今天適合獨處整理思緒，答案自然會浮現。",
-  "貴人運不錯，遇到困難時開口求助會有幫助。",
-  "情緒起伏稍大，避免在氣頭上做重要決定。",
-  "適合檢視長期計畫的進度，微調方向比重來更省力。"
+  "今天適合把拖著的小事收尾。做完一件，心會比較寬。",
+  "訊息或對話可能帶來轉折，留意你平常不太注意的人。",
+  "錢的方面以穩為主，大額決定可以再睡一晚。",
+  "人際偏順，主動聯繫久未聯絡的人，往往比等對方來找你有效。",
+  "身體比行程誠實。累就早點停，效率反而比較好。",
+  "靈感偏多，適合動筆、構思，或把想法排進可執行的清單。",
+  "適合獨處整理。你不是要逃避，是需要把思緒排好隊。",
+  "遇到卡關，開口問一句，往往比自己硬撐更靠近解法。",
+  "情緒可能比較起伏。重要決定，等氣過了再下。",
+  "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
 ];
 document.getElementById('daily-birth').value = localStorage.getItem('guanbu_birth') || '';
 
