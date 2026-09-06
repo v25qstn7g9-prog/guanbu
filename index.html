@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.4 — 情境 AI 判讀版</title>
+<title>觀卜 v1.5 — 智慧大師版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -170,6 +170,22 @@
   .ai-route{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
   .ai-route .badge{background:#171C22;color:#AFC3D6;}
 
+
+  .oracle-card{margin:14px 0;padding:16px;border-radius:16px;background:linear-gradient(145deg,#1A1720,#111019);
+    border:1px solid rgba(201,162,39,.58);box-shadow:0 10px 28px rgba(0,0,0,.22);}
+  .oracle-title{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:13px;letter-spacing:.1em;margin-bottom:8px;}
+  .oracle-main{font-family:'Noto Serif TC',serif;font-size:20px;line-height:1.65;color:#F3E8CF;font-weight:700;}
+  .oracle-quote{margin-top:10px;padding:10px 12px;border-left:3px solid var(--gold);background:#121119;
+    color:#D8CEB8;font-size:14px;line-height:1.7;}
+  .market-bars{display:grid;gap:8px;margin-top:12px;}
+  .market-bar{display:grid;grid-template-columns:54px 1fr 42px;align-items:center;gap:8px;font-size:12px;color:var(--sub);}
+  .market-track{height:8px;border-radius:99px;background:#24212D;overflow:hidden;}
+  .market-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--runic),var(--gold));}
+  .session-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .session-box{padding:10px;border:1px solid var(--panel-border);border-radius:11px;background:#0F0E17;}
+  .session-box span{display:block;color:var(--sub);font-size:11px;margin-bottom:4px;}
+  .session-box strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
+
 </style>
 </head>
 <body>
@@ -177,7 +193,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.4 更有人味</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.5 智慧大師</p>
   </div>
 
   <div class="tabs">
@@ -232,7 +248,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.4｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.5 智慧大師｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -259,12 +275,13 @@ function hexFromBits(bits){
 function classifyQuestion(q){
   q=(q||'').toLowerCase();
   const groups=[
-    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣','貸款','房貸','存款','基金','理財','現金','負債','還款']],
+    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣','貸款','房貸','存款','基金','理財','現金','負債','還款','台股','美股','大盤','加權','指數','盤勢','股市','開盤','收盤','多空','漲','跌']],
     ['工作',['工作','職場','公司','升遷','轉職','主管','同事','事業','退休','調薪','加薪','薪水','薪資','年薪','月薪','獎金','考核','績效','裁員','離職','面試','求職','創業','接案']],
     ['感情',['感情','愛情','老婆','老公','伴侶','結婚','分手','復合','關係','暗戀','追求','表白','桃花','吵架','冷戰']],
     ['健康',['健康','身體','睡眠','恢復','訓練','運動','疾病','醫療','焦慮','壓力','失眠']],
     ['學業',['考試','學業','功課','研究所','證照','升學','成績']],
-    ['時間',['什麼時候','何時','多久','幾月','幾年','今年','明年','時間']],
+    ['市場',['台股','美股','大盤','加權','指數','盤勢','股市','開盤','收盤','多空','漲','跌']],
+    ['時間',['什麼時候','何時','多久','幾月','幾年','今年','明年','明天','今日','今天','下週','本週','時間']],
     ['選擇',['要不要','是否','該不該','可以嗎','選哪個','哪一個']]
   ];
   const hits=[];
@@ -286,11 +303,14 @@ function analyzeIntent(q){
   if(/擔心|害怕|焦慮|不安|煩惱|難過|痛苦/.test(q)) out.tone='anxious';
   else if(/希望|期待|想要|會不會有|能不能/.test(q)) out.tone='hopeful';
   else if(/該怎麼|怎麼辦|如何是好/.test(q)) out.tone='seeking';
-  if(/什麼時候|何時|多久|幾月|幾年|何年|時間/.test(q)){out.type='when';out.label='時間';}
+  if(/明天|今日|今天|本週|下週|台股|美股|大盤|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q)){out.type='forecast';out.label='趨勢預測';}
+  else if(/什麼時候|何時|多久|幾月|幾年|何年|時間/.test(q)){out.type='when';out.label='時間';}
   else if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有|嗎[？?]?$/.test(q)){out.type='yesno';out.label='是非・傾向';}
   else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){out.type='how';out.label='方法・建議';}
   else if(/哪一個|哪個|選擇|選哪/.test(q)){out.type='choice';out.label='選擇';}
-  if(/今天|今日/.test(q)) out.horizon='今日';
+  if(/明天/.test(q)) out.horizon='明日';
+  else if(/今天|今日/.test(q)) out.horizon='今日';
+  else if(/下週/.test(q)) out.horizon='下週';
   else if(/這週|本週|一週/.test(q)) out.horizon='一週';
   else if(/這個月|本月|一個月/.test(q)) out.horizon='一個月';
   else if(/三個月|3個月/.test(q)) out.horizon='三個月';
@@ -353,9 +373,10 @@ function detectNeeds(q){
   const tags=classifyQuestion(q), intent=analyzeIntent(q);
   return {
     tags,intent,
+    market: tags.includes('市場') || /台股|美股|大盤|加權|指數|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q),
     debt: tags.includes('財務') && /債|卡債|貸款|還款|清完|還完/.test(q),
     cashflow: tags.includes('財務') && /現金流|入不敷出|透支|吃緊|周轉|降低投資|降低投入|喘不過氣/.test(q),
-    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q) && !/現金流|入不敷出|透支|吃緊|周轉/.test(q),
+    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q) && !/台股|美股|大盤|加權|指數|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q) && !/現金流|入不敷出|透支|吃緊|周轉/.test(q),
     health: tags.includes('健康'),
     work: tags.includes('工作'),
     relation: tags.includes('感情')
@@ -379,7 +400,10 @@ function money(n){ return Math.round(n).toLocaleString('zh-TW'); }
 function contextHTML(prefix,q){
   const n=detectNeeds(q);
   let fields='', note='';
-  if(n.debt){
+  if(n.market){
+    fields = `<div class="field full"><label>盤面焦點（可留白）</label><input class="input" id="${prefix}-marketfocus" placeholder="例：電子權值、金融、尾盤"></div>`;
+    note='這題不用補一堆資料；直接抽牌／起卦／抽符文，就會給多空傾向、波動與盤中節奏。';
+  }else if(n.debt){
     fields = `
       <div class="field"><label>目前債務餘額</label><input class="input" inputmode="decimal" id="${prefix}-balance" placeholder="例：120000"></div>
       <div class="field"><label>年利率 %</label><input class="input" inputmode="decimal" id="${prefix}-rate" placeholder="例：8"></div>
@@ -501,6 +525,54 @@ const RESULT_EMPTY = {
   });
 });
 
+
+function marketPercentages(score, volatility=0){
+  let bull = Math.round(38 + score*10);
+  let bear = Math.round(28 - score*7);
+  let range = 100-bull-bear;
+  if(volatility>1){ range+=6; bull-=3; bear-=3; }
+  bull=Math.max(12,Math.min(72,bull));
+  bear=Math.max(12,Math.min(72,bear));
+  range=100-bull-bear;
+  if(range<12){ range=12; const diff=bull+bear-(100-range); if(bull>=bear) bull-=diff; else bear-=diff; }
+  return {bull,bear,range};
+}
+function marketNarrative(direction, horizon, cue, score, volatility){
+  const p=marketPercentages(score,volatility);
+  const bias = p.bull>p.bear+8 ? '中性偏多' : p.bear>p.bull+8 ? '中性偏空' : '震盪整理';
+  const open = score>1 ? '開盤氣氛偏強，但別把第一波當成整天方向。'
+              : score<-1 ? '開盤容易偏保守，先看賣壓是否很快被承接。'
+              : '開盤方向感不強，容易先試單再選邊。';
+  const mid = volatility>1 ? '盤中變數較多，容易出現急拉急殺或方向反覆。'
+              : score>0 ? '盤中若量價接得上，多方容易慢慢取得主導。'
+              : score<0 ? '盤中若反彈無量，空方壓力容易重新出來。'
+              : '盤中比較像區間拉扯，追價容易被洗。';
+  const close = score>1 ? '尾盤較有機會收回高檔附近。'
+               : score<-1 ? '尾盤要防賣壓再度出現。'
+               : '尾盤才比較可能決定今天到底偏紅還偏黑。';
+  const fireworks = score>1.5 ? '有戲，而且比較像多方有煙火。'
+                   : score<-1.5 ? '有戲，但火花可能偏向空方。'
+                   : '有戲，只是更像震盪煙火，不是單邊煙火。';
+  return {bias,p,open,mid,close,fireworks,cue,horizon: horizon||'近期'};
+}
+function marketOracleHTML(m){
+  return `<div class="oracle-card">
+    <div class="oracle-title">大師盤勢判讀</div>
+    <div class="oracle-main">${esc(m.bias)}。${esc(m.fireworks)}</div>
+    <div class="oracle-quote">「${esc(m.cue)}」放在市場題，重點不是神準猜點數，而是抓節奏：明天盤勢不太像乖乖走直線。</div>
+    <div class="market-bars">
+      <div class="market-bar"><span>偏多</span><div class="market-track"><div class="market-fill" style="width:${m.p.bull}%"></div></div><strong>${m.p.bull}%</strong></div>
+      <div class="market-bar"><span>震盪</span><div class="market-track"><div class="market-fill" style="width:${m.p.range}%"></div></div><strong>${m.p.range}%</strong></div>
+      <div class="market-bar"><span>偏空</span><div class="market-track"><div class="market-fill" style="width:${m.p.bear}%"></div></div><strong>${m.p.bear}%</strong></div>
+    </div>
+    <div class="session-grid">
+      <div class="session-box"><span>開盤</span><strong>${esc(m.open)}</strong></div>
+      <div class="session-box"><span>盤中</span><strong>${esc(m.mid)}</strong></div>
+      <div class="session-box"><span>尾盤</span><strong>${esc(m.close)}</strong></div>
+    </div>
+  </div>`;
+}
+
 const TAROT_AI = [
   {tone:0,pace:1,agency:1,key:'新開始'}, {tone:2,pace:2,agency:2,key:'主動創造'},
   {tone:0,pace:-1,agency:0,key:'等待直覺'}, {tone:2,pace:0,agency:1,key:'成長滋養'},
@@ -547,7 +619,13 @@ function tarotAnswer(picks,q){
     ? (picks[2].reversed?TAROT_REVERSED[picks[2].idx]:TAROT[picks[2].idx][1])
     : (picks[0].reversed?TAROT_REVERSED[picks[0].idx]:TAROT[picks[0].idx][1]);
   let answer='';
-  if(intent.type==='when'){
+  const isMarket=tags.includes('市場');
+  const volatility = picks.length===3 ? Math.abs(vs[1].tone-vs[2].tone)+Math.abs(vs[1].pace-vs[2].pace) : Math.abs(vs[0].pace);
+  if(isMarket){
+    answer = score>1.4 ? `盤勢偏多，但不像一路直線上攻。比較像拉高後震盪、再看資金有沒有續上。核心牌「${focus}」：${meaning}` :
+             score<-1.4 ? `盤勢偏空，反彈比較像測試賣壓，不宜把一根紅K就當翻多。核心牌「${focus}」：${meaning}` :
+             `盤勢偏震盪，方向容易反覆。明天比較有「先動、再翻、最後才定調」的味道。核心牌「${focus}」：${meaning}`;
+  }else if(intent.type==='when'){
     answer = score>1 ? `${lead}有機會往前推進，但不是立刻定案。${paceH}「${focus}」提醒：${meaning}` :
              score<-1 ? `${lead}時間容易往後挪。${paceH}先處理卡住的條件；「${focus}」的訊息是：${meaning}` :
              `${lead}還看不出單一日期，比較像邊調整邊走。${paceH}`;
@@ -577,7 +655,7 @@ function tarotAnswer(picks,q){
   if(tags.includes('工作')) reasons.push('工作題請對準職務、權責與人際，不要只看單張牌。');
   if(tags.includes('感情')) reasons.push('感情題看溝通與界線，牌義不是對方的內心獨白。');
   const hr1=horizonReason(intent); if(hr1) reasons.push(hr1);
-  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
+  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility,focus};
 }
 function tarotSynthesis(picks,labels,q){
   const tags=classifyQuestion(q);
@@ -624,7 +702,13 @@ function hexAnswer(hexNum,changedNum,moving,q){
   const paceHuman = softenPace(pace);
   const fromName = HEX_NAMES[hexNum], toName = HEX_NAMES[changedNum];
   let answer='';
-  if(intent.type==='when'){
+  const isMarket=tags.includes('市場');
+  const volatility = moving.length>=3 ? 3 : moving.length===2 ? 2 : moving.length===1 ? 1 : 0;
+  if(isMarket){
+    answer = score>.7 ? `明日盤勢偏多方占優，但中間會有拉扯。從「${fromName}」走向「${toName}」，比較像先震後穩。` :
+             score<-.7 ? `明日盤勢偏空方占優，反彈若無量要小心再被壓回。從「${fromName}」走向「${toName}」，防守意味較重。` :
+             `明日盤勢偏震盪，方向不會一次講清楚。從「${fromName}」到「${toName}」，比較像盤中反覆後才收斂。`;
+  }else if(intent.type==='when'){
     answer = future>0 ? `${lead}有轉機，但不是立刻見效。${paceHuman}本卦「${fromName}」走到「${toName}」的過程，比某個特定日期更值得盯。` :
              future<0 ? `${lead}時間點容易往後拖。${paceHuman}先把「${fromName}」裡卡住的條件理清楚，再談什麼時候。` :
              `${lead}這題還壓不成一個明確日期。${paceHuman}先看「${fromName}」怎麼轉成「${toName}」，節奏會比較清楚。`;
@@ -653,7 +737,7 @@ function hexAnswer(hexNum,changedNum,moving,q){
   if(tags.includes('工作')) reasons.push('工作／薪資仍看考核、表現與公司環境；卦象不保證結果。');
   if(tags.includes('感情')) reasons.push('感情題請對準溝通與界線，不要把卦義直接當成對方的想法。');
   const hr2=horizonReason(intent); if(hr2) reasons.push(hr2);
-  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons};
+  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility,focus:`${fromName}→${toName}`};
 }
 // ================= I CHING =================
 const HEX_NAMES = {
@@ -771,6 +855,9 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
     direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
     confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
   });
+  if(directHex.tags.includes('市場')){
+    html += marketOracleHTML(marketNarrative(directHex.direction,directHex.intent.horizon,directHex.focus,directHex.score,directHex.volatility));
+  }
   html += realityHTML('yijing',question);
   const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
@@ -842,6 +929,9 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
     direction:direct.direction, window:direct.window, intent:direct.intent.label,
     confidence:direct.confidence, clarity:direct.clarity, reasons:direct.reasons
   });
+  if(direct.tags.includes('市場')){
+    html += marketOracleHTML(marketNarrative(direct.direction,direct.intent.horizon,direct.focus,direct.score,direct.volatility));
+  }
   html += realityHTML('tarot',question);
   const smart = tarotSynthesis(picked,labels,question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
