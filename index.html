@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.6.1 — 人話判讀版</title>
+<title>觀卜 v1.6.2 — 人話判讀版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -193,7 +193,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.6.1 更白話</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.6.2 給結論</p>
   </div>
 
   <div class="tabs">
@@ -248,7 +248,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.6.1｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.6.2｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -637,9 +637,9 @@ function tarotAnswer(picks,q){
              score<-1 ? `${lead}時間容易往後。${paceH}先把卡住的清一清。「${focus}」：${meaning}` :
              `${lead}日期說不死，邊走邊調。${paceH}`;
   }else if(intent.type==='yesno'){
-    answer = score>=2.2 ? `${lead}偏「可以／會」，但要你真的去做才算。「${focus}」：${meaning}` :
-             score<=-2.2 ? `${lead}偏「先別急」。阻力還在。「${focus}」：${meaning}` :
-             `${lead}現在給死答案太早。下一步怎麼選比較關鍵。「${focus}」：${meaning}`;
+    const lean = score>=0.8 ? 'yes' : score<=-0.8 ? 'no' : (score>=0?'yes':'no');
+    answer = lean==='yes' ? `結論偏「會／可以」。後面仍要靠你做實。「${focus}」：${meaning}` :
+             `結論偏「先別急／機會較小」。先看阻力。「${focus}」：${meaning}`;
   }else if(intent.type==='how'){
     answer = agency>1 ? `${lead}別空等，先動手做你能做的。「${focus}」：${meaning}` :
              agency<-1 ? `${lead}先停、先拆，別硬推。「${focus}」：${meaning}` :
@@ -723,22 +723,24 @@ function hexAnswer(hexNum,changedNum,moving,q){
              score<-.7 ? `盤勢偏壓，反彈要小心又被壓回去。從「${fromName}」到「${toName}」，防守優先。` :
              `明天比較像震盪市，上下都有機會，別急著一次押死方向。「${fromName}」→「${toName}」。`;
   }else if(intent.type==='yesno'){
+    // 是非題：先給結論，再補一句條件；門檻放寬，少落在「說太死」
+    const lean = score>=0.25 ? 'yes' : score<=-0.25 ? 'no' : (future>0?'yes':future<0?'no':'soft');
     if(isWork){
-      answer = score>.7 ? `以卦來看，${horizon||'這段期間'}「有機會」，但不是躺著等就會發生。你現在比較像在「${fromName}」的階段，後面要走到「${toName}」——通常得把表現、考核或談薪的條件先做實。` :
-               score<-.7 ? `以卦來看，${horizon||'這段期間'}別太樂觀當已定案。局面還停在「${fromName}」，要先處理卡住的條件，才談不談得上「${toName}」那種累積後的結果。` :
-               `「會或不會」現在都說太死。變數還在動（${vol?moving.map(lineLabel).join('、'):'局勢未定'}），比較像：有機會，但看你跟環境能不能對上「${toName}」要的條件。`;
+      answer = lean==='yes' ? `結論偏「會／有機會」。${horizon?horizon+'這段，':''}從「${fromName}」走到「${toName}」，調薪比較像要靠表現跟考核對上，不是空等。` :
+               lean==='no' ? `結論偏「機會不大／先別當已定」。${horizon?horizon+'，':''}局面還停在「${fromName}」，條件沒到位前，別把調薪當必然。` :
+               `結論偏「有條件才會」。不是穩穩的會，也不是穩穩的不會；「${toName}」要的條件（表現、制度、時機）對上了，機會才站得住。`;
     }else if(isLove){
-      answer = score>.7 ? `偏向「有機會往好的走」，但關係要雙方動手，不是單方面等答案。「${fromName}」→「${toName}」。` :
-               score<-.7 ? `偏向先別急著定生死。現在硬逼結論，容易把「${fromName}」裡的不穩放大。` :
-               `還沒到能一句話定案。先看溝通跟界線，再決定要不要推進。`;
+      answer = lean==='yes' ? `結論偏「有機會往好的走」。但要雙方動手，單等沒有用。「${fromName}」→「${toName}」。` :
+               lean==='no' ? `結論偏「先別急著定」。現在硬逼，容易把不穩放大。` :
+               `結論偏「還看你們怎麼走」。溝通跟界線對了，才談得上下一步。`;
     }else if(isMoney){
-      answer = score>.7 ? `偏向「有機會」，但仍要看現金流跟你自己的紀律，卦不能替你算報酬率。` :
-               score<-.7 ? `偏向先守、先別加槓桿。條件未明前，穩比衝重要。` :
-               `還說不準成不成。先把數字攤開，比再問一次卦有用。`;
+      answer = lean==='yes' ? `結論偏「有機會」。但成敗仍看現金流跟你的紀律。` :
+               lean==='no' ? `結論偏「先守」。條件未明，別加碼硬衝。` :
+               `結論偏「可以做，但别梭哈」。先把數字算清楚再動。`;
     }else{
-      answer = score>.7 ? `偏向「可以／有機會」，但要你真的去做，才走得向「${toName}」。` :
-               score<-.7 ? `偏向「先別急」。在「${fromName}」把阻力理一理，再決定要不要硬上。` :
-               `現在給死答案太早。看「${fromName}」怎麼轉成「${toName}」，你的選擇會影響結局。`;
+      answer = lean==='yes' ? `結論偏「可以／有機會」。你真的去做，才走得向「${toName}」。` :
+               lean==='no' ? `結論偏「先別急」。在「${fromName}」把阻力理一理再決定。` :
+               `結論偏「有條件」。條件對了比較像會，硬推則不一定。`;
     }
   }else if(intent.type==='when'){
     answer = future>0 ? `${horizon?horizon+'這段：':''}有機會往前推，但別問「哪一天一定發生」。重點是「${fromName}」走到「${toName}」的過程。` :
@@ -1098,9 +1100,9 @@ function runeAnswer(picks,q){
              score<-1 ? `${lead}時間容易往後。先把卡住的清一清。${paceH}` :
              `${lead}日期說不死，邊走邊調。${paceH}`;
   }else if(intent.type==='yesno'){
-    answer = score>=2 ? `${lead}偏「可以／會」，但要做了才算。「${tipName}」：${tipText}` :
-             score<=-2 ? `${lead}偏「先別急」。先看阻力。「${tipName}」：${tipText}` :
-             `${lead}現在給死答案太早。下一步怎麼選比較關鍵。「${tipName}」：${tipText}`;
+    const lean = score>=0.6 ? 'yes' : score<=-0.6 ? 'no' : (score>=0?'yes':'no');
+    answer = lean==='yes' ? `結論偏「會／可以」。做了才算數。「${tipName}」：${tipText}` :
+             `結論偏「先別急／機會較小」。先處理阻力。「${tipName}」：${tipText}`;
   }else if(intent.type==='how'){
     answer = agency>0.8 ? `${lead}別空等，先動手。「${tipName}」：${tipText}` :
              agency<-0.8 ? `${lead}先停、先拆，別硬推。「${tipName}」：${tipText}` :
