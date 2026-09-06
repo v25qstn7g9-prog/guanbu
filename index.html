@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>觀卜 v1.2 — AI 智慧判讀版</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
+
+  :root{
+    --bg:#0B0B14;
+    --panel:#15141F;
+    --panel-border:#2A2438;
+    --text:#EDE6D6;
+    --sub:#8A8398;
+    --gold:#C9A227;
+    --crimson:#8B2635;
+    --jade:#3F6659;
+    --runic:#5C7A99;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'EB Garamond', serif; min-height:100%;}
+  body{
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(201,162,39,0.06), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(92,122,153,0.06), transparent 45%);
+  }
+  .app{max-width:460px;margin:0 auto;min-height:100vh;padding:22px 18px 60px;}
+
+  .hero{text-align:center;margin-bottom:22px;}
+  .hero .mark{font-size:13px;letter-spacing:.35em;color:var(--sub);margin-bottom:6px;}
+  .hero h1{font-family:'Noto Serif TC',serif;font-weight:700;font-size:30px;margin:0;
+    background:linear-gradient(120deg, var(--gold), #E8D48A 55%, var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{color:var(--sub);font-size:14px;margin-top:8px;font-style:italic;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tab{flex:1;padding:10px 4px;text-align:center;border-radius:12px;
+    border:1px solid var(--panel-border);background:var(--panel);
+    color:var(--sub);font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;
+    cursor:pointer;transition:border-color .2s, color .2s;}
+  .tab.active{color:var(--text);}
+  .tab[data-t="yijing"].active{border-color:var(--jade);box-shadow:0 0 0 1px var(--jade) inset;}
+  .tab[data-t="tarot"].active{border-color:var(--crimson);box-shadow:0 0 0 1px var(--crimson) inset;}
+  .tab[data-t="runes"].active{border-color:var(--runic);box-shadow:0 0 0 1px var(--runic) inset;}
+  .tab[data-t="daily"].active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+
+  .panel{display:none;background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:16px;padding:22px 18px;min-height:280px;}
+  .panel.active{display:block;}
+
+  .section-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.18em;
+    color:var(--sub);margin-bottom:14px;text-align:center;}
+  .section-title.cn{font-family:'Noto Serif TC',serif;letter-spacing:.08em;}
+
+  .btn{display:block;width:100%;padding:13px;border-radius:10px;border:none;
+    font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px;cursor:pointer;
+    margin-top:16px;transition:transform .15s;}
+  .btn:active{transform:scale(0.98);}
+  .btn.jade{background:var(--jade);color:#EAF3EF;}
+  .btn.crimson{background:var(--crimson);color:#F6E9EA;}
+  .btn.runic{background:var(--runic);color:#EAF1F7;}
+  .btn.gold{background:var(--gold);color:#1B1508;}
+
+  /* --- I Ching --- */
+  .hexagram{display:flex;flex-direction:column-reverse;gap:7px;align-items:center;margin:18px 0;}
+  .line{width:150px;height:12px;display:flex;justify-content:space-between;}
+  .line .bar{height:100%;background:var(--jade);border-radius:2px;}
+  .line.solid .bar{width:100%;}
+  .line.broken .bar{width:44%;}
+  .line.changing{outline:1.5px dashed var(--gold);outline-offset:3px;}
+
+  .result-name{text-align:center;font-family:'Noto Serif TC',serif;font-size:24px;
+    font-weight:700;color:var(--gold);margin:14px 0 4px;}
+  .result-sub{text-align:center;color:var(--sub);font-size:13px;margin-bottom:12px;}
+  .result-text{font-size:16px;line-height:1.75;text-align:center;padding:0 4px;}
+
+  /* --- Tarot --- */
+  .cards-row{display:flex;justify-content:center;gap:10px;margin:16px 0;flex-wrap:wrap;}
+  .tcard{width:74px;height:118px;border-radius:8px;position:relative;
+    background:linear-gradient(160deg,#1D1420,#2A1620);
+    border:1px solid var(--crimson);display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif;color:var(--crimson);font-size:11px;text-align:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.4);}
+  .tcard .rev{transform:rotate(180deg);}
+  .tcard-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.05em;
+    color:var(--crimson);text-align:center;margin-top:8px;}
+
+  /* --- Runes --- */
+  .rune-glyph{text-align:center;font-size:56px;color:var(--runic);margin:10px 0 4px;
+    text-shadow:0 0 18px rgba(92,122,153,.5);}
+  .rune-name{text-align:center;font-family:'Cinzel',serif;font-size:16px;color:var(--runic);
+    letter-spacing:.08em;}
+
+  /* --- Daily --- */
+  .stars{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
+    border-bottom:1px solid var(--panel-border);}
+  .stars:last-child{border-bottom:none;}
+  .stars .label{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--sub);}
+  .stars .dots span{color:var(--panel-border);font-size:15px;}
+  .stars .dots span.on{color:var(--gold);}
+  .daily-msg{margin-top:16px;font-size:15px;line-height:1.7;text-align:center;
+    font-style:italic;color:var(--text);}
+  .daily-date{text-align:center;color:var(--sub);font-size:12px;margin-bottom:6px;
+    letter-spacing:.1em;}
+
+  .field{margin:10px 0 14px;}
+  .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:7px;}
+  .input,.select{width:100%;background:#0F0E17;color:var(--text);border:1px solid var(--panel-border);
+    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;}
+  .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.08);}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
+  .meta-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:var(--sub);font-size:13px;}
+  .meta-row strong{color:var(--text);font-weight:600;text-align:right;}
+  .moving{color:var(--gold);}
+  .hex-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+  .hex-box{padding:10px 6px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
+  .hex-box .hexagram{margin:10px 0;}
+  .hex-box .line{width:110px;height:9px;}
+  .hex-box .result-name{font-size:20px;margin-top:8px;}
+  .hex-box .result-sub{margin-bottom:4px;}
+  .tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#201C13;color:#E8D48A;font-size:11px;margin:2px;}
+  .question-echo{font-family:'Noto Serif TC',serif;text-align:center;color:#D9CFB7;font-size:14px;line-height:1.6;margin:8px 0 14px;}
+  .hint{font-size:12px;color:var(--sub);line-height:1.55;margin-top:8px;}
+  .toolbar{display:flex;gap:8px;margin-top:10px;}
+  .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
+  .btn.small{padding:9px 10px;margin-top:0;font-size:13px;}
+  @media (max-width:380px){.hex-pair{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr;}}
+
+
+  .smart-card{margin:14px 0;padding:15px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
+  .smart-title{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold);letter-spacing:.08em;margin-bottom:9px;}
+  .smart-text{font-size:15px;line-height:1.75;color:var(--text);}
+  .smart-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .smart-chip{border:1px solid var(--panel-border);border-radius:10px;padding:9px;background:#0F0E17;}
+  .smart-chip span{display:block;color:var(--sub);font-size:11px;margin-bottom:3px;}
+  .smart-chip strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
+  .badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#211D14;color:#E8D48A;font-size:11px;margin:2px;}
+  .warning-note{margin-top:10px;padding:10px 12px;border-left:3px solid var(--gold);background:#121119;color:var(--sub);font-size:12px;line-height:1.6;}
+
+
+  .answer-card{margin:14px 0 12px;padding:16px;border:1px solid rgba(201,162,39,.58);
+    border-radius:15px;background:linear-gradient(145deg,#1B1821,#111019);
+    box-shadow:0 8px 28px rgba(0,0,0,.18);}
+  .answer-kicker{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:12px;
+    letter-spacing:.12em;margin-bottom:8px;}
+  .answer-main{font-family:'Noto Serif TC',serif;font-size:19px;line-height:1.55;
+    color:#F2E8CF;font-weight:700;}
+  .answer-sub{margin-top:8px;color:var(--sub);font-size:13px;line-height:1.65;}
+  .meter{height:7px;background:#24212D;border-radius:999px;overflow:hidden;margin-top:7px;}
+  .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--gold));border-radius:999px;}
+  .why-list{margin:10px 0 0;padding-left:18px;color:var(--text);font-size:13px;line-height:1.65;}
+  .why-list li{margin:4px 0;}
+
+  .empty{color:var(--sub);text-align:center;font-size:14px;padding:40px 10px;line-height:1.8;}
+  .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:26px;
+    letter-spacing:.05em;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <div class="mark">D I V I N A T I O N</div>
+    <h1>觀卜</h1>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.2 AI 智慧判讀</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-t="yijing">易經</div>
+    <div class="tab" data-t="tarot">塔羅</div>
+    <div class="tab" data-t="runes">符文</div>
+    <div class="tab" data-t="daily">今日運勢</div>
+  </div>
+
+  <div class="panel active" id="panel-yijing">
+    <div class="section-title cn">起卦問事</div>
+    <div class="field">
+      <label for="yijing-question">你想問什麼？</label>
+      <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" />
+      <div class="hint">問題越單一越好。起卦後會顯示本卦、動爻與之卦。</div>
+    </div>
+    <div id="yijing-result">
+      <div class="empty">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div>
+    </div>
+    <button class="btn jade" id="yijing-btn">起卦</button>
+  </div>
+
+  <div class="panel" id="panel-tarot">
+    <div class="section-title">MAJOR ARCANA</div>
+    <div class="field"><label for="tarot-question">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" /></div>
+    <div class="field"><label for="tarot-mode">牌陣</label><select class="select" id="tarot-mode"><option value="1">單張指引</option><option value="3">三張牌｜過去・現在・未來</option></select></div>
+    <div id="tarot-result">
+      <div class="empty">靜心片刻<br/>抽牌看看此刻該留意什麼</div>
+    </div>
+    <button class="btn crimson" id="tarot-btn">抽牌</button>
+  </div>
+
+  <div class="panel" id="panel-runes">
+    <div class="section-title">ELDER FUTHARK</div>
+    <div class="field"><label for="runes-question">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" /></div>
+    <div class="field"><label for="runes-mode">符文陣</label><select class="select" id="runes-mode"><option value="1">單枚指引</option><option value="3">三枚｜現況・阻力・建議</option></select></div>
+    <div id="runes-result">
+      <div class="empty">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div>
+    </div>
+    <button class="btn runic" id="runes-btn">抽符文</button>
+  </div>
+
+  <div class="panel" id="panel-daily">
+    <div class="section-title cn">今日運勢</div>
+    <div class="field"><label for="daily-birth">生日（選填，用來個人化每日 seed）</label><input class="input" type="date" id="daily-birth" /></div>
+    <div id="daily-result">
+      <div class="empty">按下查看，抓出今天的運勢</div>
+    </div>
+    <button class="btn gold" id="daily-btn">查看今日運勢</button>
+  </div>
+
+  <div class="footer-note">僅供參考娛樂｜v1.2 本機 AI 式判讀｜重要決策仍以現實資訊為準</div>
+</div>
+
+<script>
+// ---------------- tab switching ----------------
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.t).classList.add('active');
+  });
+});
+
+// ---------------- helpers ----------------
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
+function hexFromBits(bits){
+  const lowerIdx = trigramIndex(bits.slice(0,3));
+  const upperIdx = trigramIndex(bits.slice(3,6));
+  return TRI_MATRIX[upperIdx][lowerIdx];
+}
+function classifyQuestion(q){
+  q=(q||'').toLowerCase();
+  const groups=[
+    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣']],
+    ['工作',['工作','職場','公司','升遷','轉職','主管','同事','事業','退休']],
+    ['感情',['感情','愛情','老婆','老公','伴侶','結婚','分手','復合','關係']],
+    ['健康',['健康','身體','睡眠','恢復','訓練','運動','疾病','醫療']],
+    ['時間',['什麼時候','何時','多久','幾月','幾年','今年','明年','時間']],
+    ['選擇',['要不要','是否','該不該','可以嗎','選哪個','哪一個']]
+  ];
+  const hits=[];
+  groups.forEach(([name,ks])=>{ if(ks.some(k=>q.includes(k))) hits.push(name); });
+  return hits.length?hits:['一般'];
+}
+function intentAdvice(tags){
+  if(tags.includes('財務')) return '把象徵訊息落到現金流、利率、還款順序與可執行數字；占卜不替代財務試算。';
+  if(tags.includes('工作')) return '把訊息落到職務變化、權責、人際與可控行動，不把單一象徵視為必然事件。';
+  if(tags.includes('健康')) return '只把牌義當作自我觀察提示；症狀、用藥與治療仍以醫療專業為準。';
+  if(tags.includes('感情')) return '優先看溝通、界線與雙方行動，不把牌義當作對方內心的事實。';
+  return '把結果當作整理問題的框架，再用現實資訊驗證。';
+}
+
+function analyzeIntent(q){
+  q=(q||'').trim();
+  const out={type:'trend',label:'趨勢',horizon:'未指定'};
+  if(/什麼時候|何時|多久|幾月|幾年|何年|時間/.test(q)){out.type='when';out.label='時間';}
+  else if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有/.test(q)){out.type='yesno';out.label='是非・傾向';}
+  else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){out.type='how';out.label='方法・建議';}
+  else if(/哪一個|哪個|選擇|選哪/.test(q)){out.type='choice';out.label='選擇';}
+  if(/今天|今日/.test(q)) out.horizon='今日';
+  else if(/這週|本週|一週/.test(q)) out.horizon='一週';
+  else if(/這個月|本月|一個月/.test(q)) out.horizon='一個月';
+  else if(/三個月|3個月/.test(q)) out.horizon='三個月';
+  else if(/半年|六個月|6個月/.test(q)) out.horizon='半年';
+  else if(/今年/.test(q)) out.horizon='今年';
+  else if(/明年/.test(q)) out.horizon='明年';
+  else if(/20\d{2}/.test(q)) out.horizon=(q.match(/20\d{2}/)||[])[0]||'指定年份';
+  return out;
+}
+function confidenceLabel(v){
+  if(v>=78) return '高';
+  if(v>=58) return '中高';
+  if(v>=40) return '中';
+  return '偏低';
+}
+function answerCardHTML(a){
+  const reasons=(a.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+  return `<div class="answer-card">
+    <div class="answer-kicker">AI 式直接回答</div>
+    <div class="answer-main">${esc(a.answer)}</div>
+    <div class="answer-sub">${esc(a.sub||'')}</div>
+    <div class="smart-grid">
+      <div class="smart-chip"><span>判讀方向</span><strong>${esc(a.direction||'觀察中')}</strong></div>
+      <div class="smart-chip"><span>象徵時間窗</span><strong>${esc(a.window||'未指定')}</strong></div>
+      <div class="smart-chip"><span>問題意圖</span><strong>${esc(a.intent||'趨勢')}</strong></div>
+      <div class="smart-chip"><span>指向明確度</span><strong>${esc(a.clarity||'中')}</strong><div class="meter"><i style="width:${Math.max(8,Math.min(100,a.confidence||50))}%"></i></div></div>
+    </div>
+    ${reasons?`<ul class="why-list">${reasons}</ul>`:''}
+  </div>`;
+}
+const TAROT_AI = [
+  {tone:0,pace:1,agency:1,key:'新開始'}, {tone:2,pace:2,agency:2,key:'主動創造'},
+  {tone:0,pace:-1,agency:0,key:'等待直覺'}, {tone:2,pace:0,agency:1,key:'成長滋養'},
+  {tone:1,pace:0,agency:2,key:'秩序掌控'}, {tone:0,pace:-1,agency:0,key:'制度與指引'},
+  {tone:1,pace:0,agency:1,key:'抉擇與關係'}, {tone:2,pace:2,agency:2,key:'推進突破'},
+  {tone:1,pace:0,agency:1,key:'穩定韌性'}, {tone:0,pace:-2,agency:0,key:'沉澱'},
+  {tone:1,pace:2,agency:0,key:'局勢轉動'}, {tone:1,pace:0,agency:1,key:'清算與平衡'},
+  {tone:-1,pace:-2,agency:-1,key:'暫停換角度'}, {tone:0,pace:1,agency:1,key:'結束與重啟'},
+  {tone:1,pace:-1,agency:1,key:'調整平衡'}, {tone:-2,pace:-1,agency:-1,key:'束縛與執著'},
+  {tone:-2,pace:2,agency:-1,key:'劇變'}, {tone:2,pace:0,agency:0,key:'希望恢復'},
+  {tone:-1,pace:-1,agency:-1,key:'迷霧'}, {tone:3,pace:2,agency:1,key:'明朗成功'},
+  {tone:2,pace:1,agency:1,key:'覺醒定案'}, {tone:3,pace:0,agency:1,key:'完成收尾'}
+];
+function tarotVector(p){
+  const m=TAROT_AI[p.idx];
+  const rev=p.reversed?-1:1;
+  return {tone:m.tone*rev, pace:m.pace*(p.reversed?-0.65:1), agency:m.agency*rev, key:m.key};
+}
+function timingFromTarot(picks){
+  let score=0;
+  picks.forEach((p,i)=>{ const v=tarotVector(p); score += v.pace*(i===picks.length-1?1.25:1); });
+  if(score>=3) return '近期｜數週到約 1–3 個月的節奏';
+  if(score<=-2.2) return '偏慢｜數月級，先整理條件再看進展';
+  return '中期｜較像數月內逐步推進，不像立即定局';
+}
+function tarotAnswer(picks,q){
+  const tags=classifyQuestion(q), intent=analyzeIntent(q);
+  const vs=picks.map(tarotVector);
+  const weights=picks.length===3?[0.65,1.15,1.45]:[1.2];
+  let score=0, agency=0;
+  vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
+  const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
+  const same=signs.length>1 && signs.every(s=>s===signs[0]);
+  let confidence=48 + (same?22:0) + Math.min(18,Math.abs(score)*5);
+  if(picks.length===3 && Math.sign(vs[1].tone)!==Math.sign(vs[2].tone) && vs[1].tone && vs[2].tone) confidence-=12;
+  confidence=Math.round(Math.max(28,Math.min(92,confidence)));
+  let direction=score>=2.2?'偏正向':score<=-2.2?'偏阻滯':'未完全定局';
+  let window=timingFromTarot(picks);
+  let answer='';
+  if(intent.type==='when'){
+    answer = score>1 ? `有機會往完成方向走，但不是立刻；${window.replace('｜','，')}` :
+             score<-1 ? `時間點偏延後，先處理卡住的條件；${window.replace('｜','，')}` :
+             `目前還看不出單一明確日期，較像邊調整邊推進；${window.replace('｜','，')}`;
+  }else if(intent.type==='yesno'){
+    answer = score>=2.2?'目前牌勢偏向「可以／會」，但仍要靠後續行動落地。':
+             score<=-2.2?'目前牌勢偏向「不宜急進／容易延後」，先處理阻力。':
+             '目前是「有條件、尚未定局」，關鍵在接下來的選擇與執行。';
+  }else if(intent.type==='how'){
+    answer = agency>1 ? '重點不是等結果，而是主動處理；越早把可控項目做實，局勢越容易轉好。' :
+             agency<-1 ? '此刻更適合先停、整理與拆解問題，不宜用力硬推。' :
+             '先把問題拆成可控與不可控兩部分，逐步調整比一次翻盤更有效。';
+  }else{
+    answer = score>=2.2?'整體趨勢偏向改善與推進，但不是無條件順利。':
+             score<=-2.2?'整體趨勢偏向受阻或延後，先處理根本問題會比較有利。':
+             '整體趨勢正在轉換中，現在比「結果」更重要的是下一步怎麼做。';
+  }
+  const reasons=[];
+  if(picks.length===3){
+    reasons.push(`現在牌「${TAROT[picks[1].idx][0]}」代表當下主軸，未來牌「${TAROT[picks[2].idx][0]}」決定後續方向。`);
+    reasons.push(`未來牌呈現${vs[2].tone>0?'較正向':'較保守'}訊號，速度屬${vs[2].pace>0?'推進型':vs[2].pace<0?'延後型':'中性'}。`);
+  }else reasons.push(`核心牌「${TAROT[picks[0].idx][0]}」的主題是「${vs[0].key}」。`);
+  if(tags.includes('財務')) reasons.push('財務題真正的落地變數仍是現金流、利率、還款紀律與是否新增負債。');
+  if(tags.includes('工作')) reasons.push('工作題要同步觀察職務、權責、人際與公司環境，而不是只看單一象徵。');
+  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
+}
+function tarotSynthesis(picks,labels,q){
+  const tags=classifyQuestion(q);
+  let core='';
+  if(picks.length===1){ core=`這張牌較像是在提醒你：${picks[0].reversed?TAROT_REVERSED[picks[0].idx]:TAROT[picks[0].idx][1]}`; }
+  else{
+    const b=picks[1],c=picks[2];
+    core=`整組牌不是三句分開的牌義，而是一條路徑：現在的「${TAROT[b.idx][0]}」是轉折核心，未來的「${TAROT[c.idx][0]}」顯示後續課題與方向。`;
+  }
+  return {tags,core,timing:timingFromTarot(picks),advice:intentAdvice(tags)};
+}
+function hexSynthesis(hexNum,changedNum,moving,q){
+  const tags=classifyQuestion(q);
+  let pace=moving.length===0?'局勢偏穩｜短期以維持與觀察為主':moving.length<=2?'局勢有明確轉折｜留意近期出現的一兩個關鍵事件':'變化幅度較大｜不要只抓單一時間點，先看趨勢轉向';
+  if(tags.includes('時間')) pace += '；若問「何時」，此版只能給節奏，不硬斷日期';
+  const core=`本卦「${HEX_NAMES[hexNum]}」是當下背景，${moving.length?`動爻集中在 ${moving.map(lineLabel).join('、')}，代表真正要看的不是靜態吉凶，而是變化本身；`:'目前沒有動爻，重點仍在原局；'}後勢轉向「${HEX_NAMES[changedNum]}」。`;
+  return {tags,pace,core,advice:intentAdvice(tags)};
+}
+
+const HEX_POSITIVE = new Set([1,8,11,13,14,16,19,24,30,31,32,35,40,42,45,46,50,53,55,58,61,63]);
+const HEX_CAUTION = new Set([6,12,18,23,28,29,33,36,38,39,41,44,47,51,52,54,56,59,60,62,64]);
+const HEX_FAST = new Set([1,11,14,16,19,24,34,35,40,42,43,46,49,51,55,58]);
+const HEX_SLOW = new Set([5,9,12,20,23,26,32,39,47,52,53,60,62,64]);
+function hexTone(n){ return HEX_POSITIVE.has(n)?1:HEX_CAUTION.has(n)?-1:0; }
+function hexAnswer(hexNum,changedNum,moving,q){
+  const tags=classifyQuestion(q), intent=analyzeIntent(q);
+  const now=hexTone(hexNum), future=hexTone(changedNum);
+  const score=now*.7+future*1.3+(moving.length===0?0:(moving.length<=2?.15:-.1));
+  let confidence=46 + (now===future?18:4) + (moving.length<=2?10:0);
+  if(moving.length>=4) confidence-=8;
+  confidence=Math.max(30,Math.min(88,Math.round(confidence)));
+  let pace='中期｜循序推進';
+  if(moving.length===0) pace='偏穩｜短期不易大幅改變';
+  else if(HEX_FAST.has(changedNum)) pace='偏快｜近期較容易出現轉折';
+  else if(HEX_SLOW.has(changedNum)) pace='偏慢｜需要等待條件成熟';
+  const pos=moving.length?moving.reduce((a,b)=>a+b,0)/moving.length:null;
+  if(pos!==null){
+    if(pos<1.5) pace += '，變化偏前段';
+    else if(pos>3.5) pace += '，結果偏後段';
+    else pace += '，轉折落在過程中段';
+  }
+  let answer='';
+  if(intent.type==='when'){
+    answer = future>0 ? `有轉機，但時間不是「立刻」；${pace.replace('｜','，')}。` :
+             future<0 ? `時間點偏延後；${pace.replace('｜','，')}，先處理阻力會更重要。` :
+             `目前卦象較難壓成單一日期；${pace.replace('｜','，')}。`;
+  }else if(intent.type==='yesno'){
+    answer = score>.7?'卦勢偏向「有機會／可成」，但要順勢而做，不宜硬推。':
+             score<-.7?'卦勢偏向「不宜急進／容易受阻」，先調整條件再行動。':
+             '卦勢屬「未完全定局」，關鍵在動爻所代表的轉折與後續選擇。';
+  }else if(intent.type==='how'){
+    answer = future>0?'做法上宜順著之卦的方向推進，把眼前問題拆小並逐步處理。':
+             future<0?'做法上先守、先修正，再求突破；現在不是硬碰硬的好時機。':
+             '做法上先觀察局勢與動爻位置，確認真正變動點再出手。';
+  }else{
+    answer = future>0?'整體趨勢由現況往較有利方向移動，但仍要經過中間轉折。':
+             future<0?'整體趨勢顯示後續仍有阻力，保守調整比急著定局更合適。':
+             '整體趨勢仍在轉化中，現在較適合看變化方向，不宜硬下結論。';
+  }
+  const reasons=[
+    `本卦「${HEX_NAMES[hexNum]}」代表目前背景；之卦「${HEX_NAMES[changedNum]}」代表變化後的主題。`,
+    moving.length?`共有 ${moving.length} 個動爻，位置在 ${moving.map(lineLabel).join('、')}。`:'此卦無動爻，代表目前局勢相對穩定。'
+  ];
+  if(tags.includes('財務')) reasons.push('財務問題仍需用現金流、負債成本與實際數字驗證。');
+  return {tags,intent,answer,direction:future>0?'往有利方向':future<0?'先守後調整':'中性轉化',window:pace,confidence,clarity:confidenceLabel(confidence),reasons};
+}
+// ================= I CHING =================
+const HEX_NAMES = {
+  1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",
+  11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",
+  21:"噬嗑",22:"賁",23:"剝",24:"復",25:"無妄",26:"大畜",27:"頤",28:"大過",29:"坎",30:"離",
+  31:"咸",32:"恆",33:"遯",34:"大壯",35:"晉",36:"明夷",37:"家人",38:"睽",39:"蹇",40:"解",
+  41:"損",42:"益",43:"夬",44:"姤",45:"萃",46:"升",47:"困",48:"井",49:"革",50:"鼎",
+  51:"震",52:"艮",53:"漸",54:"歸妹",55:"豐",56:"旅",57:"巽",58:"兌",59:"渙",60:"節",
+  61:"中孚",62:"小過",63:"既濟",64:"未濟"
+};
+const HEX_TEXT = {
+  1:"剛健自強，時機成熟，大展身手正是時候。",2:"厚德載物，柔順包容，順勢而為得吉。",
+  3:"萬事起頭難，卡關是正常的，穩住腳步別急躁。",4:"尚在摸索階段，虛心求教比自己硬闖更有效。",
+  5:"條件還沒到位，耐心等待比躁進更明智。",6:"爭執當前，退一步協商比硬碰硬更有利。",
+  7:"團隊作戰的時刻，紀律和領導力是關鍵。",8:"找對盟友、彼此扶持，合作會帶來好結果。",
+  9:"力量還在累積中，先蓄勢，別急著衝刺。",10:"步步為營，謹慎行事能避開風險。",
+  11:"天時地利人和，運勢正旺，放手去做。",12:"阻塞不通的時期，先韜光養晦，等待轉機。",
+  13:"志同道合者相聚，攜手合作事半功倍。",14:"收穫豐盛的時刻，但別忘了謙虛低調。",
+  15:"謙遜是這階段最大的智慧，退一步海闊天空。",16:"心情愉悅、順勢而為，適合展開新計畫。",
+  17:"隨機應變，順應變化比堅持己見更聰明。",18:"積弊已久該整頓了，勇敢面對問題根源。",
+  19:"影響力正在擴大，把握機會好好經營。",20:"靜觀其變，多觀察少行動，看清全局再出手。",
+  21:"遇到阻礙要果斷處理，別拖泥帶水。",22:"外表包裝重要，但別忘了充實內在。",
+  23:"情勢正在衰退，保守應對、靜待谷底反彈。",24:"否極泰來，新的循環正要開始，充滿希望。",
+  25:"心存誠實、順其自然，強求反而招災。",26:"累積實力的好時機，厚積才能薄發。",
+  27:"注意飲食與言語，養身也要養德。",28:"壓力超出負荷，需要非常手段來度過難關。",
+  29:"身處險境，保持冷靜、步步為營才能脫困。",30:"光明在前，依附正道、堅持信念會有回報。",
+  31:"心意相通的時刻，感情與合作都適合表白。",32:"持之以恆才是長久之道，別輕易變動方向。",
+  33:"該退則退，適時抽身反而是明智之舉。",34:"氣勢正盛，但切記剛強過度容易招忌。",
+  35:"步步高升，正是嶄露頭角的好時機。",36:"光明受阻，韜光養晦、明哲保身為上策。",
+  37:"家庭與內部關係是重點，先安內才能攘外。",38:"意見分歧的時刻，求同存異、別硬拗立場。",
+  39:"前路多阻，暫緩腳步、尋求貴人相助。",40:"困境正在化解，壓力釋放後會輕鬆許多。",
+  41:"有所犧牲才能換取長遠利益，捨得是智慧。",42:"助力正在到來，把握機會多方拓展。",
+  43:"該斷則斷，果決處理才能免除後患。",44:"意外的相遇或誘惑出現，保持清醒別被迷惑。",
+  45:"人氣聚集的時刻，適合團聚、招募或整合資源。",46:"穩步上升，循序漸進會比一步登天更踏實。",
+  47:"身處困頓，但內心堅定終能度過難關。",48:"資源穩定但需要持續維護，別讓根基枯竭。",
+  49:"改革的時機到了，勇於求變會帶來新局面。",50:"建立新秩序的時刻，穩重承擔責任會有成就。",
+  51:"突如其來的震動，保持鎮定比慌張更重要。",52:"該停則停，靜心自省比躁動更有智慧。",
+  53:"循序漸進，穩紮穩打會比躁進更長久。",54:"名分未定的關係要謹慎，別急著下結論。",
+  55:"盛極一時，把握高峰期但也要居安思危。",56:"身處異地或過渡期，謙和待人會少些波折。",
+  57:"溫和滲透比強硬對抗更有效，順勢而為。",58:"喜悅交流的時刻，適合社交、談判與分享。",
+  59:"凝聚力渙散，該是重新整合人心的時候。",60:"節制有度，過猶不及，拿捏分寸最重要。",
+  61:"誠信為本，真心待人會贏得信任與支持。",62:"小心行事、別好高騖遠，穩健度過這階段。",
+  63:"大功告成的時刻，但別鬆懈，居安要思危。",64:"尚未圓滿，還有努力空間，堅持下去終會成功。"
+};
+// upper/lower trigram -> King Wen hexagram number
+// trigram order: Qian, Dui, Li, Zhen, Xun, Kan, Gen, Kun
+const TRI_MATRIX = [
+  [1,43,14,34,9,5,26,11],
+  [10,58,38,54,61,60,41,19],
+  [13,49,30,55,37,63,22,36],
+  [25,17,21,51,42,3,27,24],
+  [44,28,50,32,57,48,18,46],
+  [6,47,64,40,59,29,4,7],
+  [33,31,56,62,53,39,52,15],
+  [12,45,35,16,20,8,23,2]
+];
+function tossLine(){
+  // three-coin method: sum of 2 or 3 per coin, heads(3)=yang, tails(2)=yin
+  let sum=0;
+  for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3;
+  return sum; // 6=old yin, 7=young yang, 8=young yin, 9=old yang
+}
+function trigramIndex(bits){ // bits: array of 3, bottom to top, 1=yang 0=yin
+  const key = bits.join('');
+  const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7};
+  return map[key];
+}
+document.getElementById('yijing-btn').addEventListener('click', ()=>{
+  const question = document.getElementById('yijing-question').value.trim();
+  const lines = [];
+  for(let i=0;i<6;i++) lines.push(tossLine());
+
+  const bits = lines.map(v => (v===7||v===9)?1:0);
+  const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
+  const hexNum = hexFromBits(bits);
+  const changedNum = hexFromBits(changedBits);
+  const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
+
+  function renderHex(vals, title, num, changedView=false){
+    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
+    vals.forEach((v,i)=>{
+      const solid = changedView ? !!changedBits[i] : (v===7||v===9);
+      const changing = !changedView && (v===6||v===9);
+      h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
+    });
+    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div><div class="result-sub">第 ${num} 卦</div></div>`;
+    return h;
+  }
+
+  let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
+  html += `<div class="hex-pair">${renderHex(lines,'本卦',hexNum)}${renderHex(lines,'之卦',changedNum,true)}</div>`;
+  html += `<div class="meta-card">`;
+  html += `<div class="meta-row"><span>本卦</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>動爻</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):'無動爻'}</strong></div>`;
+  html += `<div class="meta-row"><span>之卦</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
+  html += `</div>`;
+
+  const lineTags = lines.map((v,i)=>`<span class="tag">${lineLabel(i)} ${v}${v===6?' 老陰':v===7?' 少陽':v===8?' 少陰':' 老陽'}</span>`).join('');
+  html += `<div style="text-align:center;margin:8px 0 12px;">${lineTags}</div>`;
+
+  let synthesis = '';
+  if(!moving.length){
+    synthesis = `此卦無動爻，重點放在本卦「${HEX_NAMES[hexNum]}」：${HEX_TEXT[hexNum]}`;
+  }else if(moving.length<=2){
+    synthesis = `此卦有 ${moving.length} 個動爻，先看本卦「${HEX_NAMES[hexNum]}」的當下處境，再把 ${moving.map(lineLabel).join('、')} 視為主要轉折，後勢朝「${HEX_NAMES[changedNum]}」發展。`;
+  }else{
+    synthesis = `動爻較多，代表局勢變化幅度較大；本卦「${HEX_NAMES[hexNum]}」較像起點，之卦「${HEX_NAMES[changedNum]}」的重要性提高。`;
+  }
+  html += `<div class="result-text">${synthesis}</div>`;
+  const directHex = hexAnswer(hexNum,changedNum,moving,question);
+  html += answerCardHTML({
+    answer:directHex.answer, sub:`依本卦、動爻、之卦與問題語意做本機綜合判讀；不是保證事件。`,
+    direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
+    confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
+  });
+  const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
+  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
+  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.2 為本機語意＋規則型 AI 式判讀；能直接回答問題，但不是連線模型，也不保證預測。</div>`;
+
+  document.getElementById('yijing-result').innerHTML = html;
+});
+
+// ================= TAROT =================
+const TAROT = [
+  ["愚者","全新開始，勇敢踏出未知的第一步。"],
+  ["魔術師","資源具備，行動力強，心想事成。"],
+  ["女祭司","直覺敏銳，答案在內心深處。"],
+  ["皇后","豐盛滋養，創造力與愛意湧現。"],
+  ["皇帝","掌控全局，秩序與紀律帶來穩定。"],
+  ["教皇","傳統智慧，尋求指引或依循體制。"],
+  ["戀人","抉擇時刻，跟隨真心去做決定。"],
+  ["戰車","意志堅定，全力衝刺就能獲勝。"],
+  ["力量","溫柔而堅韌，以柔克剛化解難關。"],
+  ["隱者","向內探索，獨處沉澱會帶來洞見。"],
+  ["命運之輪","局勢轉變，把握這波風向。"],
+  ["正義","公平清算，誠實面對會得到公道。"],
+  ["倒吊人","換個角度看事情，暫停也是前進。"],
+  ["死神","舊階段結束，新的開始正在醞釀。"],
+  ["節制","調和平衡，耐心融合會帶來和諧。"],
+  ["惡魔","留意執念與束縛，是時候鬆綁了。"],
+  ["高塔","劇變來襲，舊有框架需要被打破。"],
+  ["星星","希望重燃，堅持下去會迎來曙光。"],
+  ["月亮","迷霧未散，別急著下判斷，靜觀其變。"],
+  ["太陽","光明燦爛，好事發生、心情開朗。"],
+  ["審判","覺醒時刻，過去的努力終將被看見。"],
+  ["世界","圓滿完成，新的循環即將展開。"]
+];
+const TAROT_REVERSED = [
+  "方向未明，先別急著冒進。","資源分散，行動前先重新整合。","直覺受干擾，先安靜再判斷。","付出過度，注意照顧自己的界線。",
+  "控制欲過強，放鬆僵硬的規則。","別盲從傳統，重新檢查真正適合你的方法。","關係或選擇失衡，先釐清價值排序。","方向感不足，先穩住再加速。",
+  "自信受阻，以耐心取代硬撐。","過度封閉，適時向外尋求意見。","變化延遲，先接受暫時的不確定。","判斷偏頗，回到事實與責任。",
+  "卡在犧牲感裡，換角度仍未到行動時機。","舊事難放，真正的結束尚未完成。","失衡或過度，重新找回節奏。","執著加深，辨認真正綁住你的東西。",
+  "抗拒改變反而延長震盪，先處理根基。","希望感變弱，回到可執行的小步驟。","迷霧加重，暫時不要做重大決定。","能量被遮住，休息與簡化會讓光回來。",
+  "遲疑或自責過多，先接受過去再前進。","尚未真正收尾，完成最後一哩路。"
+];
+
+document.getElementById('tarot-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('tarot-mode').value);
+  const question = document.getElementById('tarot-question').value.trim();
+  const picked = [];
+  const used = new Set();
+  while(picked.length<mode){
+    const idx = Math.floor(Math.random()*TAROT.length);
+    if(used.has(idx)) continue;
+    used.add(idx);
+    picked.push({idx,reversed:Math.random()<0.35});
+  }
+  const labels = mode===3?["過去","現在","未來"]:["指引"];
+  let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  html += '<div class="cards-row">';
+  picked.forEach((p,i)=>{ const [name]=TAROT[p.idx]; html += `<div><div class="tcard"><span class="${p.reversed?'rev':''}">${name}</span></div><div class="tcard-name">${labels[i]}｜${name}${p.reversed?'（逆）':'（正）'}</div></div>`; });
+  html += '</div>';
+  picked.forEach((p,i)=>{
+    const [name,text]=TAROT[p.idx];
+    const meaning = p.reversed ? TAROT_REVERSED[p.idx] : text;
+    html += `<div class="meta-card"><div class="meta-row"><span>${labels[i]}</span><strong>${name}${p.reversed?'（逆位）':'（正位）'}</strong></div><div class="result-text" style="text-align:left">${meaning}</div></div>`;
+  });
+  const direct = tarotAnswer(picked,question);
+  html += answerCardHTML({
+    answer:direct.answer,
+    sub:`這是依牌陣、正逆位、問題類型與時間語意做出的本機綜合回答；不是保證日期或結果。`,
+    direction:direct.direction, window:direct.window, intent:direct.intent.label,
+    confidence:direct.confidence, clarity:direct.clarity, reasons:direct.reasons
+  });
+  const smart = tarotSynthesis(picked,labels,question);
+  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
+  document.getElementById('tarot-result').innerHTML = html;
+});
+
+// ================= RUNES =================
+const RUNES = [
+  ["ᚠ","Fehu 財富符文","財富與資源正在累積，努力會有回報。"],
+  ["ᚢ","Uruz 原牛符文","原始力量湧現，勇氣與體力正當時。"],
+  ["ᚦ","Thurisaz 巨人符文","挑戰與阻力出現，謹慎應對衝突。"],
+  ["ᚨ","Ansuz 神諭符文","溝通與智慧的訊息，聆聽比說話重要。"],
+  ["ᚱ","Raidho 旅程符文","旅行與變動，順應節奏前進。"],
+  ["ᚲ","Kenaz 火炬符文","靈感與創造力點燃，展現才華的時刻。"],
+  ["ᚷ","Gebo 贈禮符文","給予與交換，關係中的平衡很重要。"],
+  ["ᚹ","Wunjo 喜悅符文","和諧與滿足，好消息即將到來。"],
+  ["ᚺ","Hagalaz 冰雹符文","突如其來的變化，考驗即將出現。"],
+  ["ᚾ","Nauthiz 需求符文","逆境中學習，堅忍會帶來成長。"],
+  ["ᛁ","Isa 冰符文","停滯不前，靜待時機比強行突破更好。"],
+  ["ᛃ","Jera 豐收符文","努力終見成果，收穫的季節到來。"],
+  ["ᛇ","Eihwaz 紫杉符文","堅韌與轉化，面對循環的起落。"],
+  ["ᛈ","Perthro 命運符文","未知與機緣，命運的骰子正在擲出。"],
+  ["ᛉ","Algiz 保護符文","守護與警覺，直覺會保護你免於危險。"],
+  ["ᛋ","Sowilo 太陽符文","成功與活力，目標清晰、勝利在望。"],
+  ["ᛏ","Tiwaz 戰神符文","正義與犧牲，堅持原則會贏得尊重。"],
+  ["ᛒ","Berkano 樺樹符文","新生與成長，計畫將萌芽茁壯。"],
+  ["ᛖ","Ehwaz 馬符文","夥伴關係，信任合作帶來進展。"],
+  ["ᛗ","Mannaz 人類符文","自我覺察，人際網絡是這階段的關鍵。"],
+  ["ᛚ","Laguz 水符文","情感流動，順從直覺、擁抱潛意識。"],
+  ["ᛜ","Ingwaz 種子符文","蓄勢待發，內在能量準備釋放。"],
+  ["ᛟ","Othala 家園符文","傳承與根基，價值觀給你力量。"],
+  ["ᛞ","Dagaz 黎明符文","突破與覺醒，全新的階段正在展開。"]
+];
+document.getElementById('runes-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('runes-mode').value);
+  const question = document.getElementById('runes-question').value.trim();
+  const used=new Set(), picked=[];
+  while(picked.length<mode){ const idx=Math.floor(Math.random()*RUNES.length); if(!used.has(idx)){used.add(idx);picked.push(idx);} }
+  const labels=mode===3?['現況','阻力','建議']:['指引'];
+  let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  picked.forEach((idx,i)=>{
+    const [glyph,name,text]=RUNES[idx];
+    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
+  });
+  const tags=classifyQuestion(question);
+  const pivot=RUNES[picked[picked.length-1]][1];
+  const rIntent=analyzeIntent(question);
+  const cautionRune=/冰雹|需求|冰符文|命運/.test(pivot);
+  const positiveRune=/豐收|太陽|黎明|財富|贈禮|喜悅|樺樹|馬符文/.test(pivot);
+  const rAnswer=positiveRune?'目前訊息偏向「可推進」，下一步重點是把象徵提示化成具體行動。':cautionRune?'目前訊息偏向「先觀察／先處理阻力」，不宜急著定局。':'目前訊息較中性，重點在調整方向與回應方式。';
+  html += answerCardHTML({answer:rAnswer,sub:'符文適合用來聚焦問題，不適合拿來保證事件或日期。',direction:positiveRune?'偏正向':cautionRune?'偏保守':'中性',window:rIntent.type==='when'?'不宜硬斷日期':'依行動逐步展開',intent:rIntent.label,confidence:mode===3?66:48,clarity:mode===3?'中高':'中',reasons:[`核心符文為「${pivot}」。`,mode===3?'三枚符文同時提供現況、阻力與建議，因此比單枚更容易形成完整判讀。':'單枚符文適合作為焦點提示，資訊量較少。']});
+  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${mode===3?`三枚符文把問題拆成「現況—阻力—建議」。最後的「${pivot}」適合視為你下一步最值得落地的方向。`:`「${pivot}」較適合當成今天的觀察焦點，而不是事件預言。`}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${tags.join('・')}</strong></div><div class="smart-chip"><span>使用方式</span><strong>象徵提示・現實驗證</strong></div></div><div class="warning-note">${intentAdvice(tags)}</div></div>`;
+  document.getElementById('runes-result').innerHTML = html;
+});
+
+// ================= DAILY FORTUNE =================
+function seedFromDate(extra=''){
+  const d = new Date();
+  const key = `${d.getFullYear()}${d.getMonth()}${d.getDate()}|${extra}`;
+  let h = 0;
+  for(let i=0;i<key.length;i++){ h = (h*31 + key.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function seededRandom(seed){
+  let s = seed;
+  return function(){
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+const DAILY_MSGS = [
+  "今天適合放慢腳步，把手邊累積的小事一件件收尾。",
+  "會有意外的好消息，留意身邊人捎來的訊息。",
+  "財運平穩，不適合衝動的大額決定，穩紮穩打就好。",
+  "人際互動順暢，適合主動聯繫許久未聯絡的人。",
+  "身體發出的訊號要多留意，早點休息會更有效率。",
+  "靈感特別活躍，適合處理需要創意的事情。",
+  "今天適合獨處整理思緒，答案自然會浮現。",
+  "貴人運不錯，遇到困難時開口求助會有幫助。",
+  "情緒起伏稍大，避免在氣頭上做重要決定。",
+  "適合檢視長期計畫的進度，微調方向比重來更省力。"
+];
+document.getElementById('daily-birth').value = localStorage.getItem('guanbu_birth') || '';
+
+document.getElementById('daily-btn').addEventListener('click', ()=>{
+  const birth = document.getElementById('daily-birth').value || '';
+  if(birth) localStorage.setItem('guanbu_birth', birth);
+  const seed = seedFromDate(birth);
+  const rnd = seededRandom(seed);
+  const cats = [["愛情",rnd],["事業",rnd],["財運",rnd],["健康",rnd]];
+  const d = new Date();
+  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  let html = `<div class="daily-date">${dateStr}</div>`;
+  const scored=[];
+  cats.forEach(([label])=>{
+    const score = 2 + Math.floor(rnd()*4); // 2-5
+    scored.push([label,score]);
+    let dots = '';
+    for(let i=0;i<5;i++) dots += `<span class="${i<score?'on':''}">★</span>`;
+    html += `<div class="stars"><span class="label">${label}</span><span class="dots">${dots}</span></div>`;
+  });
+  const msgIdx = seed % DAILY_MSGS.length;
+  html += `<div class="daily-msg">${DAILY_MSGS[msgIdx]}</div>`;
+  const best=[...scored].sort((a,b)=>b[1]-a[1])[0], low=[...scored].sort((a,b)=>a[1]-b[1])[0];
+  html += `<div class="smart-card"><div class="smart-title">今日焦點</div><div class="smart-text">相對較順的是「${best[0]}」，比較需要保守的是「${low[0]}」。把它當作今天的注意力排序，而不是預測事件一定發生。</div><div class="warning-note">同一生日在同一天會得到固定結果；資料只存在你的瀏覽器 localStorage。</div></div>`;
+  document.getElementById('daily-result').innerHTML = html;
+});
+</script>
+</body>
+</html>
