@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.6.2 — 人話判讀版</title>
+<title>觀卜 v1.7 — 好懂版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -193,7 +193,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.6.2 給結論</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.7 好懂版</p>
   </div>
 
   <div class="tabs">
@@ -208,7 +208,7 @@
     <div class="field">
       <label for="yijing-question">你想問什麼？</label>
       <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" />
-      <div class="hint">問題越單一越好。起卦後會顯示本卦、動爻與之卦。</div>
+      <div class="hint">一次問一件事就好。按起卦後，會先給你一句「簡單說」。</div>
     </div>
     <div id="yijing-context"></div>
     <div id="yijing-result">
@@ -248,7 +248,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.6.2｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.7｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -289,12 +289,12 @@ function classifyQuestion(q){
   return hits.length?hits:['一般'];
 }
 function intentAdvice(tags){
-  if(tags.includes('財務')) return '數字要落地：現金流、利率、還款順序。占卜是整理思緒用的，不能取代試算。';
-  if(tags.includes('工作')) return '工作題請對準可控的部分：表現、溝通、準備度；環境變數往往不在你手上。';
-  if(tags.includes('健康')) return '身體訊號請以醫療為準；這裡只適合當自我觀察的提醒。';
-  if(tags.includes('感情')) return '感情題看的是溝通、界線與雙方行動，牌義不能當成對方心裡的事實。';
-  if(tags.includes('學業')) return '學業題把「準備量」和「時間分配」放在前面，比等一個結果更實用。';
-  return '把結果當整理問題的框架，再用現實資訊驗證。';
+  if(tags.includes('財務')) return '錢的事最後還是要自己算清楚，占卜不能代替計算機。';
+  if(tags.includes('工作')) return '工作能掌握的是你的表現跟準備；公司怎麼決定，不在這次占卜裡。';
+  if(tags.includes('健康')) return '身體不適請看醫生；這裡只是心情提醒。';
+  if(tags.includes('感情')) return '感情要看雙方怎麼互動，占卜讀不出別人在想什麼。';
+  if(tags.includes('學業')) return '考試還是靠準備跟時間分配，比等一個結果有用。';
+  return '把結果當參考，重要決定還是看現實狀況。';
 }
 
 function analyzeIntent(q){
@@ -362,14 +362,14 @@ function softenPace(pace){
 function answerCardHTML(a){
   const reasons=(a.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join('');
   return `<div class="answer-card">
-    <div class="answer-kicker">給你的判讀</div>
+    <div class="answer-kicker">簡單說</div>
     <div class="answer-main">${esc(a.answer)}</div>
     <div class="answer-sub">${esc(a.sub||'')}</div>
     <div class="smart-grid">
-      <div class="smart-chip"><span>判讀方向</span><strong>${esc(a.direction||'觀察中')}</strong></div>
-      <div class="smart-chip"><span>象徵時間窗</span><strong>${esc(a.window||'未指定')}</strong></div>
-      <div class="smart-chip"><span>問題意圖</span><strong>${esc(a.intent||'趨勢')}</strong></div>
-      <div class="smart-chip"><span>指向明確度</span><strong>${esc(a.clarity||'中')}</strong><div class="meter"><i style="width:${Math.max(8,Math.min(100,a.confidence||50))}%"></i></div></div>
+      <div class="smart-chip"><span>方向</span><strong>${esc(a.direction||'觀察中')}</strong></div>
+      <div class="smart-chip"><span>大概多久</span><strong>${esc(a.window||'未指定')}</strong></div>
+      <div class="smart-chip"><span>你在問</span><strong>${esc(a.intent||'趨勢')}</strong></div>
+      <div class="smart-chip"><span>有多肯定</span><strong>${esc(a.clarity||'中')}</strong><div class="meter"><i style="width:${Math.max(8,Math.min(100,a.confidence||50))}%"></i></div></div>
     </div>
     ${reasons?`<ul class="why-list">${reasons}</ul>`:''}
   </div>`;
@@ -443,7 +443,7 @@ function contextHTML(prefix,q){
     fields = `<div class="field full"><label>補充背景（選填）</label><input class="input" id="${prefix}-state" placeholder="有關鍵現實條件可寫在這裡"></div>`;
     note='補充一個真正會影響結果的現實條件，判讀會更有用。';
   }
-  return `<div class="context-card"><div class="context-title">情境 AI｜先理解問題</div>
+  return `<div class="context-card"><div class="context-title">先看懂你的問題</div>
     <div class="ai-route"><span class="badge">${n.tags.join('・')}</span><span class="badge">${n.intent.label}</span>${(n.debt||n.cashflow)?'<span class="badge">可計算</span>':''}</div>
     <div class="hint" style="margin:8px 0">${note}</div><div class="context-grid">${fields}</div></div>`;
 }
@@ -564,7 +564,7 @@ function marketNarrative(direction, horizon, cue, score, volatility){
 }
 function marketOracleHTML(m){
   return `<div class="oracle-card">
-    <div class="oracle-title">大師盤勢判讀</div>
+    <div class="oracle-title">盤勢簡單說</div>
     <div class="oracle-main">${esc(m.bias)}。${esc(m.fireworks)}</div>
     <div class="oracle-quote">「${esc(m.cue)}」放在市場題，重點不是神準猜點數，而是抓節奏：明天盤勢不太像乖乖走直線。</div>
     <div class="market-bars">
@@ -616,7 +616,7 @@ function tarotAnswer(picks,q){
   let confidence=48 + (same?22:0) + Math.min(18,Math.abs(score)*5);
   if(picks.length===3 && Math.sign(vs[1].tone)!==Math.sign(vs[2].tone) && vs[1].tone && vs[2].tone) confidence-=12;
   confidence=Math.round(Math.max(28,Math.min(92,confidence)));
-  let direction=score>=2.2?'偏正向':score<=-2.2?'偏阻滯':'未完全定局';
+  let direction=score>=2.2?'偏往好的':score<=-2.2?'比較卡':'還不一定';
   let window=timingFromTarot(picks);
   const lead=humanLead(intent,direction);
   const paceH=softenPace(window);
@@ -633,25 +633,25 @@ function tarotAnswer(picks,q){
              score<-1.4 ? `盤偏壓。反彈別太當真，一根紅的不代表翻多。牌面「${focus}」：${meaning}` :
              `比較像震盪，上下都可能。先動、再翻、尾盤才比較定。牌面「${focus}」：${meaning}`;
   }else if(intent.type==='when'){
-    answer = score>1 ? `${lead}有機會往前，但別問哪一天一定。${paceH}「${focus}」：${meaning}` :
-             score<-1 ? `${lead}時間容易往後。${paceH}先把卡住的清一清。「${focus}」：${meaning}` :
-             `${lead}日期說不死，邊走邊調。${paceH}`;
+    answer = score>1 ? `${lead}有機會往前，但說不出哪一天。${paceH}「${focus}」：${meaning}` :
+             score<-1 ? `${lead}時間可能往後拖。${paceH}先把卡住的清一清。「${focus}」：${meaning}` :
+             `${lead}說不出正確日期，邊走邊看。${paceH}`;
   }else if(intent.type==='yesno'){
     const lean = score>=0.8 ? 'yes' : score<=-0.8 ? 'no' : (score>=0?'yes':'no');
-    answer = lean==='yes' ? `結論偏「會／可以」。後面仍要靠你做實。「${focus}」：${meaning}` :
-             `結論偏「先別急／機會較小」。先看阻力。「${focus}」：${meaning}`;
+    answer = lean==='yes' ? `簡單說：比較像「會」。但要你真的去做。「${focus}」：${meaning}` :
+             `簡單說：比較像「先不要／機會小」。先處理卡住的。「${focus}」：${meaning}`;
   }else if(intent.type==='how'){
     answer = agency>1 ? `${lead}別空等，先動手做你能做的。「${focus}」：${meaning}` :
              agency<-1 ? `${lead}先停、先拆，別硬推。「${focus}」：${meaning}` :
-             `${lead}分清能控制跟不能控制，一步一步來。「${focus}」：${meaning}`;
+             `${lead}能做的先做，不能控制的先放著。「${focus}」：${meaning}`;
   }else if(intent.type==='choice'){
-    answer = score>=1 ? `${lead}選比較不折磨自己、又貼近「${focus}」的那條。` :
-             score<=-1 ? `${lead}先別鎖死。條件未明，留退路比較穩。` :
+    answer = score>=1 ? `${lead}選你比較不痛苦的那條。` :
+             score<=-1 ? `${lead}先別選死，留一條退路。` :
              `${lead}優劣還沒浮上來。對照「${focus}」：${meaning}`;
   }else{
-    answer = score>=2.2 ? `${lead}整體往好的移動，但不是無條件順利。「${focus}」：${meaning}` :
-             score<=-2.2 ? `${lead}整體偏卡或偏慢，先處理根上的問題。「${focus}」：${meaning}` :
-             `${lead}還在轉。下一步比「結果」重要。「${focus}」：${meaning}`;
+    answer = score>=2.2 ? `${lead}整體往好的，但不是一帆風順。「${focus}」：${meaning}` :
+             score<=-2.2 ? `${lead}比較卡，先處理真正的問題。「${focus}」：${meaning}` :
+             `${lead}還在變。先想下一步，別只盯結果。「${focus}」：${meaning}`;
   }
   const reasons=[];
   if(picks.length===3){
@@ -679,8 +679,8 @@ function hexSynthesis(hexNum,changedNum,moving,q){
   let pace=moving.length===0?'局勢偏穩｜短期以維持與觀察為主':moving.length<=2?'局勢有明確轉折｜留意近期出現的一兩個關鍵事件':'變化幅度較大｜不要只抓單一時間點，先看趨勢轉向';
   if(tags.includes('時間')) pace += '；若問「何時」，此版只能給節奏，不硬斷日期';
   const core=moving.length
-    ? `你現在比較像在「${HEX_NAMES[hexNum]}」這段：局面還沒定。真正在動的是 ${moving.map(lineLabel).join('、')}，後面味道往「${HEX_NAMES[changedNum]}」走。`
-    : `這次沒有動爻，重點就放在「${HEX_NAMES[hexNum]}」本身：局面相對穩，先把這層意思讀清楚。`;
+    ? `現在是「${HEX_NAMES[hexNum]}」，有在變的地方是 ${moving.map(lineLabel).join('、')}。變完後比較像「${HEX_NAMES[changedNum]}」。`
+    : `現在是「${HEX_NAMES[hexNum]}」，這次變化不大，先看這個意思就好。`;
   return {tags,pace,core,advice:intentAdvice(tags)};
 }
 
@@ -706,7 +706,7 @@ function hexAnswer(hexNum,changedNum,moving,q){
     else if(pos>3.5) pace += '，結果偏後段';
     else pace += '，轉折落在過程中段';
   }
-  const direction = future>0?'往有利方向':future<0?'先守後調整':'中性轉化';
+  const direction = future>0?'偏往好的':future<0?'先穩住':'還在變';
   const fromName = HEX_NAMES[hexNum], toName = HEX_NAMES[changedNum];
   const isMarket=tags.includes('市場');
   const isWork=tags.includes('工作');
@@ -718,65 +718,65 @@ function hexAnswer(hexNum,changedNum,moving,q){
 
   // 人話組句：少套話、對準領域
   let answer='';
+  // 超白話：先一句結論，再一句原因；少用術語
   if(isMarket){
-    answer = score>.7 ? `盤勢感覺偏多方有力一點，但不會一路順。從「${fromName}」到「${toName}」，比較像先震一下再決定方向。` :
-             score<-.7 ? `盤勢偏壓，反彈要小心又被壓回去。從「${fromName}」到「${toName}」，防守優先。` :
-             `明天比較像震盪市，上下都有機會，別急著一次押死方向。「${fromName}」→「${toName}」。`;
+    answer = score>.7 ? `簡單說：偏漲比較有力，但不會一路順。中間可能晃一下。` :
+             score<-.7 ? `簡單說：偏跌、壓力大。反彈也要小心再掉。` :
+             `簡單說：上上下下，方向還沒定。先別一次押死。`;
   }else if(intent.type==='yesno'){
-    // 是非題：先給結論，再補一句條件；門檻放寬，少落在「說太死」
     const lean = score>=0.25 ? 'yes' : score<=-0.25 ? 'no' : (future>0?'yes':future<0?'no':'soft');
     if(isWork){
-      answer = lean==='yes' ? `結論偏「會／有機會」。${horizon?horizon+'這段，':''}從「${fromName}」走到「${toName}」，調薪比較像要靠表現跟考核對上，不是空等。` :
-               lean==='no' ? `結論偏「機會不大／先別當已定」。${horizon?horizon+'，':''}局面還停在「${fromName}」，條件沒到位前，別把調薪當必然。` :
-               `結論偏「有條件才會」。不是穩穩的會，也不是穩穩的不會；「${toName}」要的條件（表現、制度、時機）對上了，機會才站得住。`;
+      answer = lean==='yes' ? `簡單說：比較像「會」，有機會。${horizon?('時間大概看「'+horizon+'」。'):''}但要工作表現夠、公司也有調薪，不是躺著等就會來。` :
+               lean==='no' ? `簡單說：比較像「先別指望一定會」。${horizon?('「'+horizon+'」這段，'):''}條件還不夠，別當成已經定了。` :
+               `簡單說：不是穩穩的會，也不是穩穩的不會。表現跟公司制度對上了，才比較有機會。`;
     }else if(isLove){
-      answer = lean==='yes' ? `結論偏「有機會往好的走」。但要雙方動手，單等沒有用。「${fromName}」→「${toName}」。` :
-               lean==='no' ? `結論偏「先別急著定」。現在硬逼，容易把不穩放大。` :
-               `結論偏「還看你們怎麼走」。溝通跟界線對了，才談得上下一步。`;
+      answer = lean==='yes' ? `簡單說：比較有機會往好的走。但要兩邊都願意，單方面等沒有用。` :
+               lean==='no' ? `簡單說：先別急著定生死。現在逼答案，容易更糟。` :
+               `簡單說：還看你們怎麼相處。話有說清楚、界線有顧好，才談得上下一步。`;
     }else if(isMoney){
-      answer = lean==='yes' ? `結論偏「有機會」。但成敗仍看現金流跟你的紀律。` :
-               lean==='no' ? `結論偏「先守」。條件未明，別加碼硬衝。` :
-               `結論偏「可以做，但别梭哈」。先把數字算清楚再動。`;
+      answer = lean==='yes' ? `簡單說：有機會，但錢的事要看你實際怎麼管，不能只靠這次占卜。` :
+               lean==='no' ? `簡單說：先保守一點，別急著加碼。` :
+               `簡單說：可以做，但別一次押太大。先算清楚再動。`;
     }else{
-      answer = lean==='yes' ? `結論偏「可以／有機會」。你真的去做，才走得向「${toName}」。` :
-               lean==='no' ? `結論偏「先別急」。在「${fromName}」把阻力理一理再決定。` :
-               `結論偏「有條件」。條件對了比較像會，硬推則不一定。`;
+      answer = lean==='yes' ? `簡單說：比較像「可以／會」。你有去做，機會才比較大。` :
+               lean==='no' ? `簡單說：比較像「先不要」。先把卡著的問題解決。` :
+               `簡單說：有條件才會。條件對了比較像會，硬推就不一定。`;
     }
   }else if(intent.type==='when'){
-    answer = future>0 ? `${horizon?horizon+'這段：':''}有機會往前推，但別問「哪一天一定發生」。重點是「${fromName}」走到「${toName}」的過程。` :
-             future<0 ? `${horizon?horizon+'這段：':''}時間容易往後延。先把卡住的條件清掉，再談時程。` :
-             `壓不成一個日期。只能說節奏偏${pace.includes('快')?'快':pace.includes('慢')?'慢':'中等'}，跟著條件成熟再動。`;
+    answer = future>0 ? `簡單說：有機會往前，但說不出「哪一天一定」。大概${pace.includes('快')?'比較快':pace.includes('慢')?'要等比較久':'慢慢來'}。` :
+             future<0 ? `簡單說：時間容易往後拖。先把卡住的事情清掉，再談什麼時候。` :
+             `簡單說：說不出正確日期。只能說速度${pace.includes('快')?'偏快':pace.includes('慢')?'偏慢':'普通'}。`;
   }else if(intent.type==='how'){
-    answer = future>0 ? `別一次想翻盤。把事情拆小，順著「${toName}」一點點做，會比較順。` :
-             future<0 ? `先守、先修，再求突破。現在硬推，不如先拆「${fromName}」裡的阻力。` :
-             `先搞清楚真正卡在哪一步，再出手。一次押全部，風險比較大。`;
+    answer = future>0 ? `簡單說：拆成小步驟，一步一步做，會比較順。` :
+             future<0 ? `簡單說：先停、先修，別硬衝。` :
+             `簡單說：先搞清楚卡在哪，再動手。`;
   }else if(intent.type==='choice'){
-    answer = future>0 ? `兩條路裡，選比較不折磨自己、又比較靠近「${toName}」的那條。` :
-             future<0 ? `現在比「選對」更急的是「別選錯」。條件未明，先留退路。` :
-             `優劣還沒完全浮上來。對照「${fromName}→${toName}」，看哪條阻力比較小。`;
+    answer = future>0 ? `簡單說：選讓你比較不痛苦、也比較走得下去的那條。` :
+             future<0 ? `簡單說：現在先別鎖死，留一條退路。` :
+             `簡單說：兩條路還沒分出高下，選阻力比較小的。`;
   }else{
-    // trend
     if(isWork){
-      answer = future>0 ? `工作這條線，整體有機會往好的移動，但中間會轉折。從「${fromName}」到「${toName}」，適合把能做的先做滿。` :
-               future<0 ? `工作這條線後面仍有阻力，先把本分跟關係顧好，比急著要結果實際。` :
-               `工作局面還在變。別急著下結論，先看接下來一兩個關鍵點怎麼走。`;
+      answer = future>0 ? `簡單說：工作這件事，整體有機會變好，但中間會轉折。能做的先做。` :
+               future<0 ? `簡單說：工作後面還有阻力。先顧好自己該做的，比急著要結果實際。` :
+               `簡單說：工作局面還在變，先觀察，別太早下定論。`;
     }else{
-      answer = future>0 ? `方向大致往「${toName}」移動，偏有利，但仍要過中間那段。` :
-               future<0 ? `後面仍有阻力。先穩住，比急著定局好。` :
-               `還在轉。現在適合看方向，不適合一次下死判斷。`;
+      answer = future>0 ? `簡單說：方向偏往好的，但還要過一段。` :
+               future<0 ? `簡單說：後面還有阻力，先穩住。` :
+               `簡單說：還在變，現在適合看方向，不適合一次下死判斷。`;
     }
   }
 
   const reasons=[];
-  reasons.push(`本卦「${fromName}」是現在，之卦「${toName}」是變化後的味道。`);
-  if(vol) reasons.push(`動爻在 ${moving.map(lineLabel).join('、')}，這些位置最能說明「什麼正在變」。`);
-  else reasons.push('沒有動爻，局面相對穩，重點仍在本卦。');
-  if(isWork) reasons.push('調薪／升遷最終仍看考核、制度跟你的表現，卦只提示節奏。');
-  if(isMoney) reasons.push('財務請回到現金流與風險承受度。');
-  if(isLove) reasons.push('感情看雙方行動與溝通，不是單方面的答案。');
+  reasons.push(`現在的卦是「${fromName}」，變完後比較像「${toName}」。`);
+  if(vol) reasons.push(`有變化的位置在 ${moving.map(lineLabel).join('、')}。`);
+  else reasons.push('這次沒有大變化的爻，局面比較穩。');
+  if(isWork) reasons.push('調不調得成，最後還是看公司跟你的表現。');
+  if(isMoney) reasons.push('錢的事請自己算清楚收支。');
+  if(isLove) reasons.push('感情要看雙方，不是單方面的答案。');
   const hr2=horizonReason(intent); if(hr2) reasons.push(hr2);
   return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility};
 }
+
 const HEX_NAMES = {
   1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",
   11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",
@@ -900,9 +900,9 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
   let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
   html += `<div class="hex-pair">${renderHex(lines,'本卦',hexNum)}${renderHex(lines,'之卦',changedNum,true)}</div>`;
   html += `<div class="meta-card">`;
-  html += `<div class="meta-row"><span>本卦</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
-  html += `<div class="meta-row"><span>動爻</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):'無動爻'}</strong></div>`;
-  html += `<div class="meta-row"><span>之卦</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>現在</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>有變化</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):'沒有'}</strong></div>`;
+  html += `<div class="meta-row"><span>之後</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
   html += `</div>`;
 
   const lineTags = lines.map((v,i)=>`<span class="tag">${lineLabel(i)} ${v}${v===6?' 老陰':v===7?' 少陽':v===8?' 少陰':' 老陽'}</span>`).join('');
@@ -910,17 +910,17 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
 
   let synthesis = '';
   if(!moving.length){
-    synthesis = `此卦無動爻，重點放在本卦「${HEX_NAMES[hexNum]}」：${HEX_TEXT[hexNum]}`;
+    synthesis = `現在是「${HEX_NAMES[hexNum]}」：${HEX_TEXT[hexNum]}`;
   }else if(moving.length<=2){
-    synthesis = `此卦有 ${moving.length} 個動爻，先看本卦「${HEX_NAMES[hexNum]}」的當下處境，再把 ${moving.map(lineLabel).join('、')} 視為主要轉折，後勢朝「${HEX_NAMES[changedNum]}」發展。`;
+    synthesis = `現在是「${HEX_NAMES[hexNum]}」，有在變的地方：${moving.map(lineLabel).join('、')}。變完後比較像「${HEX_NAMES[changedNum]}」。`;
   }else{
-    synthesis = `動爻較多，代表局勢變化幅度較大；本卦「${HEX_NAMES[hexNum]}」較像起點，之卦「${HEX_NAMES[changedNum]}」的重要性提高。`;
+    synthesis = `變化比較多。現在是「${HEX_NAMES[hexNum]}」，變完後比較看「${HEX_NAMES[changedNum]}」。`;
   }
   html += `<div class="result-text">${synthesis}</div>`;
   let directHex = hexAnswer(hexNum,changedNum,moving,question);
    directHex = blendAnswer(directHex,'yijing',question);
   html += answerCardHTML({
-    answer:directHex.answer, sub:`依本卦、動爻、之卦與你的問題整理；僅供參考，不是保證。`,
+    answer:directHex.answer, sub:`只是參考，不是保證一定會發生。`,
     direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
     confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
   });
@@ -929,8 +929,8 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
   }
   html += realityHTML('yijing',question);
   const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
-  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
-  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.4 會先辨識問題意圖、需要的現實資料與可計算項目，再把象徵訊息與現實條件合併；不是連線模型，也不保證預測。</div>`;
+  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
+  html += `<div class="hint" style="text-align:center;margin-top:12px">說明：上面「簡單說」是這次最重要的一句。卦名跟圖只是參考，不能保證真的會發生。</div>`;
 
   document.getElementById('yijing-result').innerHTML = html;
 });
@@ -1020,7 +1020,7 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
   }
   html += realityHTML('tarot',question);
   const smart = tarotSynthesis(picked,labels,question);
-  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
+  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
   document.getElementById('tarot-result').innerHTML = html;
 });
 
@@ -1087,7 +1087,7 @@ function runeAnswer(picks,q){
   let confidence=46+(same?20:0)+Math.min(18,Math.abs(score)*5);
   if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6;
   confidence=Math.round(Math.max(28,Math.min(90,confidence)));
-  let direction=score>=2?'偏正向':score<=-2?'偏阻滯':'未完全定局';
+  let direction=score>=2?'偏往好的':score<=-2?'比較卡':'還不一定';
   let window=timingFromRunes(picks);
   const lead=humanLead(intent,direction);
   const paceH=softenPace(window);
@@ -1097,16 +1097,16 @@ function runeAnswer(picks,q){
   let answer='';
   if(intent.type==='when'){
     answer = score>1 ? `${lead}有機會往前，但不是立刻。${paceH}「${tipName}」：${tipText}` :
-             score<-1 ? `${lead}時間容易往後。先把卡住的清一清。${paceH}` :
-             `${lead}日期說不死，邊走邊調。${paceH}`;
+             score<-1 ? `${lead}時間可能往後拖。先把卡住的清一清。${paceH}` :
+             `${lead}說不出正確日期，邊走邊看。${paceH}`;
   }else if(intent.type==='yesno'){
     const lean = score>=0.6 ? 'yes' : score<=-0.6 ? 'no' : (score>=0?'yes':'no');
-    answer = lean==='yes' ? `結論偏「會／可以」。做了才算數。「${tipName}」：${tipText}` :
-             `結論偏「先別急／機會較小」。先處理阻力。「${tipName}」：${tipText}`;
+    answer = lean==='yes' ? `簡單說：比較像「會」。做了才算。「${tipName}」：${tipText}` :
+             `簡單說：比較像「先不要／機會小」。先處理卡住的。「${tipName}」：${tipText}`;
   }else if(intent.type==='how'){
     answer = agency>0.8 ? `${lead}別空等，先動手。「${tipName}」：${tipText}` :
              agency<-0.8 ? `${lead}先停、先拆，別硬推。「${tipName}」：${tipText}` :
-             `${lead}分清能控制跟不能控制，一步一步來。「${tipName}」：${tipText}`;
+             `${lead}能做的先做，不能控制的先放著。「${tipName}」：${tipText}`;
   }else if(intent.type==='choice'){
     answer = score>=1 ? `${lead}選比較貼「${tipName}」、也比較不勉強的那條。` :
              score<=-1 ? `${lead}先別鎖死，留退路比較穩。` :
@@ -1162,7 +1162,7 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
   });
   html += realityHTML('runes',question);
   const smart = runeSynthesis(picked,labels,question);
-  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
+  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
   document.getElementById('runes-result').innerHTML = html;
 });
 
