@@ -323,7 +323,8 @@ function detectNeeds(q){
   return {
     tags,intent,
     debt: tags.includes('財務') && /債|卡債|貸款|還款|清完|還完/.test(q),
-    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q),
+    cashflow: tags.includes('財務') && /現金流|入不敷出|透支|吃緊|周轉|降低投資|降低投入|喘不過氣/.test(q),
+    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q) && !/現金流|入不敷出|透支|吃緊|周轉/.test(q),
     health: tags.includes('健康'),
     work: tags.includes('工作'),
     relation: tags.includes('感情')
@@ -353,6 +354,12 @@ function contextHTML(prefix,q){
       <div class="field"><label>年利率 %</label><input class="input" inputmode="decimal" id="${prefix}-rate" placeholder="例：8"></div>
       <div class="field full"><label>每月預計還款</label><input class="input" inputmode="decimal" id="${prefix}-payment" placeholder="例：15000"></div>`;
     note='這題可以計算。填入數字後，判讀會優先使用真實還款試算，不用牌卡硬猜月份。';
+  }else if(n.cashflow){
+    fields = `
+      <div class="field"><label>月收入（選填）</label><input class="input" inputmode="decimal" id="${prefix}-income" placeholder="例：80000"></div>
+      <div class="field"><label>月固定支出（不含投資，選填）</label><input class="input" inputmode="decimal" id="${prefix}-expense" placeholder="例：55000"></div>
+      <div class="field full"><label>目前每月投入金額</label><input class="input" inputmode="decimal" id="${prefix}-invest" placeholder="例：40000"></div>`;
+    note='「現金流何時恢復」其實是金額問題，不是時間問題。填入收入、支出、目前投入後，系統會直接算出要降到多少才能打平，不用牌卡猜日期。';
   }else if(n.investment){
     fields = `
       <div class="field"><label>目前金額（選填）</label><input class="input" inputmode="decimal" id="${prefix}-capital" placeholder="例：5500000"></div>
@@ -375,7 +382,7 @@ function contextHTML(prefix,q){
     note='補充一個真正會影響結果的現實條件，判讀會更有用。';
   }
   return `<div class="context-card"><div class="context-title">情境 AI｜先理解問題</div>
-    <div class="ai-route"><span class="badge">${n.tags.join('・')}</span><span class="badge">${n.intent.label}</span>${n.debt?'<span class="badge">可計算</span>':''}</div>
+    <div class="ai-route"><span class="badge">${n.tags.join('・')}</span><span class="badge">${n.intent.label}</span>${(n.debt||n.cashflow)?'<span class="badge">可計算</span>':''}</div>
     <div class="hint" style="margin:8px 0">${note}</div><div class="context-grid">${fields}</div></div>`;
 }
 function refreshContext(prefix,q){
@@ -401,6 +408,24 @@ function realityContext(prefix,q){
     }else{
       out.text='這題其實可以直接算；補上「餘額、利率、每月還款」後，系統才應該回答多久，而不是拿符號硬猜日期。';
       out.reason='目前缺少足以計算清償時間的關鍵資料。';
+    }
+  }else if(n.cashflow){
+    const income=numVal(prefix+'-income'), expense=numVal(prefix+'-expense'), invest=numVal(prefix+'-invest');
+    if(income && expense!=null && invest){
+      const balance = income - (expense||0) - invest;
+      if(balance<0){
+        const gap = Math.abs(balance);
+        const newInvest = Math.max(0, invest - gap);
+        out.text=`現實試算：月收入 ${money(income)}、固定支出 ${money(expense||0)}、目前每月投入 ${money(invest)}，現金流每月短少 ${money(gap)} 元。只要把每月投入從 ${money(invest)} 降到約 ${money(newInvest)} 元（降低 ${money(gap)} 元），現金流下個月就能打平——這不是要「等到某個時間點」，是「調整金額」就立即生效的事。`;
+        out.reason='這是收支相減的直接算法，可信度高於占卜對「何時恢復」的象徵推測。';
+      }else{
+        out.text=`現實試算：月收入 ${money(income)}、固定支出 ${money(expense||0)}、目前每月投入 ${money(invest)}，扣除後現金流其實還有結餘約 ${money(balance)} 元／月。若真的覺得吃緊，多半是支出結構或緊急預備金不足的問題，而不是投入金額本身；要不要降低投入可依風險承受度決定，不用被「現金流」這個理由逼著做決定。`;
+        out.reason='這是收支相減的直接算法，先確認問題真正出在哪一項。';
+      }
+      out.exact=true;
+    }else{
+      out.text='「什麼時候現金流會恢復」其實不該用猜的；補上「月收入、月固定支出、目前每月投入」，系統會直接算出現金流缺口，以及要降到多少投入金額才能打平。';
+      out.reason='目前缺少足以計算現金流缺口的關鍵資料。';
     }
   }else if(n.investment){
     const c=numVal(prefix+'-capital'), m=numVal(prefix+'-monthly');
@@ -430,9 +455,19 @@ function blendAnswer(base,prefix,q){
 }
 
 // 問題一改，情境欄位就跟著改；不必先抽牌才知道系統理解成什麼題型。
+// 同時清掉舊的抽牌／符文／卦象結果——那是對應「上一個問題」抽出來的，換問題後留著只會誤導。
+const RESULT_EMPTY = {
+  yijing: '<div class="empty">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div>',
+  tarot: '<div class="empty">靜心片刻<br/>抽牌看看此刻該留意什麼</div>',
+  runes: '<div class="empty">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div>'
+};
 [['yijing','yijing-question'],['tarot','tarot-question'],['runes','runes-question']].forEach(([p,id])=>{
   const el=document.getElementById(id);
-  el.addEventListener('input',()=>refreshContext(p,el.value));
+  el.addEventListener('input',()=>{
+    refreshContext(p,el.value);
+    const box=document.getElementById(p+'-result');
+    if(box && !box.querySelector('.empty')) box.innerHTML = RESULT_EMPTY[p];
+  });
 });
 
 const TAROT_AI = [
