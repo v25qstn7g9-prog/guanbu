@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.5 — 智慧大師版</title>
+<title>觀卜 v1.6 — 人話判讀版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -193,7 +193,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.5 智慧大師</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.6 人話版</p>
   </div>
 
   <div class="tabs">
@@ -248,7 +248,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.5 智慧大師｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.6｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -303,11 +303,18 @@ function analyzeIntent(q){
   if(/擔心|害怕|焦慮|不安|煩惱|難過|痛苦/.test(q)) out.tone='anxious';
   else if(/希望|期待|想要|會不會有|能不能/.test(q)) out.tone='hopeful';
   else if(/該怎麼|怎麼辦|如何是好/.test(q)) out.tone='seeking';
-  if(/明天|今日|今天|本週|下週|台股|美股|大盤|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q)){out.type='forecast';out.label='趨勢預測';}
-  else if(/什麼時候|何時|多久|幾月|幾年|何年|時間/.test(q)){out.type='when';out.label='時間';}
-  else if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有|嗎[？?]?$/.test(q)){out.type='yesno';out.label='是非・傾向';}
-  else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){out.type='how';out.label='方法・建議';}
-  else if(/哪一個|哪個|選擇|選哪/.test(q)){out.type='choice';out.label='選擇';}
+  // 是非優先：「…嗎」「會不會」不要被「明年／今天」搶成趨勢題
+  if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有|嗎\s*[？?]?\s*$/.test(q) || /嗎[？?]?$/.test(q)){
+    out.type='yesno'; out.label='是非・傾向';
+  }else if(/什麼時候|何時|多久|幾月|幾年|何年/.test(q)){
+    out.type='when'; out.label='時間';
+  }else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){
+    out.type='how'; out.label='方法・建議';
+  }else if(/哪一個|哪個|選擇|選哪/.test(q)){
+    out.type='choice'; out.label='選擇';
+  }else if(/台股|美股|大盤|盤勢|股市|開盤|收盤|多空/.test(q) && /(明天|今日|今天|本週|下週)/.test(q)){
+    out.type='forecast'; out.label='盤勢';
+  }
   if(/明天/.test(q)) out.horizon='明日';
   else if(/今天|今日/.test(q)) out.horizon='今日';
   else if(/下週/.test(q)) out.horizon='下週';
@@ -355,7 +362,7 @@ function softenPace(pace){
 function answerCardHTML(a){
   const reasons=(a.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join('');
   return `<div class="answer-card">
-    <div class="answer-kicker">AI 式直接回答</div>
+    <div class="answer-kicker">給你的判讀</div>
     <div class="answer-main">${esc(a.answer)}</div>
     <div class="answer-sub">${esc(a.sub||'')}</div>
     <div class="smart-grid">
@@ -671,7 +678,9 @@ function hexSynthesis(hexNum,changedNum,moving,q){
   const tags=classifyQuestion(q);
   let pace=moving.length===0?'局勢偏穩｜短期以維持與觀察為主':moving.length<=2?'局勢有明確轉折｜留意近期出現的一兩個關鍵事件':'變化幅度較大｜不要只抓單一時間點，先看趨勢轉向';
   if(tags.includes('時間')) pace += '；若問「何時」，此版只能給節奏，不硬斷日期';
-  const core=`本卦「${HEX_NAMES[hexNum]}」是當下背景，${moving.length?`動爻集中在 ${moving.map(lineLabel).join('、')}，代表真正要看的不是靜態吉凶，而是變化本身；`:'目前沒有動爻，重點仍在原局；'}後勢轉向「${HEX_NAMES[changedNum]}」。`;
+  const core=moving.length
+    ? `你現在比較像在「${HEX_NAMES[hexNum]}」這段：局面還沒定。真正在動的是 ${moving.map(lineLabel).join('、')}，後面味道往「${HEX_NAMES[changedNum]}」走。`
+    : `這次沒有動爻，重點就放在「${HEX_NAMES[hexNum]}」本身：局面相對穩，先把這層意思讀清楚。`;
   return {tags,pace,core,advice:intentAdvice(tags)};
 }
 
@@ -698,48 +707,74 @@ function hexAnswer(hexNum,changedNum,moving,q){
     else pace += '，轉折落在過程中段';
   }
   const direction = future>0?'往有利方向':future<0?'先守後調整':'中性轉化';
-  const lead = humanLead(intent, direction);
-  const paceHuman = softenPace(pace);
   const fromName = HEX_NAMES[hexNum], toName = HEX_NAMES[changedNum];
-  let answer='';
   const isMarket=tags.includes('市場');
-  const volatility = moving.length>=3 ? 3 : moving.length===2 ? 2 : moving.length===1 ? 1 : 0;
+  const isWork=tags.includes('工作');
+  const isMoney=tags.includes('財務') && !isMarket;
+  const isLove=tags.includes('感情');
+  const vol = moving.length;
+  const volatility = vol>=3 ? 3 : vol===2 ? 2 : vol===1 ? 1 : 0;
+  const horizon = intent.horizon!=='未指定' ? intent.horizon : '';
+
+  // 人話組句：少套話、對準領域
+  let answer='';
   if(isMarket){
-    answer = score>.7 ? `明日盤勢偏多方占優，但中間會有拉扯。從「${fromName}」走向「${toName}」，比較像先震後穩。` :
-             score<-.7 ? `明日盤勢偏空方占優，反彈若無量要小心再被壓回。從「${fromName}」走向「${toName}」，防守意味較重。` :
-             `明日盤勢偏震盪，方向不會一次講清楚。從「${fromName}」到「${toName}」，比較像盤中反覆後才收斂。`;
-  }else if(intent.type==='when'){
-    answer = future>0 ? `${lead}有轉機，但不是立刻見效。${paceHuman}本卦「${fromName}」走到「${toName}」的過程，比某個特定日期更值得盯。` :
-             future<0 ? `${lead}時間點容易往後拖。${paceHuman}先把「${fromName}」裡卡住的條件理清楚，再談什麼時候。` :
-             `${lead}這題還壓不成一個明確日期。${paceHuman}先看「${fromName}」怎麼轉成「${toName}」，節奏會比較清楚。`;
+    answer = score>.7 ? `盤勢感覺偏多方有力一點，但不會一路順。從「${fromName}」到「${toName}」，比較像先震一下再決定方向。` :
+             score<-.7 ? `盤勢偏壓，反彈要小心又被壓回去。從「${fromName}」到「${toName}」，防守優先。` :
+             `明天比較像震盪市，上下都有機會，別急著一次押死方向。「${fromName}」→「${toName}」。`;
   }else if(intent.type==='yesno'){
-    answer = score>.7 ? `${lead}目前較像「有機會／可以」，但要順著「${toName}」的方向做，硬推反而容易走樣。` :
-             score<-.7 ? `${lead}目前較像「先別急／容易受阻」。在「${fromName}」這段先調整條件，比硬點頭或硬拒絕都重要。` :
-             `${lead}還不到能一錘定音的時候。關鍵在動爻：看「${fromName}」怎麼往「${toName}」轉，你的選擇會影響收尾。`;
+    if(isWork){
+      answer = score>.7 ? `以卦來看，${horizon||'這段期間'}「有機會」，但不是躺著等就會發生。你現在比較像在「${fromName}」的階段，後面要走到「${toName}」——通常得把表現、考核或談薪的條件先做實。` :
+               score<-.7 ? `以卦來看，${horizon||'這段期間'}別太樂觀當已定案。局面還停在「${fromName}」，要先處理卡住的條件，才談不談得上「${toName}」那種累積後的結果。` :
+               `「會或不會」現在都說太死。變數還在動（${vol?moving.map(lineLabel).join('、'):'局勢未定'}），比較像：有機會，但看你跟環境能不能對上「${toName}」要的條件。`;
+    }else if(isLove){
+      answer = score>.7 ? `偏向「有機會往好的走」，但關係要雙方動手，不是單方面等答案。「${fromName}」→「${toName}」。` :
+               score<-.7 ? `偏向先別急著定生死。現在硬逼結論，容易把「${fromName}」裡的不穩放大。` :
+               `還沒到能一句話定案。先看溝通跟界線，再決定要不要推進。`;
+    }else if(isMoney){
+      answer = score>.7 ? `偏向「有機會」，但仍要看現金流跟你自己的紀律，卦不能替你算報酬率。` :
+               score<-.7 ? `偏向先守、先別加槓桿。條件未明前，穩比衝重要。` :
+               `還說不準成不成。先把數字攤開，比再問一次卦有用。`;
+    }else{
+      answer = score>.7 ? `偏向「可以／有機會」，但要你真的去做，才走得向「${toName}」。` :
+               score<-.7 ? `偏向「先別急」。在「${fromName}」把阻力理一理，再決定要不要硬上。` :
+               `現在給死答案太早。看「${fromName}」怎麼轉成「${toName}」，你的選擇會影響結局。`;
+    }
+  }else if(intent.type==='when'){
+    answer = future>0 ? `${horizon?horizon+'這段：':''}有機會往前推，但別問「哪一天一定發生」。重點是「${fromName}」走到「${toName}」的過程。` :
+             future<0 ? `${horizon?horizon+'這段：':''}時間容易往後延。先把卡住的條件清掉，再談時程。` :
+             `壓不成一個日期。只能說節奏偏${pace.includes('快')?'快':pace.includes('慢')?'慢':'中等'}，跟著條件成熟再動。`;
   }else if(intent.type==='how'){
-    answer = future>0 ? `${lead}做法上，把問題拆小，順著「${toName}」一點一點推進會比較順。` :
-             future<0 ? `${lead}先守、先修正，再求突破。現在硬碰硬，不如先把「${fromName}」裡的阻力拆開。` :
-             `${lead}先觀察真正的變動點在哪一爻、哪一步，確認後再出手，會比一次押全部更穩。`;
+    answer = future>0 ? `別一次想翻盤。把事情拆小，順著「${toName}」一點點做，會比較順。` :
+             future<0 ? `先守、先修，再求突破。現在硬推，不如先拆「${fromName}」裡的阻力。` :
+             `先搞清楚真正卡在哪一步，再出手。一次押全部，風險比較大。`;
   }else if(intent.type==='choice'){
-    answer = future>0 ? `${lead}兩條路裡，較能配合「${toName}」走向、也比較不勉強自己的那條，勝算通常高一些。` :
-             future<0 ? `${lead}現在比「選對」更急的是「先別選錯」。條件未明時，保留彈性比一次鎖死好。` :
-             `${lead}選擇還沒完全浮現優劣。先對照「${fromName}→${toName}」看哪條路阻力較小、也較符合你的底線。`;
+    answer = future>0 ? `兩條路裡，選比較不折磨自己、又比較靠近「${toName}」的那條。` :
+             future<0 ? `現在比「選對」更急的是「別選錯」。條件未明，先留退路。` :
+             `優劣還沒完全浮上來。對照「${fromName}→${toName}」，看哪條阻力比較小。`;
   }else{
-    answer = future>0 ? `${lead}整體由「${fromName}」往「${toName}」移動，方向偏有利，但仍要過中間那一段轉折。` :
-             future<0 ? `${lead}後續仍有阻力。保守調整、把基礎顧好，比急著定局更合適。` :
-             `${lead}局勢還在轉。現在比較適合看「往哪轉」，不宜硬下結論。`;
+    // trend
+    if(isWork){
+      answer = future>0 ? `工作這條線，整體有機會往好的移動，但中間會轉折。從「${fromName}」到「${toName}」，適合把能做的先做滿。` :
+               future<0 ? `工作這條線後面仍有阻力，先把本分跟關係顧好，比急著要結果實際。` :
+               `工作局面還在變。別急著下結論，先看接下來一兩個關鍵點怎麼走。`;
+    }else{
+      answer = future>0 ? `方向大致往「${toName}」移動，偏有利，但仍要過中間那段。` :
+               future<0 ? `後面仍有阻力。先穩住，比急著定局好。` :
+               `還在轉。現在適合看方向，不適合一次下死判斷。`;
+    }
   }
-  const reasons=[
-    `本卦「${fromName}」是當下背景，之卦「${toName}」是變化後的主題。`,
-    moving.length?`動爻在 ${moving.map(lineLabel).join('、')}，這些位置最能說明「真正在動的是什麼」。`:'此卦無動爻，代表目前相對穩定，重點仍在本卦。'
-  ];
-  if(tags.includes('財務')) reasons.push('財務題請回到現金流、利率與還款能力，卦象只提示節奏。');
-  if(tags.includes('工作')) reasons.push('工作／薪資仍看考核、表現與公司環境；卦象不保證結果。');
-  if(tags.includes('感情')) reasons.push('感情題請對準溝通與界線，不要把卦義直接當成對方的想法。');
+
+  const reasons=[];
+  reasons.push(`本卦「${fromName}」是現在，之卦「${toName}」是變化後的味道。`);
+  if(vol) reasons.push(`動爻在 ${moving.map(lineLabel).join('、')}，這些位置最能說明「什麼正在變」。`);
+  else reasons.push('沒有動爻，局面相對穩，重點仍在本卦。');
+  if(isWork) reasons.push('調薪／升遷最終仍看考核、制度跟你的表現，卦只提示節奏。');
+  if(isMoney) reasons.push('財務請回到現金流與風險承受度。');
+  if(isLove) reasons.push('感情看雙方行動與溝通，不是單方面的答案。');
   const hr2=horizonReason(intent); if(hr2) reasons.push(hr2);
-  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility,focus:`${fromName}→${toName}`};
+  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility};
 }
-// ================= I CHING =================
 const HEX_NAMES = {
   1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",
   11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",
@@ -851,7 +886,7 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
   let directHex = hexAnswer(hexNum,changedNum,moving,question);
    directHex = blendAnswer(directHex,'yijing',question);
   html += answerCardHTML({
-    answer:directHex.answer, sub:`依本卦、動爻、之卦與你的問題整理出的方向，供參考；不是對事件的保證。`,
+    answer:directHex.answer, sub:`依本卦、動爻、之卦與你的問題整理；僅供參考，不是保證。`,
     direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
     confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
   });
