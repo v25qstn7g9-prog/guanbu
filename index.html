@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v1.2 — AI 智慧判讀版</title>
+<title>觀卜 v1.3 — 情境 AI 判讀版</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -157,6 +157,19 @@
   .empty{color:var(--sub);text-align:center;font-size:14px;padding:40px 10px;line-height:1.8;}
   .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:26px;
     letter-spacing:.05em;}
+
+  .context-card{margin:12px 0;padding:14px;border:1px solid rgba(92,122,153,.38);
+    border-radius:14px;background:#10111A;}
+  .context-title{font-family:'Noto Serif TC',serif;color:#9CB3C9;font-size:13px;
+    letter-spacing:.08em;margin-bottom:8px;}
+  .context-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .context-grid .field{margin:4px 0;}
+  .context-grid .field.full{grid-column:1/-1;}
+  .calc-result{margin-top:10px;padding:11px;border-radius:10px;background:#15131B;
+    border-left:3px solid var(--gold);font-size:13px;line-height:1.65;}
+  .ai-route{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .ai-route .badge{background:#171C22;color:#AFC3D6;}
+
 </style>
 </head>
 <body>
@@ -164,7 +177,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.2 AI 智慧判讀</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.3 情境 AI</p>
   </div>
 
   <div class="tabs">
@@ -181,6 +194,7 @@
       <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" />
       <div class="hint">問題越單一越好。起卦後會顯示本卦、動爻與之卦。</div>
     </div>
+    <div id="yijing-context"></div>
     <div id="yijing-result">
       <div class="empty">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div>
     </div>
@@ -191,6 +205,7 @@
     <div class="section-title">MAJOR ARCANA</div>
     <div class="field"><label for="tarot-question">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" /></div>
     <div class="field"><label for="tarot-mode">牌陣</label><select class="select" id="tarot-mode"><option value="1">單張指引</option><option value="3">三張牌｜過去・現在・未來</option></select></div>
+    <div id="tarot-context"></div>
     <div id="tarot-result">
       <div class="empty">靜心片刻<br/>抽牌看看此刻該留意什麼</div>
     </div>
@@ -201,6 +216,7 @@
     <div class="section-title">ELDER FUTHARK</div>
     <div class="field"><label for="runes-question">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" /></div>
     <div class="field"><label for="runes-mode">符文陣</label><select class="select" id="runes-mode"><option value="1">單枚指引</option><option value="3">三枚｜現況・阻力・建議</option></select></div>
+    <div id="runes-context"></div>
     <div id="runes-result">
       <div class="empty">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div>
     </div>
@@ -216,7 +232,7 @@
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v1.2 本機 AI 式判讀｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note">僅供參考娛樂｜v1.3 情境 AI 判讀｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -300,6 +316,125 @@ function answerCardHTML(a){
     ${reasons?`<ul class="why-list">${reasons}</ul>`:''}
   </div>`;
 }
+
+function detectNeeds(q){
+  q=(q||'').trim();
+  const tags=classifyQuestion(q), intent=analyzeIntent(q);
+  return {
+    tags,intent,
+    debt: tags.includes('財務') && /債|卡債|貸款|還款|清完|還完/.test(q),
+    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q),
+    health: tags.includes('健康'),
+    work: tags.includes('工作'),
+    relation: tags.includes('感情')
+  };
+}
+function numVal(id){
+  const el=document.getElementById(id);
+  if(!el) return null;
+  const n=Number(String(el.value||'').replace(/,/g,''));
+  return Number.isFinite(n) && n>0 ? n : null;
+}
+function debtMonths(balance, annualRate, payment){
+  if(!balance || !payment) return null;
+  const r=(annualRate||0)/100/12;
+  if(r===0) return Math.ceil(balance/payment);
+  if(payment<=balance*r) return Infinity;
+  return Math.ceil(-Math.log(1-r*balance/payment)/Math.log(1+r));
+}
+function money(n){ return Math.round(n).toLocaleString('zh-TW'); }
+
+function contextHTML(prefix,q){
+  const n=detectNeeds(q);
+  let fields='', note='';
+  if(n.debt){
+    fields = `
+      <div class="field"><label>目前債務餘額</label><input class="input" inputmode="decimal" id="${prefix}-balance" placeholder="例：120000"></div>
+      <div class="field"><label>年利率 %</label><input class="input" inputmode="decimal" id="${prefix}-rate" placeholder="例：8"></div>
+      <div class="field full"><label>每月預計還款</label><input class="input" inputmode="decimal" id="${prefix}-payment" placeholder="例：15000"></div>`;
+    note='這題可以計算。填入數字後，判讀會優先使用真實還款試算，不用牌卡硬猜月份。';
+  }else if(n.investment){
+    fields = `
+      <div class="field"><label>目前金額（選填）</label><input class="input" inputmode="decimal" id="${prefix}-capital" placeholder="例：5500000"></div>
+      <div class="field"><label>每月投入（選填）</label><input class="input" inputmode="decimal" id="${prefix}-monthly" placeholder="例：90000"></div>
+      <div class="field full"><label>你最在意的現實條件（選填）</label><input class="input" id="${prefix}-constraint" placeholder="例：2035退休、不想增加風險"></div>`;
+    note='投資題會把牌義降為「風險／節奏提示」，不把隨機牌卡當報酬率預測器。';
+  }else if(n.work){
+    fields = `
+      <div class="field"><label>時間範圍（選填）</label><input class="input" id="${prefix}-period" placeholder="例：未來一年"></div>
+      <div class="field"><label>目前狀態（選填）</label><input class="input" id="${prefix}-state" placeholder="例：穩定、考慮轉職"></div>`;
+    note='工作題會把結果拆成「環境變化」與「你可控制的行動」。';
+  }else if(n.health){
+    fields = `<div class="field full"><label>現實背景（選填）</label><input class="input" id="${prefix}-state" placeholder="例：恢復中、已有醫師追蹤"></div>`;
+    note='健康題只做反思提示，不把占卜當診斷、用藥或治療依據。';
+  }else if(n.relation){
+    fields = `<div class="field full"><label>目前關係狀態（選填）</label><input class="input" id="${prefix}-state" placeholder="例：穩定交往、溝通卡住"></div>`;
+    note='感情題只判讀互動模式，不假裝知道另一個人的內心事實。';
+  }else{
+    fields = `<div class="field full"><label>補充背景（選填）</label><input class="input" id="${prefix}-state" placeholder="有關鍵現實條件可寫在這裡"></div>`;
+    note='補充一個真正會影響結果的現實條件，判讀會更有用。';
+  }
+  return `<div class="context-card"><div class="context-title">情境 AI｜先理解問題</div>
+    <div class="ai-route"><span class="badge">${n.tags.join('・')}</span><span class="badge">${n.intent.label}</span>${n.debt?'<span class="badge">可計算</span>':''}</div>
+    <div class="hint" style="margin:8px 0">${note}</div><div class="context-grid">${fields}</div></div>`;
+}
+function refreshContext(prefix,q){
+  const box=document.getElementById(prefix+'-context');
+  if(box) box.innerHTML=q.trim()?contextHTML(prefix,q):'';
+}
+function realityContext(prefix,q){
+  const n=detectNeeds(q);
+  const out={text:'', reason:'', exact:false};
+  if(n.debt){
+    const b=numVal(prefix+'-balance'), rate=numVal(prefix+'-rate')||0, p=numVal(prefix+'-payment');
+    if(b&&p){
+      const m=debtMonths(b,rate,p);
+      if(m===Infinity){
+        out.text=`依你填的數字，每月還款 ${money(p)} 元不足以穩定攤還目前利息，不能用這個還款額推算清償日期。`;
+      }else{
+        const years=Math.floor(m/12), rem=m%12;
+        const span=years?`${years} 年${rem?` ${rem} 個月`:''}`:`約 ${m} 個月`;
+        out.text=`先看現實試算：債務 ${money(b)} 元、年利率 ${rate}%、每月還 ${money(p)} 元，在不新增債務且利率不變的簡化假設下，約需 ${span}。`;
+      }
+      out.reason='這是數學試算，可信度高於占卜對日期的象徵推測。';
+      out.exact=true;
+    }else{
+      out.text='這題其實可以直接算；補上「餘額、利率、每月還款」後，系統才應該回答多久，而不是拿符號硬猜日期。';
+      out.reason='目前缺少足以計算清償時間的關鍵資料。';
+    }
+  }else if(n.investment){
+    const c=numVal(prefix+'-capital'), m=numVal(prefix+'-monthly');
+    if(c||m){
+      out.text=`現實底盤：${c?`目前資產約 ${money(c)} 元`:'未填目前資產'}，${m?`每月投入約 ${money(m)} 元`:'未填每月投入'}。牌卡只用來提示節奏與風險，不拿來取代報酬率試算。`;
+      out.reason='投資結果主要由投入、時間、報酬與風險決定。';
+    }
+  }
+  return out;
+}
+function realityHTML(prefix,q){
+  const r=realityContext(prefix,q);
+  if(!r.text) return '';
+  return `<div class="smart-card"><div class="smart-title">現實驗證層</div><div class="smart-text">${esc(r.text)}</div><div class="warning-note">${esc(r.reason)}</div></div>`;
+}
+function blendAnswer(base,prefix,q){
+  const r=realityContext(prefix,q);
+  if(!r.text) return base;
+  if(r.exact){
+    base.sub = r.text + ' 占卜部分只補充「執行節奏／心理阻力」，不覆蓋這個試算。';
+    base.reasons = [r.reason].concat(base.reasons||[]);
+    base.confidence = Math.max(base.confidence||50, 88);
+    base.clarity = confidenceLabel(base.confidence);
+    base.window = '以現實試算為主';
+  }
+  return base;
+}
+
+// 問題一改，情境欄位就跟著改；不必先抽牌才知道系統理解成什麼題型。
+[['yijing','yijing-question'],['tarot','tarot-question'],['runes','runes-question']].forEach(([p,id])=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>refreshContext(p,el.value));
+});
+
 const TAROT_AI = [
   {tone:0,pace:1,agency:1,key:'新開始'}, {tone:2,pace:2,agency:2,key:'主動創造'},
   {tone:0,pace:-1,agency:0,key:'等待直覺'}, {tone:2,pace:0,agency:1,key:'成長滋養'},
@@ -539,15 +674,17 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
     synthesis = `動爻較多，代表局勢變化幅度較大；本卦「${HEX_NAMES[hexNum]}」較像起點，之卦「${HEX_NAMES[changedNum]}」的重要性提高。`;
   }
   html += `<div class="result-text">${synthesis}</div>`;
-  const directHex = hexAnswer(hexNum,changedNum,moving,question);
+  let directHex = hexAnswer(hexNum,changedNum,moving,question);
+   directHex = blendAnswer(directHex,'yijing',question);
   html += answerCardHTML({
     answer:directHex.answer, sub:`依本卦、動爻、之卦與問題語意做本機綜合判讀；不是保證事件。`,
     direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
     confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
   });
+  html += realityHTML('yijing',question);
   const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
-  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.2 為本機語意＋規則型 AI 式判讀；能直接回答問題，但不是連線模型，也不保證預測。</div>`;
+  html += `<div class="hint" style="text-align:center;margin-top:12px">6/9 為動爻；之卦由所有動爻陰陽反轉後計算。v1.3 會先辨識問題意圖、需要的現實資料與可計算項目，再把象徵訊息與現實條件合併；不是連線模型，也不保證預測。</div>`;
 
   document.getElementById('yijing-result').innerHTML = html;
 });
@@ -607,13 +744,15 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
     const meaning = p.reversed ? TAROT_REVERSED[p.idx] : text;
     html += `<div class="meta-card"><div class="meta-row"><span>${labels[i]}</span><strong>${name}${p.reversed?'（逆位）':'（正位）'}</strong></div><div class="result-text" style="text-align:left">${meaning}</div></div>`;
   });
-  const direct = tarotAnswer(picked,question);
+  let direct = tarotAnswer(picked,question);
+   direct = blendAnswer(direct,'tarot',question);
   html += answerCardHTML({
     answer:direct.answer,
     sub:`這是依牌陣、正逆位、問題類型與時間語意做出的本機綜合回答；不是保證日期或結果。`,
     direction:direct.direction, window:direct.window, intent:direct.intent.label,
     confidence:direct.confidence, clarity:direct.clarity, reasons:direct.reasons
   });
+  html += realityHTML('tarot',question);
   const smart = tarotSynthesis(picked,labels,question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
   document.getElementById('tarot-result').innerHTML = html;
@@ -663,7 +802,10 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
   const cautionRune=/冰雹|需求|冰符文|命運/.test(pivot);
   const positiveRune=/豐收|太陽|黎明|財富|贈禮|喜悅|樺樹|馬符文/.test(pivot);
   const rAnswer=positiveRune?'目前訊息偏向「可推進」，下一步重點是把象徵提示化成具體行動。':cautionRune?'目前訊息偏向「先觀察／先處理阻力」，不宜急著定局。':'目前訊息較中性，重點在調整方向與回應方式。';
-  html += answerCardHTML({answer:rAnswer,sub:'符文適合用來聚焦問題，不適合拿來保證事件或日期。',direction:positiveRune?'偏正向':cautionRune?'偏保守':'中性',window:rIntent.type==='when'?'不宜硬斷日期':'依行動逐步展開',intent:rIntent.label,confidence:mode===3?66:48,clarity:mode===3?'中高':'中',reasons:[`核心符文為「${pivot}」。`,mode===3?'三枚符文同時提供現況、阻力與建議，因此比單枚更容易形成完整判讀。':'單枚符文適合作為焦點提示，資訊量較少。']});
+  let runeDirect={answer:rAnswer,sub:'符文適合用來聚焦問題，不適合拿來保證事件或日期。',direction:positiveRune?'偏正向':cautionRune?'偏保守':'中性',window:rIntent.type==='when'?'不宜硬斷日期':'依行動逐步展開',intent:rIntent.label,confidence:mode===3?66:48,clarity:mode===3?'中高':'中',reasons:[`核心符文為「${pivot}」。`,mode===3?'三枚符文同時提供現況、阻力與建議，因此比單枚更容易形成完整判讀。':'單枚符文適合作為焦點提示，資訊量較少。']};
+  runeDirect=blendAnswer(runeDirect,'runes',question);
+  html += answerCardHTML(runeDirect);
+  html += realityHTML('runes',question);
   html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${mode===3?`三枚符文把問題拆成「現況—阻力—建議」。最後的「${pivot}」適合視為你下一步最值得落地的方向。`:`「${pivot}」較適合當成今天的觀察焦點，而不是事件預言。`}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${tags.join('・')}</strong></div><div class="smart-chip"><span>使用方式</span><strong>象徵提示・現實驗證</strong></div></div><div class="warning-note">${intentAdvice(tags)}</div></div>`;
   document.getElementById('runes-result').innerHTML = html;
 });
