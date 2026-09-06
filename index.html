@@ -785,6 +785,83 @@ const RUNES = [
   ["ᛟ","Othala 家園符文","傳承與根基，價值觀給你力量。"],
   ["ᛞ","Dagaz 黎明符文","突破與覺醒，全新的階段正在展開。"]
 ];
+
+// 每枚符文的判讀向量：tone=吉凶傾向、pace=節奏快慢、agency=主動或被動。
+// 用來取代「用關鍵字比對符文名稱」的作法，讓判讀真正依組合計算，而不是查表念一段固定敘述。
+const RUNES_AI = [
+  {tone:2,pace:1,agency:1,key:'資源累積'},   {tone:1,pace:1,agency:2,key:'原始力量'},
+  {tone:-1,pace:1,agency:-1,key:'衝突與阻力'}, {tone:1,pace:0,agency:0,key:'訊息與智慧'},
+  {tone:1,pace:2,agency:1,key:'旅程與節奏'},  {tone:1,pace:1,agency:2,key:'靈感創造'},
+  {tone:1,pace:0,agency:0,key:'給予交換'},   {tone:2,pace:1,agency:0,key:'和諧滿足'},
+  {tone:-2,pace:2,agency:-1,key:'突發變化'}, {tone:-1,pace:-1,agency:0,key:'逆境學習'},
+  {tone:-1,pace:-2,agency:-1,key:'停滯待時'}, {tone:2,pace:0,agency:1,key:'努力見成果'},
+  {tone:0,pace:-1,agency:1,key:'堅韌轉化'},  {tone:0,pace:0,agency:-1,key:'未知機緣'},
+  {tone:1,pace:0,agency:0,key:'守護警覺'},   {tone:3,pace:2,agency:1,key:'成功活力'},
+  {tone:1,pace:0,agency:1,key:'正義堅持'},   {tone:2,pace:1,agency:1,key:'新生成長'},
+  {tone:1,pace:1,agency:1,key:'夥伴信任'},   {tone:0,pace:0,agency:0,key:'自我覺察'},
+  {tone:0,pace:0,agency:-1,key:'情感流動'},  {tone:1,pace:-1,agency:0,key:'蓄勢待發'},
+  {tone:1,pace:-1,agency:0,key:'傳承根基'},  {tone:2,pace:2,agency:1,key:'突破覺醒'}
+];
+function timingFromRunes(picks){
+  let score=0;
+  picks.forEach((idx,i)=>{ const v=RUNES_AI[idx]; score += v.pace*(i===picks.length-1?1.25:1); });
+  if(score>=3) return '近期｜數週到約 1–3 個月的節奏';
+  if(score<=-2.2) return '偏慢｜數月級，先整理條件再看進展';
+  return '中期｜較像數月內逐步推進，不像立即定局';
+}
+function runeAnswer(picks,q){
+  const tags=classifyQuestion(q), intent=analyzeIntent(q);
+  const vs=picks.map(idx=>RUNES_AI[idx]);
+  const weights=picks.length===3?[0.8,0.6,1.1]:[1.2]; // 現況・阻力・建議：建議的方向權重最高
+  let score=0, agency=0;
+  vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
+  const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
+  const same=signs.length>1 && signs.every(s=>s===signs[0]);
+  let confidence=46+(same?20:0)+Math.min(18,Math.abs(score)*5);
+  if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6; // 阻力被建議化解，判讀更清楚
+  confidence=Math.round(Math.max(28,Math.min(90,confidence)));
+  let direction=score>=2?'偏正向':score<=-2?'偏阻滯':'未完全定局';
+  let window=timingFromRunes(picks);
+  let answer='';
+  if(intent.type==='when'){
+    answer = score>1 ? `有機會往推進方向走，但不是立刻；${window.replace('｜','，')}` :
+             score<-1 ? `時間點偏延後，先處理卡住的條件；${window.replace('｜','，')}` :
+             `目前還看不出單一明確日期，較像邊調整邊推進；${window.replace('｜','，')}`;
+  }else if(intent.type==='yesno'){
+    answer = score>=2?'目前符文偏向「可以／會」，但仍要靠後續行動落地。':
+             score<=-2?'目前符文偏向「不宜急進／容易延後」，先處理阻力。':
+             '目前是「有條件、尚未定局」，關鍵在接下來的選擇與執行。';
+  }else if(intent.type==='how'){
+    answer = agency>0.8?'重點不是等結果，而是主動處理；越早把可控項目做實，局勢越容易轉好。':
+             agency<-0.8?'此刻更適合先停、整理與拆解問題，不宜用力硬推。':
+             '先把問題拆成可控與不可控兩部分，逐步調整比一次翻盤更有效。';
+  }else{
+    answer = score>=2?'整體趨勢偏向改善與推進，但不是無條件順利。':
+             score<=-2?'整體趨勢偏向受阻或延後，先處理根本問題會比較有利。':
+             '整體趨勢正在轉換中，現在比「結果」更重要的是下一步怎麼做。';
+  }
+  const reasons=[];
+  if(picks.length===3){
+    reasons.push(`「現況」符文「${RUNES[picks[0]][1]}」定調此刻背景，「阻力」符文「${RUNES[picks[1]][1]}」點出真正卡住的地方。`);
+    reasons.push(`「建議」符文「${RUNES[picks[2]][1]}」傾向${vs[2].tone>0?'正面可行':'保守收斂'}，行動步調屬${vs[2].pace>0?'推進型':vs[2].pace<0?'放緩型':'中性'}。`);
+  }else{
+    reasons.push(`核心符文「${RUNES[picks[0]][1]}」的主題是「${vs[0].key}」。`);
+  }
+  if(tags.includes('財務')) reasons.push('財務題真正的落地變數仍是現金流、利率、還款紀律與是否新增負債。');
+  if(tags.includes('工作')) reasons.push('工作題要同步觀察職務、權責、人際與公司環境，而不是只看單一象徵。');
+  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
+}
+function runeSynthesis(picks,labels,q){
+  const tags=classifyQuestion(q);
+  let core='';
+  if(picks.length===1){
+    core=`這枚符文較像是在提醒你：${RUNES[picks[0]][2]}`;
+  }else{
+    const [cur,obs,adv]=picks;
+    core=`三枚符文不是分開的三句話，而是一條路徑：「${RUNES[cur][1]}」描述現況，「${RUNES[obs][1]}」點出真正的阻力所在，「${RUNES[adv][1]}」則是化解阻力、往下一步走的方向。`;
+  }
+  return {tags,core,timing:timingFromRunes(picks),advice:intentAdvice(tags)};
+}
 document.getElementById('runes-btn').addEventListener('click', ()=>{
   const mode = Number(document.getElementById('runes-mode').value);
   const question = document.getElementById('runes-question').value.trim();
@@ -796,17 +873,17 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
     const [glyph,name,text]=RUNES[idx];
     html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
   });
-  const tags=classifyQuestion(question);
-  const pivot=RUNES[picked[picked.length-1]][1];
-  const rIntent=analyzeIntent(question);
-  const cautionRune=/冰雹|需求|冰符文|命運/.test(pivot);
-  const positiveRune=/豐收|太陽|黎明|財富|贈禮|喜悅|樺樹|馬符文/.test(pivot);
-  const rAnswer=positiveRune?'目前訊息偏向「可推進」，下一步重點是把象徵提示化成具體行動。':cautionRune?'目前訊息偏向「先觀察／先處理阻力」，不宜急著定局。':'目前訊息較中性，重點在調整方向與回應方式。';
-  let runeDirect={answer:rAnswer,sub:'符文適合用來聚焦問題，不適合拿來保證事件或日期。',direction:positiveRune?'偏正向':cautionRune?'偏保守':'中性',window:rIntent.type==='when'?'不宜硬斷日期':'依行動逐步展開',intent:rIntent.label,confidence:mode===3?66:48,clarity:mode===3?'中高':'中',reasons:[`核心符文為「${pivot}」。`,mode===3?'三枚符文同時提供現況、阻力與建議，因此比單枚更容易形成完整判讀。':'單枚符文適合作為焦點提示，資訊量較少。']};
-  runeDirect=blendAnswer(runeDirect,'runes',question);
-  html += answerCardHTML(runeDirect);
+  let runeDirect = runeAnswer(picked,question);
+  runeDirect = blendAnswer(runeDirect,'runes',question);
+  html += answerCardHTML({
+    answer:runeDirect.answer,
+    sub:`這是依符文陣、位置意義（現況／阻力／建議）、問題類型與時間語意做出的本機綜合回答；不是保證日期或結果。`,
+    direction:runeDirect.direction, window:runeDirect.window, intent:runeDirect.intent.label,
+    confidence:runeDirect.confidence, clarity:runeDirect.clarity, reasons:runeDirect.reasons
+  });
   html += realityHTML('runes',question);
-  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${mode===3?`三枚符文把問題拆成「現況—阻力—建議」。最後的「${pivot}」適合視為你下一步最值得落地的方向。`:`「${pivot}」較適合當成今天的觀察焦點，而不是事件預言。`}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${tags.join('・')}</strong></div><div class="smart-chip"><span>使用方式</span><strong>象徵提示・現實驗證</strong></div></div><div class="warning-note">${intentAdvice(tags)}</div></div>`;
+  const smart = runeSynthesis(picked,labels,question);
+  html += `<div class="smart-card"><div class="smart-title">智慧綜合判讀</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>問題類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>時間節奏</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
   document.getElementById('runes-result').innerHTML = html;
 });
 
