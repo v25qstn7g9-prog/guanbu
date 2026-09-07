@@ -309,6 +309,32 @@ document.querySelectorAll('.tab').forEach(t=>{
 function esc(s){
   return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
+
+// ---------------- AI 白話說明（共用） ----------------
+let aiCardSeq = 0;
+function aiCardPlaceholder(title) {
+  const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
+  return {
+    id,
+    html: `<div class="smart-card" id="${id}"><div class="smart-title">${esc(title)}</div><div class="smart-text" style="color:var(--sub);font-style:italic;">AI 整理中…</div></div>`,
+  };
+}
+async function fillAiExplain(id, module, question, facts) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  try {
+    const res = await fetch('/ask', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ module, question: question || '', facts }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+    el.innerHTML = `<div class="smart-title">AI 白話說明</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="smart-title">AI 白話說明</div><div class="smart-text" style="color:var(--sub);">說明暫時產生不出來（${esc(e.message)}），可以先看上面的判定結果。</div>`;
+  }
+}
 function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
 function hexFromBits(bits){
   const lowerIdx = trigramIndex(bits.slice(0,3));
@@ -971,11 +997,16 @@ document.getElementById('yijing-btn').addEventListener('click', ()=>{
     html += marketOracleHTML(marketNarrative(directHex.direction,directHex.intent.horizon,directHex.focus,directHex.score,directHex.volatility));
   }
   html += realityHTML('yijing',question);
-  const smartHex = hexSynthesis(hexNum,changedNum,moving,question);
-  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smartHex.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smartHex.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smartHex.pace}</strong></div></div><div class="warning-note">${smartHex.advice}</div></div>`;
+  const aiHex = aiCardPlaceholder('再講一次（白話）');
+  html += aiHex.html;
   html += `<div class="hint" style="text-align:center;margin-top:12px">說明：上面「簡單說」是這次最重要的一句。卦名跟圖只是參考，不能保證真的會發生。</div>`;
 
   document.getElementById('yijing-result').innerHTML = html;
+  fillAiExplain(aiHex.id, 'yijing', question, {
+    現在卦: HEX_NAMES[hexNum], 現在卦意: HEX_TEXT[hexNum],
+    之後卦: HEX_NAMES[changedNum], 之後卦意: HEX_TEXT[changedNum],
+    有變化的爻: moving.length ? moving.map(lineLabel) : '沒有',
+  });
 });
 
 // ================= TAROT =================
@@ -1062,9 +1093,12 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
     html += marketOracleHTML(marketNarrative(direct.direction,direct.intent.horizon,direct.focus,direct.score,direct.volatility));
   }
   html += realityHTML('tarot',question);
-  const smart = tarotSynthesis(picked,labels,question);
-  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
+  const aiTarot = aiCardPlaceholder('再講一次（白話）');
+  html += aiTarot.html;
   document.getElementById('tarot-result').innerHTML = html;
+  fillAiExplain(aiTarot.id, 'tarot', question, {
+    抽到的牌: picked.map((p,i) => `${labels[i]}：${TAROT[p.idx][0]}（${p.reversed?'逆位':'正位'}）`),
+  });
 });
 
 // ================= RUNES =================
@@ -1204,9 +1238,12 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
     confidence:runeDirect.confidence, clarity:runeDirect.clarity, reasons:runeDirect.reasons
   });
   html += realityHTML('runes',question);
-  const smart = runeSynthesis(picked,labels,question);
-  html += `<div class="smart-card"><div class="smart-title">再講一次（白話）</div><div class="smart-text">${smart.core}</div><div class="smart-grid"><div class="smart-chip"><span>類型</span><strong>${smart.tags.join('・')}</strong></div><div class="smart-chip"><span>快慢</span><strong>${smart.timing}</strong></div></div><div class="warning-note">${smart.advice}</div></div>`;
+  const aiRune = aiCardPlaceholder('再講一次（白話）');
+  html += aiRune.html;
   document.getElementById('runes-result').innerHTML = html;
+  fillAiExplain(aiRune.id, 'runes', question, {
+    抽到的符文: picked.map((idx,i) => `${labels[i]}：${RUNES[idx][1]}`),
+  });
 });
 
 // ================= DAILY FORTUNE =================
@@ -1258,8 +1295,13 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{
   const msgIdx = seed % DAILY_MSGS.length;
   html += `<div class="daily-msg">${DAILY_MSGS[msgIdx]}</div>`;
   const best=[...scored].sort((a,b)=>b[1]-a[1])[0], low=[...scored].sort((a,b)=>a[1]-b[1])[0];
-  html += `<div class="smart-card"><div class="smart-title">今日焦點</div><div class="smart-text">相對較順的是「${best[0]}」，比較需要保守的是「${low[0]}」。把它當作今天的注意力排序，而不是預測事件一定發生。</div><div class="warning-note">同一生日在同一天會得到固定結果；資料只存在你的瀏覽器 localStorage。</div></div>`;
+  const aiDaily = aiCardPlaceholder('今日焦點');
+  html += aiDaily.html;
   document.getElementById('daily-result').innerHTML = html;
+  fillAiExplain(aiDaily.id, 'daily', '', {
+    今日運勢分數: scored.map(([label,score]) => `${label}：${score}分（滿分5分）`),
+    今日一句話: DAILY_MSGS[msgIdx],
+  });
 });
 
 // ==================== 紫微斗數引擎（農曆換算＋排盤）====================
@@ -1637,6 +1679,46 @@ function buildChart(y, m, d, hour, gender) {
 }
 
 
+// 十四主星的白話個性描述（國中生也能懂的日常用語，非命理術語）
+const STAR_PLAIN_MEANING = {
+  "紫微": "有領導欲、重面子，希望被尊重、被看重，做事有主見，但有時比較固執，聽不太進別人的話。",
+  "天機": "腦筋轉得快，點子多，喜歡想東想西，但想法容易變來變去，靜不下心來。",
+  "太陽": "個性直來直往、熱心、喜歡照顧別人，像太陽一樣把能量給出去，但有時候會太操心、太拚。",
+  "武曲": "務實、行動派，講求效率跟結果，對錢和目標很有概念，但表達感情比較不擅長，看起來硬邦邦的。",
+  "天同": "個性隨和、好相處，不喜歡衝突，容易知足常樂，但有時候也容易懶散、缺乏衝勁。",
+  "廉貞": "熱情但情緒起伏大，很有個人魅力，敢愛敢恨，但一衝動容易做出讓自己後悔的決定。",
+  "天府": "穩重、顧家、擅長理財規劃，做事按部就班，安全感很重要，但有時候比較保守、不太敢冒險。",
+  "太陰": "細膩、體貼、觀察力強，內心感受豐富，重視家庭和情感，但情緒容易受環境影響，比較敏感。",
+  "貪狼": "多才多藝、社交能力強、喜歡新鮮刺激的事物，人緣好，但容易三分鐘熱度，什麼都想嘗試卻不持久。",
+  "巨門": "口才好、觀察力敏銳，很會分析、很會講道理，但講話有時候比較直接，容易得罪人或引起口舌是非。",
+  "天相": "個性溫和、有服務精神，喜歡幫人處理事情、當和事佬，但比較沒主見，容易被別人的意見牽著走。",
+  "天梁": "有長輩緣、責任感重，喜歡照顧、指導別人，做事講原則，但有時候會顯得愛說教、放不下身段。",
+  "七殺": "個性剛強、有衝勁，遇到挑戰不退縮，做事雷厲風行，但脾氣比較急，容易跟人起衝突。",
+  "破軍": "喜歡打破常規、開創新局面，適應力強、不怕改變，但也容易把事情弄得大起大落，不夠穩定。",
+};
+
+// 命宮/借星命宮的簡單說總結
+function buildZiweiSummary(chart) {
+  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex]
+    .filter(s => STAR_PLAIN_MEANING[s]);
+  let borrowed = false;
+  let usedStars = lifeStars;
+  if (lifeStars.length === 0) {
+    // 命宮無主星，借對宮（遷移宮）的星曜參考
+    const oppositeIdx = (chart.lifePalaceIndex + 6) % 12;
+    usedStars = chart.starsAtBranch[oppositeIdx].filter(s => STAR_PLAIN_MEANING[s]);
+    borrowed = true;
+  }
+  if (usedStars.length === 0) {
+    return { text: "命宮跟對宮剛好都沒有主星入座，這種盤在紫微斗數裡不算少見，個性上比較沒有單一鮮明的主色調，容易受身邊環境跟相處的人影響而調整自己。", borrowed: false };
+  }
+  const descriptions = usedStars.map(s => `**${s}星**：${STAR_PLAIN_MEANING[s]}`).join("\n");
+  const prefix = borrowed
+    ? "你的命宮本身沒有主星坐鎮（這種情況滿常見的，不用擔心），命理上會參考對面的遷移宮來看個性傾向："
+    : "你的命宮主星是：";
+  return { text: prefix + "\n\n" + descriptions, borrowed };
+}
+
 // ---------------- 紫微斗數 UI ----------------
 function renderZiweiChart(chart) {
   const cellPositions = [
@@ -1645,7 +1727,10 @@ function renderZiweiChart(chart) {
     ["卯",null,null,"戌"],
     ["寅","丑","子","亥"],
   ];
-  let html = '<div class="zw-meta">';
+  const summary = buildZiweiSummary(chart);
+  const aiZiwei = aiCardPlaceholder('簡單說');
+  let html = aiZiwei.html;
+  html += '<div class="zw-meta">';
   html += `<div class="smart-chip"><span>農曆生日</span><strong>${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日</strong></div>`;
   html += `<div class="smart-chip"><span>年干支</span><strong>${chart.yearGanzhi}</strong></div>`;
   html += `<div class="smart-chip"><span>五行局</span><strong>${chart.juName}</strong></div>`;
@@ -1685,7 +1770,20 @@ function renderZiweiChart(chart) {
   html += '</div>';
   html += '<div class="hint">紫色外框＝命宮；金色虛線＝身宮。四化標記（祿權科忌）以金色小字顯示在星名旁。</div>';
   html += '<div class="warning-note">紫微星定位與四化對照表為古籍固定演算法則，已盡量核對公開範例；農曆換算已用多筆已知節日日期實際驗證過。若發現與其他命盤軟體結果不同，歡迎回報比對。</div>';
-  return html;
+
+  const mainStarSetForFacts = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
+  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex].filter(s => mainStarSetForFacts.has(s));
+  const facts = {
+    農曆生日: `${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日`,
+    年干支: chart.yearGanzhi,
+    五行局: chart.juName,
+    命宮地支: BRANCHES[chart.lifePalaceIndex],
+    身宮地支: BRANCHES[chart.bodyPalaceIndex],
+    命宮是否有主星: lifeStars.length > 0 ? `有，是：${lifeStars.join('、')}` : "沒有主星（空宮），要參考對面遷移宮",
+    遷移宮主星: chart.starsAtBranch[(chart.lifePalaceIndex + 6) % 12].filter(s => mainStarSetForFacts.has(s)),
+    有四化的星: chart.sihuaMark,
+  };
+  return { html, aiId: aiZiwei.id, facts };
 }
 
 document.getElementById('ziwei-btn').addEventListener('click', () => {
@@ -1702,7 +1800,9 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
   const hourDecimal = hh + mm / 60;
   try {
     const chart = buildChart(y, m, d, hourDecimal, gender);
-    resultEl.innerHTML = renderZiweiChart(chart);
+    const { html, aiId, facts } = renderZiweiChart(chart);
+    resultEl.innerHTML = html;
+    fillAiExplain(aiId, 'ziwei', '', facts);
   } catch (e) {
     resultEl.innerHTML = `<div class="empty">排盤失敗：${e.message}</div>`;
   }
