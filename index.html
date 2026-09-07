@@ -1678,6 +1678,30 @@ function buildChart(y, m, d, hour, gender) {
   };
 }
 
+// 流年：把某一年疊回本命盤，看流年命宮落在本命盤哪個宮位、原本坐什麼星、今年四化打到誰
+function getLiuNian(chart, targetY, targetM, targetD) {
+  const lunar = solarToLunar(targetY, targetM, targetD, 12);
+  if (!lunar) throw new Error("流年農曆換算失敗");
+  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
+  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
+  const stemIndex = ganzhiIndex % 10;
+  const branchIndex = ganzhiIndex % 12;
+  const palaceName = chart.palaceOfBranch[branchIndex];
+  const starsHere = chart.starsAtBranch[branchIndex];
+  const yearStem = STEMS[stemIndex];
+  const sihuaThisYear = SIHUA_TABLE[yearStem];
+  const sihuaMarkThisYear = {};
+  ["祿","權","科","忌"].forEach((label,i) => { sihuaMarkThisYear[sihuaThisYear[i]] = label; });
+  const hitStars = starsHere.filter(s => sihuaMarkThisYear[s]).map(s => `${s}化${sihuaMarkThisYear[s]}`);
+  return {
+    solarYear: targetY, lunarYear,
+    ganzhi: yearStem + BRANCHES[branchIndex],
+    liuNianPalaceBranch: BRANCHES[branchIndex],
+    correspondingNatalPalace: palaceName,
+    starsInThisPalace: starsHere,
+    sihuaHits: hitStars,
+  };
+}
 
 // 十四主星的白話個性描述（國中生也能懂的日常用語，非命理術語）
 const STAR_PLAIN_MEANING = {
@@ -1783,7 +1807,19 @@ function renderZiweiChart(chart) {
     遷移宮主星: chart.starsAtBranch[(chart.lifePalaceIndex + 6) % 12].filter(s => mainStarSetForFacts.has(s)),
     有四化的星: chart.sihuaMark,
   };
-  return { html, aiId: aiZiwei.id, facts };
+
+  const now = new Date();
+  const liuNian = getLiuNian(chart, now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const aiLiuNian = aiCardPlaceholder(`${liuNian.solarYear}年流年提醒`);
+  html += aiLiuNian.html;
+  const liuNianFacts = {
+    今年: `西元${liuNian.solarYear}年（農曆${liuNian.lunarYear}年，${liuNian.ganzhi}年）`,
+    流年落在本命盤的宮位: liuNian.correspondingNatalPalace,
+    這個宮位本來坐的星: liuNian.starsInThisPalace.length ? liuNian.starsInThisPalace : "沒有主星",
+    今年四化打中的星: liuNian.sihuaHits.length ? liuNian.sihuaHits : "今年沒有主星被四化",
+  };
+
+  return { html, aiId: aiZiwei.id, facts, liuNianAiId: aiLiuNian.id, liuNianFacts };
 }
 
 document.getElementById('ziwei-btn').addEventListener('click', () => {
@@ -1800,9 +1836,10 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
   const hourDecimal = hh + mm / 60;
   try {
     const chart = buildChart(y, m, d, hourDecimal, gender);
-    const { html, aiId, facts } = renderZiweiChart(chart);
+    const { html, aiId, facts, liuNianAiId, liuNianFacts } = renderZiweiChart(chart);
     resultEl.innerHTML = html;
     fillAiExplain(aiId, 'ziwei', '', facts);
+    fillAiExplain(liuNianAiId, 'ziwei', '請針對今年的流年給提醒，不用重複命宮個性', liuNianFacts);
   } catch (e) {
     resultEl.innerHTML = `<div class="empty">排盤失敗：${e.message}</div>`;
   }
