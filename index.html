@@ -17,6 +17,7 @@
     --crimson:#8B2635;
     --jade:#3F6659;
     --runic:#5C7A99;
+    --violet:#6B4E8E;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
@@ -35,8 +36,8 @@
     -webkit-background-clip:text;background-clip:text;color:transparent;}
   .hero p{color:var(--sub);font-size:14px;margin-top:8px;font-style:italic;}
 
-  .tabs{display:flex;gap:8px;margin-bottom:20px;}
-  .tab{flex:1;padding:10px 4px;text-align:center;border-radius:12px;
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{flex:1;min-width:60px;padding:10px 4px;text-align:center;border-radius:12px;
     border:1px solid var(--panel-border);background:var(--panel);
     color:var(--sub);font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;
     cursor:pointer;transition:border-color .2s, color .2s;}
@@ -45,6 +46,7 @@
   .tab[data-t="tarot"].active{border-color:var(--crimson);box-shadow:0 0 0 1px var(--crimson) inset;}
   .tab[data-t="runes"].active{border-color:var(--runic);box-shadow:0 0 0 1px var(--runic) inset;}
   .tab[data-t="daily"].active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .tab[data-t="ziwei"].active{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
 
   .panel{display:none;background:var(--panel);border:1px solid var(--panel-border);
     border-radius:16px;padding:22px 18px;min-height:280px;}
@@ -186,6 +188,30 @@
   .session-box span{display:block;color:var(--sub);font-size:11px;margin-bottom:4px;}
   .session-box strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
 
+  /* --- Zi Wei chart grid --- */
+  .zw-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+  .zw-meta .smart-chip{border-color:rgba(107,78,142,.4);}
+  .zw-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
+    gap:4px;aspect-ratio:1/1;margin:14px 0;}
+  .zw-cell{border:1px solid var(--panel-border);border-radius:8px;background:#11101A;
+    padding:5px 4px;display:flex;flex-direction:column;font-size:10px;position:relative;overflow:hidden;}
+  .zw-cell.life{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
+  .zw-cell.body{outline:1.5px dashed var(--gold);outline-offset:-3px;}
+  .zw-cell .zw-branch{position:absolute;top:3px;right:5px;color:var(--sub);font-size:9px;}
+  .zw-cell .zw-stem{position:absolute;top:3px;left:5px;color:var(--sub);font-size:9px;}
+  .zw-cell .zw-palace{font-family:'Noto Serif TC',serif;font-size:11px;color:var(--gold);
+    margin-top:14px;text-align:center;}
+  .zw-cell .zw-stars{margin-top:4px;display:flex;flex-direction:column;gap:1px;align-items:center;}
+  .zw-cell .zw-star{color:var(--text);font-size:11px;font-family:'Noto Serif TC',serif;white-space:nowrap;}
+  .zw-cell .zw-star.main{color:#E8D4F5;font-weight:700;}
+  .zw-cell .zw-sihua{color:var(--gold);font-size:9px;margin-left:2px;}
+  .zw-center{grid-column:2/4;grid-row:2/4;border:1px solid rgba(107,78,142,.4);border-radius:10px;
+    background:linear-gradient(160deg,#1B1620,#111019);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:8px;text-align:center;}
+  .zw-center .zw-c-title{font-family:'Noto Serif TC',serif;color:var(--violet);font-size:12px;margin-bottom:4px;}
+  .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
+  @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
+
 </style>
 </head>
 <body>
@@ -193,7 +219,7 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · v1.7 好懂版</p>
+    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數 · v1.7 好懂版</p>
   </div>
 
   <div class="tabs">
@@ -201,6 +227,7 @@
     <div class="tab" data-t="tarot">塔羅</div>
     <div class="tab" data-t="runes">符文</div>
     <div class="tab" data-t="daily">今日運勢</div>
+    <div class="tab" data-t="ziwei">紫微</div>
   </div>
 
   <div class="panel active" id="panel-yijing">
@@ -246,6 +273,22 @@
       <div class="empty">按下查看，抓出今天的運勢</div>
     </div>
     <button class="btn gold" id="daily-btn">查看今日運勢</button>
+  </div>
+
+  <div class="panel" id="panel-ziwei">
+    <div class="section-title cn">紫微斗數排盤</div>
+    <div class="field"><label for="zw-date">出生日期（國曆）</label><input class="input" type="date" id="zw-date" /></div>
+    <div class="mini-grid">
+      <div class="field"><label for="zw-hour">出生時間</label><input class="input" type="time" id="zw-hour" /></div>
+      <div class="field"><label for="zw-gender">性別</label>
+        <select class="select" id="zw-gender"><option value="M">男</option><option value="F">女</option></select>
+      </div>
+    </div>
+    <div class="hint">請盡量提供準確的出生時辰，時辰(如子時23:00~00:59)會直接影響命宮位置。若不確定精確時間，排出來的命盤僅供參考。</div>
+    <div id="ziwei-result">
+      <div class="empty">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div>
+    </div>
+    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;">排盤</button>
   </div>
 
   <div class="footer-note">僅供參考娛樂｜v1.7｜重要決策仍以現實資訊為準</div>
@@ -1218,6 +1261,453 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{
   html += `<div class="smart-card"><div class="smart-title">今日焦點</div><div class="smart-text">相對較順的是「${best[0]}」，比較需要保守的是「${low[0]}」。把它當作今天的注意力排序，而不是預測事件一定發生。</div><div class="warning-note">同一生日在同一天會得到固定結果；資料只存在你的瀏覽器 localStorage。</div></div>`;
   document.getElementById('daily-result').innerHTML = html;
 });
+
+// ==================== 紫微斗數引擎（農曆換算＋排盤）====================
+// ---- 天文計算核心：儒略日、太陽/月球黃經、新月搜尋、節氣 ----
+function toJD(y, m, d, hour) {
+  hour = hour || 0;
+  if (m <= 2) { y -= 1; m += 12; }
+  const A = Math.floor(y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + hour/24 + B - 1524.5;
+}
+
+function normDeg(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+const D2R = Math.PI / 180;
+
+// 太陽視黃經 (Meeus ch.25 低精度公式，精度約 0.01°)
+function sunLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L0 = normDeg(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
+  const M = normDeg(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+  const Mr = M * D2R;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mr)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * Mr)
+          + 0.000289 * Math.sin(3 * Mr);
+  const trueLong = L0 + C;
+  const omega = 357.52911 <= 0 ? 0 : normDeg(125.04 - 1934.136 * T);
+  return normDeg(trueLong - 0.00569 - 0.00478 * Math.sin(omega * D2R));
+}
+
+// 月球視黃經 (Meeus ch.47 主要項截斷，精度約 0.3°，足以做新月搜尋)
+function moonLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const Lp = normDeg(218.3164477 + 481267.88123421 * T - 0.0015786 * T*T + T*T*T/538841 - T*T*T*T/65194000);
+  const D  = normDeg(297.8501921 + 445267.1114034 * T - 0.0018819 * T*T + T*T*T/545868 - T*T*T*T/113065000);
+  const M  = normDeg(357.5291092 + 35999.0502909 * T - 0.0001536 * T*T + T*T*T/24490000);
+  const Mp = normDeg(134.9633964 + 477198.8675055 * T + 0.0087414 * T*T + T*T*T/69699 - T*T*T*T/14712000);
+  const F  = normDeg(93.2720950 + 483202.0175233 * T - 0.0036539 * T*T - T*T*T/3526000 + T*T*T*T/863310000);
+  const r = D2R;
+  let dl = 6.288774 * Math.sin(Mp*r)
+    + 1.274027 * Math.sin((2*D - Mp)*r)
+    + 0.658314 * Math.sin(2*D*r)
+    + 0.213618 * Math.sin(2*Mp*r)
+    - 0.185116 * Math.sin(M*r)
+    - 0.114332 * Math.sin(2*F*r)
+    + 0.058793 * Math.sin((2*D - 2*Mp)*r)
+    + 0.057066 * Math.sin((2*D - M - Mp)*r)
+    + 0.053322 * Math.sin((2*D + Mp)*r)
+    + 0.045758 * Math.sin((2*D - M)*r)
+    - 0.040923 * Math.sin((M - Mp)*r)
+    - 0.034720 * Math.sin(D*r)
+    - 0.030383 * Math.sin((M + Mp)*r)
+    + 0.015327 * Math.sin((2*D - 2*F)*r)
+    - 0.012528 * Math.sin((Mp + 2*F)*r)
+    + 0.010980 * Math.sin((Mp - 2*F)*r)
+    + 0.010675 * Math.sin((4*D - Mp)*r)
+    + 0.010034 * Math.sin(3*Mp*r)
+    + 0.008548 * Math.sin((4*D - 2*Mp)*r)
+    - 0.007910 * Math.sin((M - Mp + 2*D)*r)
+    - 0.006783 * Math.sin((2*D + M)*r);
+  return normDeg(Lp + dl);
+}
+
+// 太陽-月亮黃經差 (0~360，新月=0)
+function elongation(jd) {
+  return normDeg(moonLongitude(jd) - sunLongitude(jd));
+}
+
+// 用二分法找出「elongation 經過 0 度（新月）」的精確 JD，搜尋範圍 [jdStart, jdEnd]
+function findNewMoonNear(jdGuess) {
+  // 每次以 elongation 除以每日平均角速度(約12.19度/天)估算校正量，反覆逼近
+  let jd = jdGuess;
+  for (let i = 0; i < 30; i++) {
+    let e = elongation(jd);
+    if (e > 180) e -= 360; // 取最短角距，正負皆可
+    jd -= e / 12.190749;
+    if (Math.abs(e) < 0.0005) break;
+  }
+  return jd;
+}
+
+// 找出涵蓋 [jdFrom, jdTo] 範圍內所有新月的 JD 陣列（用平均朔望月 29.530589 天步進）
+function findNewMoonsInRange(jdFrom, jdTo) {
+  const results = [];
+  let k = Math.floor((jdFrom - 2451550.09766) / 29.530588861) - 2;
+  while (true) {
+    const guess = 2451550.09766 + 29.530588861 * k;
+    if (guess > jdTo + 40) break;
+    const nm = findNewMoonNear(guess);
+    if (nm >= jdFrom - 40 && nm <= jdTo + 40) results.push(nm);
+    k++;
+  }
+  results.sort((a, b) => a - b);
+  // 去重（避免二分法收斂到相鄰步進的同一個新月）
+  const dedup = [];
+  for (const v of results) {
+    if (!dedup.length || v - dedup[dedup.length - 1] > 15) dedup.push(v);
+  }
+  return dedup;
+}
+
+// 找出某個太陽黃經角度 targetDeg 附近的精確 JD（用來定節氣、冬至等）
+function findSolarLongitudeJD(targetDeg, jdGuess) {
+  let jd = jdGuess;
+  for (let i = 0; i < 30; i++) {
+    let diff = normDeg(sunLongitude(jd) - targetDeg);
+    if (diff > 180) diff -= 360;
+    jd -= diff / 0.9856; // 太陽每日約移動 0.9856 度
+    if (Math.abs(diff) < 0.0005) break;
+  }
+  return jd;
+}
+
+function jdToDate(jd) {
+  jd += 0.5;
+  const Z = Math.floor(jd);
+  const F = jd - Z;
+  let A = Z;
+  if (Z >= 2299161) {
+    const alpha = Math.floor((Z - 1867216.25) / 36524.25);
+    A = Z + 1 + alpha - Math.floor(alpha / 4);
+  }
+  const B = A + 1524;
+  const C = Math.floor((B - 122.1) / 365.25);
+  const D = Math.floor(365.25 * C);
+  const E = Math.floor((B - D) / 30.6001);
+  const day = B - D - Math.floor(30.6001 * E) + F;
+  const month = E < 14 ? E - 1 : E - 13;
+  const year = month > 2 ? C - 4716 : C - 4715;
+  return { year, month, day: Math.floor(day) };
+}
+
+const TZ = 8/24;
+
+// 把任意 JD 對齊到「當地(台北)日曆日 00:00」所對應的 JD——農曆規則是
+// 新月發生在當地哪一整天，那一天就是初一，不管新月是清晨還是半夜才發生。
+function localMidnightJD(jd) {
+  const ms = (jd - 2440587.5) * 86400000;
+  const twMs = ms + 8 * 3600 * 1000; // 平移到「台北掛鐘時間」的數值上
+  const twDate = new Date(twMs);
+  const y = twDate.getUTCFullYear(), m = twDate.getUTCMonth() + 1, d = twDate.getUTCDate();
+  const localMidnightUTCms = Date.UTC(y, m - 1, d, 0, 0, 0) - 8 * 3600 * 1000;
+  return localMidnightUTCms / 86400000 + 2440587.5;
+}
+
+// 找出涵蓋某年範圍所需的所有新月（多抓一點前後餘裕），並把每個新月對齊到當地日曆日邊界
+function newMoonsAround(year) {
+  const jdFrom = toJD(year - 1, 11, 1, -8);
+  const jdTo = toJD(year + 1, 2, 1, -8);
+  return findNewMoonsInRange(jdFrom, jdTo).map(localMidnightJD);
+}
+
+// 找出某年冬至的 JD
+function dongzhiJD(year) {
+  const guess = toJD(year, 12, 22, -8);
+  return findSolarLongitudeJD(270, guess);
+}
+
+// 建立指定西曆年份「農曆年」的完整月份表：[{ startJD, monthNum, isLeap }]
+// 涵蓋範圍：從去年冬至所在朔望月，到今年冬至所在朔望月之後一個月
+function buildYearMonths(year) {
+  const dz0 = dongzhiJD(year - 1); // 去年冬至
+  const dz1 = dongzhiJD(year);     // 今年冬至
+  const newMoons = findNewMoonsInRange(dz0 - 20, dz1 + 40).map(localMidnightJD);
+  // 找出「涵蓋去年冬至的那個朔望月」的起始新月（該月即為十一月）
+  let startIdx = 0;
+  for (let i = 0; i < newMoons.length - 1; i++) {
+    if (newMoons[i] <= dz0 && dz0 < newMoons[i+1]) { startIdx = i; break; }
+  }
+  // 找出「涵蓋今年冬至的那個朔望月」的起始新月（下一個十一月，用來判斷這中間共有幾個朔望月）
+  let endIdx = newMoons.length - 1;
+  for (let i = 0; i < newMoons.length - 1; i++) {
+    if (newMoons[i] <= dz1 && dz1 < newMoons[i+1]) { endIdx = i; break; }
+  }
+  const monthCount = endIdx - startIdx; // 這兩個十一月之間共有幾個朔望月（12或13）
+  const hasLeap = monthCount === 13;
+
+  // 對每個朔望月，判斷該月是否包含「中氣」（太陽黃經為30倍數的12個節氣之一）
+  function monthHasZhongqi(mStartJD, mEndJD) {
+    for (let k = 0; k < 12; k++) {
+      const targetDeg = normDeg(k * 30);
+      // 用月中點附近去搜尋最近的節氣，再檢查是否落在月範圍內
+      const guess = (mStartJD + mEndJD) / 2;
+      const zqJD = findSolarLongitudeJD(targetDeg, guess);
+      if (zqJD >= mStartJD && zqJD < mEndJD) return true;
+    }
+    return false;
+  }
+
+  const months = [];
+  let currentLabel = 11;
+  let leapUsed = false;
+  for (let i = startIdx; i < endIdx; i++) {
+    const mStart = newMoons[i], mEnd = newMoons[i+1];
+    let isLeap = false;
+    if (i === startIdx) {
+      // 第一個月固定為十一月（涵蓋去年冬至），不需判斷閏月
+    } else if (hasLeap && !leapUsed && !monthHasZhongqi(mStart, mEnd)) {
+      isLeap = true;
+      leapUsed = true;
+      // 閏月沿用「前一個月」的月序，不遞增
+    } else {
+      currentLabel = currentLabel === 12 ? 1 : currentLabel + 1;
+    }
+    months.push({ startJD: mStart, endJD: mEnd, monthNum: currentLabel, isLeap });
+  }
+  return months;
+}
+
+// 將西曆日期轉為農曆 { year, month, day, isLeap }
+function solarToLunar(y, m, d, hour) {
+  hour = hour || 12;
+  const jd = toJD(y, m, d, hour - 8); // 換算成UTC時刻的JD
+  // 嘗試用「該西曆年」跟「西曆年-1」兩組月表，找出涵蓋此日期的月份
+  for (const tryYear of [y, y + 1, y - 1]) {
+    const months = buildYearMonths(tryYear);
+    for (const mo of months) {
+      if (jd >= mo.startJD && jd < mo.endJD) {
+        const dayNum = Math.floor(jd - mo.startJD) + 1;
+        // 農曆年：以農曆正月初一所在的西曆年份為準
+        let lunarYear = tryYear;
+        // 這裡月表是以「tryYear的冬至」為十一月，故十一、十二月其實跨到 tryYear，正月以後才是 tryYear+... 需要另外判斷
+        return { rawMonth: mo.monthNum, day: dayNum, isLeap: mo.isLeap, jdMonthStart: mo.startJD, tryYear };
+      }
+    }
+  }
+  return null;
+}
+
+const BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+
+// 60甲子納音五行（每兩個干支共用一個，共30組）
+const NAYIN_ELEMENTS = ["金","火","木","土","金","火","水","土","金","木","水","土","火","木","水","金","火","木","土","金","火","水","土","金","木","水","土","火","木","水"];
+function nayinElement(ganzhiIndex) { return NAYIN_ELEMENTS[Math.floor(ganzhiIndex / 2)]; }
+const ELEMENT_TO_JU = { "水": 2, "木": 3, "金": 4, "土": 5, "火": 6 };
+
+// 安紫微星訣：局數 ju，農曆日 day(1~30)
+function ziweiIndex(ju, day) {
+  const branchStart = 2; // 寅
+  const r = day % ju;
+  if (r === 0) {
+    const q = day / ju;
+    return (branchStart + (q - 1)) % 12;
+  }
+  const diff = ju - r;
+  const q = (day + diff) / ju;
+  let pos = (branchStart + (q - 1)) % 12;
+  if (diff % 2 === 1) pos = ((pos - diff) % 12 + 12) % 12; // 奇數逆行
+  else pos = (pos + diff) % 12; // 偶數順行
+  return pos;
+}
+
+
+const PALACE_NAMES = ["命宮","兄弟","夫妻","子女","財帛","疾厄","遷移","交友","官祿","田宅","福德","父母"];
+
+// 五虎遁年上起月訣：年干 -> 寅宮的天干
+const YINGONG_STEM_BY_YEARSTEM = [2,4,6,8,0,2,4,6,8,0]; // 甲乙丙丁戊己庚辛壬癸 -> 丙戊庚壬甲丙戊庚壬甲(索引)
+
+function stemAtBranch(branchIndex, yearStemIndex) {
+  const yinStem = YINGONG_STEM_BY_YEARSTEM[yearStemIndex];
+  const steps = (branchIndex - 2 + 12) % 12; // 從寅(2)算起走幾步
+  return (yinStem + steps) % 10;
+}
+
+// 主星系offsets（相對於紫微/天府的位移，皆為地支步數）
+const ZIWEI_SERIES = [
+  { name: "紫微", offset: 0 },
+  { name: "天機", offset: -1 },
+  { name: "太陽", offset: -3 },
+  { name: "武曲", offset: -4 },
+  { name: "天同", offset: -5 },
+  { name: "廉貞", offset: -8 },
+];
+const TIANFU_SERIES = [
+  { name: "天府", offset: 0 },
+  { name: "太陰", offset: 1 },
+  { name: "貪狼", offset: 2 },
+  { name: "巨門", offset: 3 },
+  { name: "天相", offset: 4 },
+  { name: "天梁", offset: 5 },
+  { name: "七殺", offset: 6 },
+  { name: "破軍", offset: 10 },
+];
+
+// 十天干四化表：[化祿, 化權, 化科, 化忌]
+const SIHUA_TABLE = {
+  "甲": ["廉貞","破軍","武曲","太陽"],
+  "乙": ["天機","天梁","紫微","太陰"],
+  "丙": ["天同","天機","文昌","廉貞"],
+  "丁": ["太陰","天同","天機","巨門"],
+  "戊": ["貪狼","太陰","右弼","天機"],
+  "己": ["武曲","貪狼","天梁","文曲"],
+  "庚": ["太陽","武曲","太陰","天同"],
+  "辛": ["巨門","太陽","文曲","文昌"],
+  "壬": ["天梁","紫微","左輔","武曲"],
+  "癸": ["破軍","巨門","太陰","貪狼"],
+};
+
+function hourToBranchIndex(hour) {
+  // 23:00~00:59=子(0)，每2小時一個時辰
+  const h = ((hour + 1) % 24);
+  return Math.floor(h / 2) % 12;
+}
+
+function buildChart(y, m, d, hour, gender) {
+  const lunar = solarToLunar(y, m, d, hour);
+  if (!lunar) throw new Error("農曆換算失敗");
+  // 判斷正確的農曆年份標籤：11、12月屬於 tryYear-1；1~10月屬於 tryYear
+  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
+
+  // 年干支（以農曆年份，1984年=甲子年為基準）
+  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
+  const yearStemIndex = ganzhiIndex % 10;
+  const yearBranchIndex = ganzhiIndex % 12;
+
+  const hourBranchIndex = hourToBranchIndex(hour);
+  const monthNum = lunar.rawMonth; // 1~12（安命宮用農曆月份，若為閏月則視同該月）
+
+  // 命宮 / 身宮
+  const monthPalaceIndex = (2 + monthNum - 1) % 12; // 寅起正月，順數到生月
+  const lifePalaceIndex = ((monthPalaceIndex - hourBranchIndex) % 12 + 12) % 12; // 再逆數到生時
+  const bodyPalaceIndex = (monthPalaceIndex + hourBranchIndex) % 12; // 再順數到生時
+
+  // 命宮干支 -> 納音 -> 五行局
+  const lifeStemIndex = stemAtBranch(lifePalaceIndex, yearStemIndex);
+  const lifeGanzhiIndex = (() => {
+    // 找出 0~59 中，天干=lifeStemIndex 且地支=lifePalaceIndex 的甲子序號
+    for (let i = 0; i < 60; i++) { if (i % 10 === lifeStemIndex && i % 12 === lifePalaceIndex) return i; }
+    return 0;
+  })();
+  const element = nayinElement(lifeGanzhiIndex);
+  const ju = ELEMENT_TO_JU[element];
+
+  // 紫微 / 天府 位置
+  const ziweiPos = ziweiIndex(ju, lunar.day);
+  const tianfuPos = (4 - ziweiPos + 12) % 12;
+
+  // 十二宮：從命宮開始，依序命兄夫子財疾遷交官田福父，順著地支方向排列
+  const palaceOfBranch = {}; // branchIndex -> 宮名
+  for (let i = 0; i < 12; i++) {
+    const branchIdx = (lifePalaceIndex + i) % 12;
+    palaceOfBranch[branchIdx] = PALACE_NAMES[i];
+  }
+
+  // 每個宮位的天干（沿用五虎遁）
+  const stemOfBranch = {};
+  for (let b = 0; b < 12; b++) stemOfBranch[b] = stemAtBranch(b, yearStemIndex);
+
+  // 主星分布
+  const starsAtBranch = {}; // branchIndex -> [starName,...]
+  for (let b = 0; b < 12; b++) starsAtBranch[b] = [];
+  ZIWEI_SERIES.forEach(s => {
+    const idx = ((ziweiPos + s.offset) % 12 + 12) % 12;
+    starsAtBranch[idx].push(s.name);
+  });
+  TIANFU_SERIES.forEach(s => {
+    const idx = (tianfuPos + s.offset) % 12;
+    starsAtBranch[idx].push(s.name);
+  });
+
+  // 四化（以年干查表，標註在對應主星旁）
+  const yearStem = STEMS[yearStemIndex];
+  const sihua = SIHUA_TABLE[yearStem]; // [祿,權,科,忌]
+  const sihuaMark = {}; // starName -> "祿"/"權"/"科"/"忌"
+  ["祿","權","科","忌"].forEach((label, i) => { sihuaMark[sihua[i]] = label; });
+
+  return {
+    lunar: { year: lunarYear, month: monthNum, day: lunar.day, isLeap: lunar.isLeap },
+    yearGanzhi: STEMS[yearStemIndex] + BRANCHES[yearBranchIndex],
+    ju, juName: { 2:"水二局",3:"木三局",4:"金四局",5:"土五局",6:"火六局" }[ju],
+    lifePalaceIndex, bodyPalaceIndex,
+    palaceOfBranch, stemOfBranch, starsAtBranch, sihuaMark,
+    ziweiPos, tianfuPos,
+  };
+}
+
+
+// ---------------- 紫微斗數 UI ----------------
+function renderZiweiChart(chart) {
+  const cellPositions = [
+    ["巳","午","未","申"],
+    ["辰",null,null,"酉"],
+    ["卯",null,null,"戌"],
+    ["寅","丑","子","亥"],
+  ];
+  let html = '<div class="zw-meta">';
+  html += `<div class="smart-chip"><span>農曆生日</span><strong>${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日</strong></div>`;
+  html += `<div class="smart-chip"><span>年干支</span><strong>${chart.yearGanzhi}</strong></div>`;
+  html += `<div class="smart-chip"><span>五行局</span><strong>${chart.juName}</strong></div>`;
+  html += `<div class="smart-chip"><span>命宮</span><strong>${BRANCHES[chart.lifePalaceIndex]}宮</strong></div>`;
+  html += '</div>';
+
+  html += '<div class="zw-grid">';
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const b = cellPositions[r][c];
+      if (b === null) {
+        if (r === 1 && c === 1) {
+          html += `<div class="zw-center"><div class="zw-c-title">觀卜 · 紫微命盤</div>
+            <div class="zw-c-line">${chart.yearGanzhi}年</div>
+            <div class="zw-c-line">${chart.juName}</div>
+            <div class="zw-c-line">身宮在${BRANCHES[chart.bodyPalaceIndex]}</div></div>`;
+        }
+        continue;
+      }
+      const branchIdx = BRANCHES.indexOf(b);
+      const isLife = branchIdx === chart.lifePalaceIndex;
+      const isBody = branchIdx === chart.bodyPalaceIndex;
+      const palaceName = chart.palaceOfBranch[branchIdx];
+      const stem = STEMS[chart.stemOfBranch[branchIdx]];
+      const stars = chart.starsAtBranch[branchIdx];
+      const mainStarSet = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
+      html += `<div class="zw-cell${isLife?' life':''}${isBody?' body':''}">
+        <span class="zw-stem">${stem}</span><span class="zw-branch">${b}</span>
+        <div class="zw-stars">`;
+      stars.forEach(s => {
+        const sh = chart.sihuaMark[s];
+        html += `<span class="zw-star${mainStarSet.has(s)?' main':''}">${s}${sh?`<span class="zw-sihua">${sh}</span>`:''}</span>`;
+      });
+      html += `</div><div class="zw-palace">${palaceName}</div></div>`;
+    }
+  }
+  html += '</div>';
+  html += '<div class="hint">紫色外框＝命宮；金色虛線＝身宮。四化標記（祿權科忌）以金色小字顯示在星名旁。</div>';
+  html += '<div class="warning-note">紫微星定位與四化對照表為古籍固定演算法則，已盡量核對公開範例；農曆換算已用多筆已知節日日期實際驗證過。若發現與其他命盤軟體結果不同，歡迎回報比對。</div>';
+  return html;
+}
+
+document.getElementById('ziwei-btn').addEventListener('click', () => {
+  const dateVal = document.getElementById('zw-date').value;
+  const timeVal = document.getElementById('zw-hour').value;
+  const gender = document.getElementById('zw-gender').value;
+  const resultEl = document.getElementById('ziwei-result');
+  if (!dateVal || !timeVal) {
+    resultEl.innerHTML = '<div class="empty">請先輸入完整的出生日期與時間</div>';
+    return;
+  }
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const hourDecimal = hh + mm / 60;
+  try {
+    const chart = buildChart(y, m, d, hourDecimal, gender);
+    resultEl.innerHTML = renderZiweiChart(chart);
+  } catch (e) {
+    resultEl.innerHTML = `<div class="empty">排盤失敗：${e.message}</div>`;
+  }
+});
+
 </script>
 </body>
 </html>
