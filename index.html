@@ -31,7 +31,7 @@
 
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .lang-btn{background:#1B1A26;border:1px solid var(--gold);color:var(--gold);
-    padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
+    padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
 
   .hero{text-align:center;margin-bottom:20px;}
   .hero .mark{font-size:12px;letter-spacing:.35em;color:var(--sub);margin-bottom:4px;}
@@ -75,6 +75,15 @@
     border-radius:10px;padding:10px 12px;font-size:14px;outline:none;}
   .input:focus,.select:focus{border-color:var(--gold);}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
+  .meta-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:var(--sub);font-size:13px;}
+  .meta-row strong{color:var(--text);font-weight:600;text-align:right;}
+  .moving{color:var(--gold);}
+  .question-echo{font-family:'Noto Serif TC',serif;text-align:center;color:#D9CFB7;font-size:14px;line-height:1.6;margin:8px 0 14px;}
+  .toolbar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
+  .btn.small{padding:8px 10px;margin-top:0;font-size:12px;}
+  @media (max-width:380px){.mini-grid{grid-template-columns:1fr;}}
 
   .smart-card{margin:14px 0;padding:14px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
   .smart-title{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold);letter-spacing:.08em;margin-bottom:8px;}
@@ -82,17 +91,13 @@
   
   .empty{color:var(--sub);text-align:center;font-size:14px;padding:36px 10px;line-height:1.8;}
   .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:24px;}
-  
-  .toolbar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
-  .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
-  .btn.small{padding:8px 10px;margin-top:0;font-size:12px;}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top-bar">
     <div></div>
-    <button class="lang-btn" id="lang-toggle">English</button>
+    <button class="lang-btn" id="lang-toggle">中文 / EN / ID</button>
   </div>
 
   <div class="hero">
@@ -160,15 +165,17 @@
     <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
   </div>
 
-  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.2｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.3｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
-// ---------------- i18n Dictionary ----------------
+// ---------------- i18n 三語對照表 ----------------
+const languages = ['zh', 'en', 'id'];
 let currentLang = localStorage.getItem('guanbu_lang') || 'zh';
 
 const dict = {
   zh: {
+    btn_lang: "繁體中文",
     subtitle: "易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數",
     tab_yijing: "易經", tab_tarot: "塔羅", tab_runes: "符文", tab_daily: "每日", tab_ziwei: "紫微",
     title_yijing: "起卦問事", title_daily: "今日運勢", title_ziwei: "紫微斗數排盤",
@@ -184,12 +191,13 @@ const dict = {
     opt_r1: "單枚指引", opt_r3: "三枚｜現況・阻力・建議",
     opt_male: "男", opt_female: "女",
     lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
-    footer: "僅供參考娛樂｜v2.2｜重要決策仍以現實資訊為準",
+    footer: "僅供參考娛樂｜v2.3｜重要決策仍以現實資訊為準",
     ai_title: "AI 白話說明", ai_chat_title: "💡 對這個結果還有疑問？直接問 AI 陪伴助手",
     chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
     hints: ["正在為你解讀符號背後的訊息…", "正在梳理當前的能量與脈絡…", "正在為你準備溫和的行動建議…"]
   },
   en: {
+    btn_lang: "English",
     subtitle: "I Ching · Tarot · Runes · Daily · Zi Wei Dou Shu",
     tab_yijing: "I Ching", tab_tarot: "Tarot", tab_runes: "Runes", tab_daily: "Daily", tab_ziwei: "Zi Wei",
     title_yijing: "I Ching Reading", title_daily: "Daily Fortune", title_ziwei: "Zi Wei Dou Shu Chart",
@@ -205,17 +213,39 @@ const dict = {
     opt_r1: "1 Rune Guide", opt_r3: "3 Runes | Status · Obstacle · Advice",
     opt_male: "Male", opt_female: "Female",
     lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
-    footer: "For Entertainment Only | v2.2 | Always make real decisions wisely",
+    footer: "For Entertainment Only | v2.3 | Always make real decisions wisely",
     ai_title: "AI Interpretation", ai_chat_title: "💡 Have questions? Ask AI assistant",
     chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
     hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."]
+  },
+  id: {
+    btn_lang: "Bahasa Indonesia",
+    subtitle: "I Ching · Tarot · Rune · Ramalan Harian · Zi Wei Dou Shu",
+    tab_yijing: "I Ching", tab_tarot: "Tarot", tab_runes: "Rune", tab_daily: "Harian", tab_ziwei: "Zi Wei",
+    title_yijing: "Ramalan I Ching", title_daily: "Ramalan Harian", title_ziwei: "Bagan Zi Wei Dou Shu",
+    lbl_question: "Apa pertanyaan Anda?", lbl_question_opt: "Pertanyaan Anda (Opsional)", lbl_spread: "Pola Kartu",
+    ph_yijing: "Contoh: Apakah ada perubahan karir besar tahun depan?", ph_tarot: "Contoh: Bagaimana perkembangan ini dalam 3 bulan?", ph_runes: "Contoh: Apa yang harus saya fokuskan sekarang?",
+    btn_yijing: "Lempar Koin", btn_tarot: "Tarik Kartu", btn_runes: "Tarik Rune", btn_daily: "Cek Ramalan", btn_ziwei: "Buat Bagan",
+    empty_yijing: "Fokus pada pertanyaan Anda<br/>Klik untuk melempar koin I Ching",
+    empty_tarot: "Tarik napas dalam-dalam<br/>Tarik kartu untuk melihat petunjuk",
+    empty_runes: "Ambil rune dari kantong<br/>Dengarkan pesan kebijaksanaannya",
+    empty_daily: "Klik untuk melihat keberuntungan hari ini",
+    empty_ziwei: "Masukkan data kelahiran<br/>Buat bagan 12 istana Anda",
+    opt_t1: "1 Kartu Panduan", opt_t3: "3 Kartu | Masa Lalu · Sekarang · Masa Depan",
+    opt_r1: "1 Rune Panduan", opt_r3: "3 Rune | Status · Hambatan · Saran",
+    opt_male: "Pria", opt_female: "Wanita",
+    lbl_birth: "Tanggal Lahir (Opsional)", lbl_dob: "Tanggal Lahir", lbl_tob: "Waktu Lahir", lbl_gender: "Jenis Kelamin",
+    footer: "Hanya untuk hiburan | v2.3 | Tetap buat keputusan hidup secara bijak",
+    ai_title: "Interpretasi AI", ai_chat_title: "💡 Ada pertanyaan? Tanyakan pada asisten AI",
+    chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim",
+    hints: ["Menerjemahkan pesan untuk Anda...", "Menyusun pola energi saat ini...", "Menyiapkan saran langkah yang ramah..."]
   }
 };
 
 function applyLang(lang) {
   currentLang = lang;
   localStorage.setItem('guanbu_lang', lang);
-  document.getElementById('lang-toggle').innerText = lang === 'zh' ? 'English' : '中文';
+  document.getElementById('lang-toggle').innerText = dict[lang].btn_lang;
   
   document.querySelectorAll('[i18n]').forEach(el => {
     const key = el.getAttribute('i18n');
@@ -228,10 +258,10 @@ function applyLang(lang) {
 }
 
 document.getElementById('lang-toggle').onclick = () => {
-  applyLang(currentLang === 'zh' ? 'en' : 'zh');
+  const nextIdx = (languages.indexOf(currentLang) + 1) % languages.length;
+  applyLang(languages[nextIdx]);
 };
 
-// ---------------- Tab Navigation ----------------
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -245,7 +275,7 @@ function esc(s){
   return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
 
-// ---------------- AI Call & Chat Functions ----------------
+// ---------------- AI Functions ----------------
 let aiCardSeq = 0;
 function aiCardPlaceholder(title) {
   const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
@@ -302,7 +332,7 @@ function attachChatSection(containerId, moduleName, question, facts) {
     if (!msgText) return;
     const historyEl = document.getElementById(`${chatBoxId}-history`);
     historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>You:</strong> ${esc(msgText)}</div>`);
-    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI is thinking...</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI thinking...</div>`);
 
     try {
       const res = await fetch('/chat', {
@@ -335,51 +365,56 @@ function attachChatSection(containerId, moduleName, question, facts) {
   document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg(dict[currentLang].chat_q2);
 }
 
-// Initial Apply
+// 預設套用語言
 applyLang(currentLang);
 
-// ---------------- Simple Divination Engine Triggers ----------------
-// (Tarot Demo Trigger)
+// ---------------- 占卜觸發引擎 ----------------
+const TAROT = [["The Fool愚者","可以踏出第一步"],["The Magician魔術師","手上的牌其實夠用"],["The High Priestess女祭司","答案在你心裡"],["The Empress皇后","適合養與創造"],["The Emperor皇帝","把規則界線講清楚"],["The Hierophant教皇","可以聽前輩建議"],["The Lovers戀人","到了要選的時候"],["The Chariot戰車","方向對了就全力推"],["Strength力量","溫柔堅定比硬槓贏"],["The Hermit隱者","想清楚再出場"],["Wheel of Fortune命運之輪","風向在轉順勢走"],["Justice正義","誠實面對算清楚"],["The Hanged Man倒吊人","換個角度看問題"],["Death死神","舊的結束新的才會來"],["Temperance節制","慢一點融合會更穩"],["The Devil惡魔","看清是什麼綁住你"],["The Tower高塔","舊架構該震一下崩掉"],["The Star星星","希望與微光漸回"],["The Moon月亮","霧沒散先別大決定"],["The Sun太陽","天氣好適合往前"],["Judgement審判","該醒了認帳往前"],["The World世界","完成收尾開新章"]];
+
 document.getElementById('tarot-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('tarot-mode').value);
   const question = document.getElementById('tarot-question').value.trim();
+  const picked = [];
+  const used = new Set();
+  while(picked.length<mode){
+    const idx = Math.floor(Math.random()*TAROT.length);
+    if(used.has(idx)) continue;
+    used.add(idx);
+    picked.push({idx,reversed:Math.random()<0.35});
+  }
+
+  let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  picked.forEach((p,i)=>{
+    const [name,text]=TAROT[p.idx];
+    html += `<div class="meta-card"><div class="meta-row"><span>Card ${i+1}</span><strong>${name} ${p.reversed?'(Rev)':'(Upright)'}</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
+  });
+
+  const aiTarot = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += aiTarot.html;
   const resContainer = document.getElementById('tarot-result');
-  const aiTarot = aiCardPlaceholder(currentLang === 'zh' ? '再講一次（白話）' : 'Plain Explanation');
-  
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Card Drawn</div><div class="smart-text">The Fool (正位) / The Star</div></div>` + aiTarot.html;
-  
-  const facts = { Card: "The Fool", Orientation: "Upright", Meaning: "New beginnings, take faith" };
+  resContainer.innerHTML = html;
+
+  const facts = { DrawnCards: picked.map((p,i) => `Card ${i+1}: ${TAROT[p.idx][0]} (${p.reversed?'Reversed':'Upright'})`) };
   fillAiExplain(aiTarot.id, 'tarot', question, facts);
   attachChatSection('tarot-result', 'tarot', question, facts);
 });
 
-// (Daily Fortune Demo Trigger)
-document.getElementById('daily-btn').addEventListener('click', ()=>{
-  const resContainer = document.getElementById('daily-result');
-  const aiDaily = aiCardPlaceholder(currentLang === 'zh' ? '今日焦點' : 'Today\'s Focus');
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Daily Fortune</div><div class="smart-text">★ ★ ★ ★ ☆</div></div>` + aiDaily.html;
-  
-  const facts = { Love: "4 Stars", Career: "4 Stars", Advice: "Focus on small wins today" };
-  fillAiExplain(aiDaily.id, 'daily', '', facts);
-  attachChatSection('daily-result', 'daily', '', facts);
-});
-
-// (I Ching Demo Trigger)
+// 其餘功能簡化觸發
 document.getElementById('yijing-btn').addEventListener('click', ()=>{
   const question = document.getElementById('yijing-question').value.trim();
   const resContainer = document.getElementById('yijing-result');
-  const aiYi = aiCardPlaceholder(currentLang === 'zh' ? '卦象解析' : 'Hexagram Analysis');
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Qian Hexagram</div></div>` + aiYi.html;
+  const aiYi = aiCardPlaceholder(dict[currentLang].ai_title);
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">I Ching Hexagram</div></div>` + aiYi.html;
   
   const facts = { Hexagram: "Qian (The Creative)", MovingLine: "None" };
   fillAiExplain(aiYi.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });
 
-// (Runes Demo Trigger)
 document.getElementById('runes-btn').addEventListener('click', ()=>{
   const question = document.getElementById('runes-question').value.trim();
   const resContainer = document.getElementById('runes-result');
-  const aiRune = aiCardPlaceholder(currentLang === 'zh' ? '符文解析' : 'Rune Analysis');
+  const aiRune = aiCardPlaceholder(dict[currentLang].ai_title);
   resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Fehu ᚠ</div></div>` + aiRune.html;
   
   const facts = { Rune: "Fehu", Meaning: "Wealth, Abundance" };
@@ -387,13 +422,22 @@ document.getElementById('runes-btn').addEventListener('click', ()=>{
   attachChatSection('runes-result', 'runes', question, facts);
 });
 
-// (Ziwei Demo Trigger)
+document.getElementById('daily-btn').addEventListener('click', ()=>{
+  const resContainer = document.getElementById('daily-result');
+  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Daily Energy</div></div>` + aiDaily.html;
+  
+  const facts = { Energy: "4 Stars", Advice: "Focus on today" };
+  fillAiExplain(aiDaily.id, 'daily', '', facts);
+  attachChatSection('daily-result', 'daily', '', facts);
+});
+
 document.getElementById('ziwei-btn').addEventListener('click', ()=>{
   const resContainer = document.getElementById('ziwei-result');
-  const aiZw = aiCardPlaceholder(currentLang === 'zh' ? '命盤解析' : 'Chart Analysis');
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Zi Wei Chart Generated</div></div>` + aiZw.html;
+  const aiZw = aiCardPlaceholder(dict[currentLang].ai_title);
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Zi Wei Chart</div></div>` + aiZw.html;
   
-  const facts = { Palace: "Life Palace", Stars: ["Zi Wei", "Tian Fu"] };
+  const facts = { Palace: "Life Palace Chart generated" };
   fillAiExplain(aiZw.id, 'ziwei', '', facts);
   attachChatSection('ziwei-result', 'ziwei', '', facts);
 });
