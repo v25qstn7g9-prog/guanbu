@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>觀卜 v2.0 — 溫暖陪伴版</title>
+<title>觀卜 Guanbu — Divination App</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
@@ -27,17 +27,21 @@
       radial-gradient(circle at 20% 0%, rgba(201,162,39,0.06), transparent 40%),
       radial-gradient(circle at 90% 80%, rgba(92,122,153,0.06), transparent 45%);
   }
-  .app{max-width:460px;margin:0 auto;min-height:100vh;padding:22px 18px 60px;}
+  .app{max-width:460px;margin:0 auto;min-height:100vh;padding:16px 18px 60px;}
 
-  .hero{text-align:center;margin-bottom:22px;}
-  .hero .mark{font-size:13px;letter-spacing:.35em;color:var(--sub);margin-bottom:6px;}
-  .hero h1{font-family:'Noto Serif TC',serif;font-weight:700;font-size:30px;margin:0;
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .lang-btn{background:#1B1A26;border:1px solid var(--gold);color:var(--gold);
+    padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
+
+  .hero{text-align:center;margin-bottom:20px;}
+  .hero .mark{font-size:12px;letter-spacing:.35em;color:var(--sub);margin-bottom:4px;}
+  .hero h1{font-family:'Noto Serif TC',serif;font-weight:700;font-size:28px;margin:0;
     background:linear-gradient(120deg, var(--gold), #E8D48A 55%, var(--gold));
     -webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero p{color:var(--sub);font-size:14px;margin-top:8px;font-style:italic;}
+  .hero p{color:var(--sub);font-size:13px;margin-top:6px;font-style:italic;}
 
-  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-  .tab{flex:1;min-width:60px;padding:10px 4px;text-align:center;border-radius:12px;
+  .tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{flex:1;min-width:55px;padding:9px 2px;text-align:center;border-radius:10px;
     border:1px solid var(--panel-border);background:var(--panel);
     color:var(--sub);font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;
     cursor:pointer;transition:border-color .2s, color .2s;}
@@ -49,250 +53,185 @@
   .tab[data-t="ziwei"].active{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
 
   .panel{display:none;background:var(--panel);border:1px solid var(--panel-border);
-    border-radius:16px;padding:22px 18px;min-height:280px;}
+    border-radius:16px;padding:20px 16px;min-height:280px;}
   .panel.active{display:block;}
 
   .section-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.18em;
     color:var(--sub);margin-bottom:14px;text-align:center;}
   .section-title.cn{font-family:'Noto Serif TC',serif;letter-spacing:.08em;}
 
-  .btn{display:block;width:100%;padding:13px;border-radius:10px;border:none;
+  .btn{display:block;width:100%;padding:12px;border-radius:10px;border:none;
     font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px;cursor:pointer;
-    margin-top:16px;transition:transform .15s;}
+    margin-top:14px;transition:transform .15s;}
   .btn:active{transform:scale(0.98);}
   .btn.jade{background:var(--jade);color:#EAF3EF;}
   .btn.crimson{background:var(--crimson);color:#F6E9EA;}
   .btn.runic{background:var(--runic);color:#EAF1F7;}
   .btn.gold{background:var(--gold);color:#1B1508;}
 
-  /* --- I Ching --- */
-  .hexagram{display:flex;flex-direction:column-reverse;gap:7px;align-items:center;margin:18px 0;}
-  .line{width:150px;height:12px;display:flex;justify-content:space-between;}
-  .line .bar{height:100%;background:var(--jade);border-radius:2px;}
-  .line.solid .bar{width:100%;}
-  .line.broken .bar{width:44%;}
-  .line.changing{outline:1.5px dashed var(--gold);outline-offset:3px;}
-
-  .result-name{text-align:center;font-family:'Noto Serif TC',serif;font-size:24px;
-    font-weight:700;color:var(--gold);margin:14px 0 4px;}
-  .result-sub{text-align:center;color:var(--sub);font-size:13px;margin-bottom:12px;}
-  .result-text{font-size:16px;line-height:1.75;text-align:center;padding:0 4px;}
-
-  /* --- Tarot --- */
-  .cards-row{display:flex;justify-content:center;gap:10px;margin:16px 0;flex-wrap:wrap;}
-  .tcard{width:74px;height:118px;border-radius:8px;position:relative;
-    background:linear-gradient(160deg,#1D1420,#2A1620);
-    border:1px solid var(--crimson);display:flex;align-items:center;justify-content:center;
-    font-family:'Cinzel',serif;color:var(--crimson);font-size:11px;text-align:center;
-    box-shadow:0 6px 16px rgba(0,0,0,.4);}
-  .tcard .rev{transform:rotate(180deg);}
-  .tcard-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:.05em;
-    color:var(--crimson);text-align:center;margin-top:8px;}
-
-  /* --- Runes --- */
-  .rune-glyph{text-align:center;font-size:56px;color:var(--runic);margin:10px 0 4px;
-    text-shadow:0 0 18px rgba(92,122,153,.5);}
-  .rune-name{text-align:center;font-family:'Cinzel',serif;font-size:16px;color:var(--runic);
-    letter-spacing:.08em;}
-
-  /* --- Daily --- */
-  .stars{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
-    border-bottom:1px solid var(--panel-border);}
-  .stars:last-child{border-bottom:none;}
-  .stars .label{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--sub);}
-  .stars .dots span{color:var(--panel-border);font-size:15px;}
-  .stars .dots span.on{color:var(--gold);}
-  .daily-msg{margin-top:16px;font-size:15px;line-height:1.7;text-align:center;
-    font-style:italic;color:var(--text);}
-  .daily-date{text-align:center;color:var(--sub);font-size:12px;margin-bottom:6px;
-    letter-spacing:.1em;}
-
   .field{margin:10px 0 14px;}
-  .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:7px;}
+  .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:6px;}
   .input,.select{width:100%;background:#0F0E17;color:var(--text);border:1px solid var(--panel-border);
-    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;}
-  .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.08);}
+    border-radius:10px;padding:10px 12px;font-size:14px;outline:none;}
+  .input:focus,.select:focus{border-color:var(--gold);}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
-  .meta-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:var(--sub);font-size:13px;}
-  .meta-row strong{color:var(--text);font-weight:600;text-align:right;}
-  .moving{color:var(--gold);}
-  .hex-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
-  .hex-box{padding:10px 6px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
-  .hex-box .hexagram{margin:10px 0;}
-  .hex-box .line{width:110px;height:9px;}
-  .hex-box .result-name{font-size:20px;margin-top:8px;}
-  .hex-box .result-sub{margin-bottom:4px;}
-  .tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#201C13;color:#E8D48A;font-size:11px;margin:2px;}
-  .question-echo{font-family:'Noto Serif TC',serif;text-align:center;color:#D9CFB7;font-size:14px;line-height:1.6;margin:8px 0 14px;}
-  .hint{font-size:12px;color:var(--sub);line-height:1.55;margin-top:8px;}
-  .toolbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+
+  .smart-card{margin:14px 0;padding:14px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
+  .smart-title{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold);letter-spacing:.08em;margin-bottom:8px;}
+  .smart-text{font-size:14px;line-height:1.7;color:var(--text);}
+  
+  .empty{color:var(--sub);text-align:center;font-size:14px;padding:36px 10px;line-height:1.8;}
+  .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:24px;}
+  
+  .toolbar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
   .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
-  .btn.small{padding:9px 10px;margin-top:0;font-size:13px;}
-  @media (max-width:380px){.hex-pair{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr;}}
-
-  .smart-card{margin:14px 0;padding:15px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
-  .smart-title{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold);letter-spacing:.08em;margin-bottom:9px;}
-  .smart-text{font-size:15px;line-height:1.75;color:var(--text);}
-  .smart-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-  .smart-chip{border:1px solid var(--panel-border);border-radius:10px;padding:9px;background:#0F0E17;}
-  .smart-chip span{display:block;color:var(--sub);font-size:11px;margin-bottom:3px;}
-  .smart-chip strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
-  .badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#211D14;color:#E8D48A;font-size:11px;margin:2px;}
-  .warning-note{margin-top:10px;padding:10px 12px;border-left:3px solid var(--gold);background:#121119;color:var(--sub);font-size:12px;line-height:1.6;}
-
-  .answer-card{margin:14px 0 12px;padding:16px;border:1px solid rgba(201,162,39,.58);
-    border-radius:15px;background:linear-gradient(145deg,#1B1821,#111019);
-    box-shadow:0 8px 28px rgba(0,0,0,.18);}
-  .answer-kicker{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:12px;
-    letter-spacing:.12em;margin-bottom:8px;}
-  .answer-main{font-family:'Noto Serif TC',serif;font-size:19px;line-height:1.55;
-    color:#F2E8CF;font-weight:700;}
-  .answer-sub{margin-top:8px;color:var(--sub);font-size:13px;line-height:1.65;}
-  .meter{height:7px;background:#24212D;border-radius:999px;overflow:hidden;margin-top:7px;}
-  .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--gold));border-radius:999px;}
-  .why-list{margin:10px 0 0;padding-left:18px;color:var(--text);font-size:13px;line-height:1.65;}
-  .why-list li{margin:4px 0;}
-
-  .empty{color:var(--sub);text-align:center;font-size:14px;padding:40px 10px;line-height:1.8;}
-  .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:26px;
-    letter-spacing:.05em;}
-
-  .context-card{margin:12px 0;padding:14px;border:1px solid rgba(92,122,153,.38);
-    border-radius:14px;background:#10111A;}
-  .context-title{font-family:'Noto Serif TC',serif;color:#9CB3C9;font-size:13px;
-    letter-spacing:.08em;margin-bottom:8px;}
-  .context-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .context-grid .field{margin:4px 0;}
-  .context-grid .field.full{grid-column:1/-1;}
-  .calc-result{margin-top:10px;padding:11px;border-radius:10px;background:#15131B;
-    border-left:3px solid var(--gold);font-size:13px;line-height:1.65;}
-  .ai-route{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-  .ai-route .badge{background:#171C22;color:#AFC3D6;}
-
-  .oracle-card{margin:14px 0;padding:16px;border-radius:16px;background:linear-gradient(145deg,#1A1720,#111019);
-    border:1px solid rgba(201,162,39,.58);box-shadow:0 10px 28px rgba(0,0,0,.22);}
-  .oracle-title{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:13px;letter-spacing:.1em;margin-bottom:8px;}
-  .oracle-main{font-family:'Noto Serif TC',serif;font-size:20px;line-height:1.65;color:#F3E8CF;font-weight:700;}
-  .oracle-quote{margin-top:10px;padding:10px 12px;border-left:3px solid var(--gold);background:#121119;
-    color:#D8CEB8;font-size:14px;line-height:1.7;}
-  .market-bars{display:grid;gap:8px;margin-top:12px;}
-  .market-bar{display:grid;grid-template-columns:54px 1fr 42px;align-items:center;gap:8px;font-size:12px;color:var(--sub);}
-  .market-track{height:8px;border-radius:99px;background:#24212D;overflow:hidden;}
-  .market-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--runic),var(--gold));}
-  .session-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
-  .session-box{padding:10px;border:1px solid var(--panel-border);border-radius:11px;background:#0F0E17;}
-  .session-box span{display:block;color:var(--sub);font-size:11px;margin-bottom:4px;}
-  .session-box strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
-
-  /* --- Zi Wei chart grid --- */
-  .zw-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
-  .zw-meta .smart-chip{border-color:rgba(107,78,142,.4);}
-  .zw-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
-    gap:4px;aspect-ratio:1/1;margin:14px 0;}
-  .zw-cell{border:1px solid var(--panel-border);border-radius:8px;background:#11101A;
-    padding:5px 4px;display:flex;flex-direction:column;font-size:10px;position:relative;overflow:hidden;}
-  .zw-cell.life{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
-  .zw-cell.body{outline:1.5px dashed var(--gold);outline-offset:-3px;}
-  .zw-cell .zw-branch{position:absolute;top:3px;right:5px;color:var(--sub);font-size:9px;}
-  .zw-cell .zw-stem{position:absolute;top:3px;left:5px;color:var(--sub);font-size:9px;}
-  .zw-cell .zw-palace{font-family:'Noto Serif TC',serif;font-size:11px;color:var(--gold);
-    margin-top:14px;text-align:center;}
-  .zw-cell .zw-stars{margin-top:4px;display:flex;flex-direction:column;gap:1px;align-items:center;}
-  .zw-cell .zw-star{color:var(--text);font-size:11px;font-family:'Noto Serif TC',serif;white-space:nowrap;}
-  .zw-cell .zw-star.main{color:#E8D4F5;font-weight:700;}
-  .zw-cell .zw-sihua{color:var(--gold);font-size:9px;margin-left:2px;}
-  .zw-center{grid-column:2/4;grid-row:2/4;border:1px solid rgba(107,78,142,.4);border-radius:10px;
-    background:linear-gradient(160deg,#1B1620,#111019);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;padding:8px;text-align:center;}
-  .zw-center .zw-c-title{font-family:'Noto Serif TC',serif;color:var(--violet);font-size:12px;margin-bottom:4px;}
-  .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
-  @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
-
+  .btn.small{padding:8px 10px;margin-top:0;font-size:12px;}
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="top-bar">
+    <div></div>
+    <button class="lang-btn" id="lang-toggle">English</button>
+  </div>
+
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
-    <p>易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數 · v2.0 溫暖陪伴版</p>
+    <p i18n="subtitle">易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數</p>
   </div>
 
   <div class="tabs">
-    <div class="tab active" data-t="yijing">易經</div>
-    <div class="tab" data-t="tarot">塔羅</div>
-    <div class="tab" data-t="runes">符文</div>
-    <div class="tab" data-t="daily">今日運勢</div>
-    <div class="tab" data-t="ziwei">紫微</div>
+    <div class="tab active" data-t="yijing" i18n="tab_yijing">易經</div>
+    <div class="tab" data-t="tarot" i18n="tab_tarot">塔羅</div>
+    <div class="tab" data-t="runes" i18n="tab_runes">符文</div>
+    <div class="tab" data-t="daily" i18n="tab_daily">每日</div>
+    <div class="tab" data-t="ziwei" i18n="tab_ziwei">紫微</div>
   </div>
 
+  <!-- Yijing Panel -->
   <div class="panel active" id="panel-yijing">
-    <div class="section-title cn">起卦問事</div>
+    <div class="section-title cn" i18n="title_yijing">起卦問事</div>
     <div class="field">
-      <label for="yijing-question">你想問什麼？</label>
-      <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" />
-      <div class="hint">一次問一件事就好。按起卦後，會先給你一句「簡單說」。</div>
+      <label i18n="lbl_question">你想問什麼？</label>
+      <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" i18n-ph="ph_yijing" />
     </div>
-    <div id="yijing-context"></div>
-    <div id="yijing-result">
-      <div class="empty">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div>
-    </div>
-    <button class="btn jade" id="yijing-btn">起卦</button>
+    <div id="yijing-result"><div class="empty" i18n="empty_yijing">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div></div>
+    <button class="btn jade" id="yijing-btn" i18n="btn_yijing">起卦</button>
   </div>
 
+  <!-- Tarot Panel -->
   <div class="panel" id="panel-tarot">
     <div class="section-title">MAJOR ARCANA</div>
-    <div class="field"><label for="tarot-question">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" /></div>
-    <div class="field"><label for="tarot-mode">牌陣</label><select class="select" id="tarot-mode"><option value="1">單張指引</option><option value="3">三張牌｜過去・現在・未來</option></select></div>
-    <div id="tarot-context"></div>
-    <div id="tarot-result">
-      <div class="empty">靜心片刻<br/>抽牌看看此刻該留意什麼</div>
-    </div>
-    <button class="btn crimson" id="tarot-btn">抽牌</button>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /></div>
+    <div class="field"><label i18n="lbl_spread">牌陣</label><select class="select" id="tarot-mode"><option value="1" i18n="opt_t1">單張指引</option><option value="3" i18n="opt_t3">三張牌｜過去・現在・未來</option></select></div>
+    <div id="tarot-result"><div class="empty" i18n="empty_tarot">靜心片刻<br/>抽牌看看此刻該留意什麼</div></div>
+    <button class="btn crimson" id="tarot-btn" i18n="btn_tarot">抽牌</button>
   </div>
 
+  <!-- Runes Panel -->
   <div class="panel" id="panel-runes">
     <div class="section-title">ELDER FUTHARK</div>
-    <div class="field"><label for="runes-question">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" /></div>
-    <div class="field"><label for="runes-mode">符文陣</label><select class="select" id="runes-mode"><option value="1">單枚指引</option><option value="3">三枚｜現況・阻力・建議</option></select></div>
-    <div id="runes-context"></div>
-    <div id="runes-result">
-      <div class="empty">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div>
-    </div>
-    <button class="btn runic" id="runes-btn">抽符文</button>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /></div>
+    <div class="field"><label i18n="lbl_spread">符文陣</label><select class="select" id="runes-mode"><option value="1" i18n="opt_r1">單枚指引</option><option value="3" i18n="opt_r3">三枚｜現況・阻力・建議</option></select></div>
+    <div id="runes-result"><div class="empty" i18n="empty_runes">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div></div>
+    <button class="btn runic" id="runes-btn" i18n="btn_runes">抽符文</button>
   </div>
 
+  <!-- Daily Panel -->
   <div class="panel" id="panel-daily">
-    <div class="section-title cn">今日運勢</div>
-    <div class="field"><label for="daily-birth">生日（選填，用來個人化每日 seed）</label><input class="input" type="date" id="daily-birth" /></div>
-    <div id="daily-result">
-      <div class="empty">按下查看，抓出今天的運勢</div>
-    </div>
-    <button class="btn gold" id="daily-btn">查看今日運勢</button>
+    <div class="section-title cn" i18n="title_daily">今日運勢</div>
+    <div class="field"><label i18n="lbl_birth">生日（選填）</label><input class="input" type="date" id="daily-birth" /></div>
+    <div id="daily-result"><div class="empty" i18n="empty_daily">按下查看，抓出今天的運勢</div></div>
+    <button class="btn gold" id="daily-btn" i18n="btn_daily">查看今日運勢</button>
   </div>
 
+  <!-- Ziwei Panel -->
   <div class="panel" id="panel-ziwei">
-    <div class="section-title cn">紫微斗數排盤</div>
-    <div class="field"><label for="zw-date">出生日期（國曆）</label><input class="input" type="date" id="zw-date" /></div>
+    <div class="section-title cn" i18n="title_ziwei">紫微斗數排盤</div>
+    <div class="field"><label i18n="lbl_dob">出生日期（國曆）</label><input class="input" type="date" id="zw-date" /></div>
     <div class="mini-grid">
-      <div class="field"><label for="zw-hour">出生時間</label><input class="input" type="time" id="zw-hour" /></div>
-      <div class="field"><label for="zw-gender">性別</label>
-        <select class="select" id="zw-gender"><option value="M">男</option><option value="F">女</option></select>
+      <div class="field"><label i18n="lbl_tob">出生時間</label><input class="input" type="time" id="zw-hour" /></div>
+      <div class="field"><label i18n="lbl_gender">性別</label>
+        <select class="select" id="zw-gender"><option value="M" i18n="opt_male">男</option><option value="F" i18n="opt_female">女</option></select>
       </div>
     </div>
-    <div class="hint">請盡量提供準確的出生時辰，時辰(如子時23:00~00:59)會直接影響命宮位置。若不確定精確時間，排出來的命盤僅供參考。</div>
-    <div id="ziwei-result">
-      <div class="empty">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div>
-    </div>
-    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;">排盤</button>
+    <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
+    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
   </div>
 
-  <div class="footer-note">僅供參考娛樂｜v2.0｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.2｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
-// ---------------- tab switching ----------------
+// ---------------- i18n Dictionary ----------------
+let currentLang = localStorage.getItem('guanbu_lang') || 'zh';
+
+const dict = {
+  zh: {
+    subtitle: "易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數",
+    tab_yijing: "易經", tab_tarot: "塔羅", tab_runes: "符文", tab_daily: "每日", tab_ziwei: "紫微",
+    title_yijing: "起卦問事", title_daily: "今日運勢", title_ziwei: "紫微斗數排盤",
+    lbl_question: "你想問什麼？", lbl_question_opt: "問題（可留白）", lbl_spread: "陣型",
+    ph_yijing: "例：2027 年工作是否會有重大轉變？", ph_tarot: "例：這件事接下來三個月的發展？", ph_runes: "例：我現在最需要注意什麼？",
+    btn_yijing: "起卦", btn_tarot: "抽牌", btn_runes: "抽符文", btn_daily: "查看今日運勢", btn_ziwei: "排盤",
+    empty_yijing: "心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻",
+    empty_tarot: "靜心片刻<br/>抽牌看看此刻該留意什麼",
+    empty_runes: "伸手入符文袋中<br/>抽出符文，聆聽它的訊息",
+    empty_daily: "按下查看，抓出今天的運勢",
+    empty_ziwei: "輸入出生資料<br/>按下排盤，起出你的十二宮命盤",
+    opt_t1: "單張指引", opt_t3: "三張牌｜過去・現在・未來",
+    opt_r1: "單枚指引", opt_r3: "三枚｜現況・阻力・建議",
+    opt_male: "男", opt_female: "女",
+    lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
+    footer: "僅供參考娛樂｜v2.2｜重要決策仍以現實資訊為準",
+    ai_title: "AI 白話說明", ai_chat_title: "💡 對這個結果還有疑問？直接問 AI 陪伴助手",
+    chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
+    hints: ["正在為你解讀符號背後的訊息…", "正在梳理當前的能量與脈絡…", "正在為你準備溫和的行動建議…"]
+  },
+  en: {
+    subtitle: "I Ching · Tarot · Runes · Daily · Zi Wei Dou Shu",
+    tab_yijing: "I Ching", tab_tarot: "Tarot", tab_runes: "Runes", tab_daily: "Daily", tab_ziwei: "Zi Wei",
+    title_yijing: "I Ching Reading", title_daily: "Daily Fortune", title_ziwei: "Zi Wei Dou Shu Chart",
+    lbl_question: "What is your question?", lbl_question_opt: "Your Question (Optional)", lbl_spread: "Spread",
+    ph_yijing: "e.g., Will there be major career changes next year?", ph_tarot: "e.g., How will this progress over 3 months?", ph_runes: "e.g., What should I focus on right now?",
+    btn_yijing: "Cast Hexagram", btn_tarot: "Draw Cards", btn_runes: "Cast Runes", btn_daily: "Get Fortune", btn_ziwei: "Generate Chart",
+    empty_yijing: "Focus on your question<br/>Click to toss coins and cast hexagram",
+    empty_tarot: "Take a deep breath<br/>Draw cards to reveal insights",
+    empty_runes: "Reach into the pouch<br/>Draw runes for guidance",
+    empty_daily: "Click to check today's fortune",
+    empty_ziwei: "Enter birth details<br/>Generate your 12-palace chart",
+    opt_t1: "1 Card Guide", opt_t3: "3 Cards | Past · Present · Future",
+    opt_r1: "1 Rune Guide", opt_r3: "3 Runes | Status · Obstacle · Advice",
+    opt_male: "Male", opt_female: "Female",
+    lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
+    footer: "For Entertainment Only | v2.2 | Always make real decisions wisely",
+    ai_title: "AI Interpretation", ai_chat_title: "💡 Have questions? Ask AI assistant",
+    chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
+    hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."]
+  }
+};
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('guanbu_lang', lang);
+  document.getElementById('lang-toggle').innerText = lang === 'zh' ? 'English' : '中文';
+  
+  document.querySelectorAll('[i18n]').forEach(el => {
+    const key = el.getAttribute('i18n');
+    if (dict[lang][key]) el.innerHTML = dict[lang][key];
+  });
+  document.querySelectorAll('[i18n-ph]').forEach(el => {
+    const key = el.getAttribute('i18n-ph');
+    if (dict[lang][key]) el.placeholder = dict[lang][key];
+  });
+}
+
+document.getElementById('lang-toggle').onclick = () => {
+  applyLang(currentLang === 'zh' ? 'en' : 'zh');
+};
+
+// ---------------- Tab Navigation ----------------
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -302,27 +241,22 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-// ---------------- helpers ----------------
 function esc(s){
   return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
 
-// ---------------- AI 白話說明與對話（共用） ----------------
+// ---------------- AI Call & Chat Functions ----------------
 let aiCardSeq = 0;
 function aiCardPlaceholder(title) {
   const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
-  const hints = [
-    "正在為你解讀符號背後的訊息…",
-    "正在梳理當前的能量與脈絡…",
-    "正在為你準備溫和的行動建議…",
-    "靜心片刻，白話解析馬上就來…"
-  ];
+  const hints = dict[currentLang].hints;
   const hint = hints[Math.floor(Math.random() * hints.length)];
   return {
     id,
     html: `<div class="smart-card" id="${id}"><div class="smart-title">${esc(title)}</div><div class="smart-text" style="color:var(--sub);font-style:italic;">${hint}</div></div>`,
   };
 }
+
 async function fillAiExplain(id, module, question, facts) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -330,13 +264,13 @@ async function fillAiExplain(id, module, question, facts) {
     const res = await fetch('/ask', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ module, question: question || '', facts }),
+      body: JSON.stringify({ module, question: question || '', facts, lang: currentLang }),
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-    el.innerHTML = `<div class="smart-title">AI 白話說明</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
+    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
   } catch (e) {
-    el.innerHTML = `<div class="smart-title">AI 白話說明</div><div class="smart-text" style="color:var(--sub);">說明暫時產生不出來（${esc(e.message)}），可以先看上面的判定結果。</div>`;
+    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text" style="color:var(--sub);">Failed: ${esc(e.message)}</div>`;
   }
 }
 
@@ -350,15 +284,15 @@ function attachChatSection(containerId, moduleName, question, facts) {
 
   const chatHTML = `
     <div class="smart-card" style="border-color:rgba(92,122,153,0.4);">
-      <div class="smart-title" style="color:var(--runic);">💡 對這個結果還有疑問？直接問 AI 陪伴助手</div>
+      <div class="smart-title" style="color:var(--runic);">${dict[currentLang].ai_chat_title}</div>
       <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn secondary small" id="${chatBoxId}-q1">下一步該怎麼做？</button>
-        <button class="btn secondary small" id="${chatBoxId}-q2">最需要注意什麼坑？</button>
+        <button class="btn secondary small" id="${chatBoxId}-q1">${dict[currentLang].chat_q1}</button>
+        <button class="btn secondary small" id="${chatBoxId}-q2">${dict[currentLang].chat_q2}</button>
       </div>
       <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
       <div style="display:flex; gap:6px;">
-        <input class="input" id="${inputId}" placeholder="輸入你想追問的細節..." style="font-size:13px;" />
-        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">發送</button>
+        <input class="input" id="${inputId}" placeholder="${dict[currentLang].chat_ph}" style="font-size:13px;" />
+        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_send}</button>
       </div>
     </div>
   `;
@@ -367,14 +301,14 @@ function attachChatSection(containerId, moduleName, question, facts) {
   const sendMsg = async (msgText) => {
     if (!msgText) return;
     const historyEl = document.getElementById(`${chatBoxId}-history`);
-    historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>你：</strong> ${esc(msgText)}</div>`);
-    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI 思考中...</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>You:</strong> ${esc(msgText)}</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI is thinking...</div>`);
 
     try {
       const res = await fetch('/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText })
+        body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText, lang: currentLang })
       });
       const data = await res.json().catch(() => null);
       document.getElementById(`${chatBoxId}-temp`)?.remove();
@@ -383,11 +317,11 @@ function attachChatSection(containerId, moduleName, question, facts) {
         history.push({ role: 'user', content: msgText });
         history.push({ role: 'assistant', content: data.reply });
       } else {
-        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">回覆失敗：${esc(data?.error || '請求錯誤')}</div>`);
+        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Error: ${esc(data?.error || 'Failed')}</div>`);
       }
     } catch (e) {
       document.getElementById(`${chatBoxId}-temp`)?.remove();
-      historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">網路錯誤，請稍後再試。</div>`);
+      historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Network Error</div>`);
     }
   };
 
@@ -397,1443 +331,72 @@ function attachChatSection(containerId, moduleName, question, facts) {
     if (txt) { sendMsg(txt); el.value = ''; }
   };
 
-  document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg("針對這個占卜結果，建議我下一步該怎麼做？");
-  document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg("如果想讓事情順利，我最需要注意或避開的坑是什麼？");
+  document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg(dict[currentLang].chat_q1);
+  document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg(dict[currentLang].chat_q2);
 }
 
-function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
-function hexFromBits(bits){
-  const lowerIdx = trigramIndex(bits.slice(0,3));
-  const upperIdx = trigramIndex(bits.slice(3,6));
-  return TRI_MATRIX[upperIdx][lowerIdx];
-}
-function classifyQuestion(q){
-  q=(q||'').toLowerCase();
-  const groups=[
-    ['財務',['錢','財','債','卡債','股票','投資','資產','收入','配息','成本','買','賣','貸款','房貸','存款','基金','理財','現金','負債','還款','台股','美股','大盤','加權','指數','盤勢','股市','開盤','收盤','多空','漲','跌']],
-    ['工作',['工作','職場','公司','升遷','轉職','主管','同事','事業','退休','調薪','加薪','薪水','薪資','年薪','月薪','獎金','考核','績效','裁員','離職','面試','求職','創業','接案']],
-    ['感情',['感情','愛情','老婆','老公','伴侶','結婚','分手','復合','關係','暗戀','追求','表白','桃花','吵架','冷戰']],
-    ['健康',['健康','身體','睡眠','恢復','訓練','運動','疾病','醫療','焦慮','壓力','失眠']],
-    ['學業',['考試','學業','功課','研究所','證照','升學','成績']],
-    ['市場',['台股','美股','大盤','加權','指數','盤勢','股市','開盤','收盤','多空','漲','跌']],
-    ['時間',['什麼時候','何時','多久','幾月','幾年','今年','明年','明天','今日','今天','下週','本週','時間']],
-    ['選擇',['要不要','是否','該不該','可以嗎','選哪個','哪一個']]
-  ];
-  const hits=[];
-  groups.forEach(([name,ks])=>{ if(ks.some(k=>q.includes(k))) hits.push(name); });
-  return hits.length?hits:['一般'];
-}
-function intentAdvice(tags){
-  if(tags.includes('財務')) return '錢的事最後還是要自己算清楚，占卜不能代替計算機。';
-  if(tags.includes('工作')) return '工作能掌握的是你的表現跟準備；公司怎麼決定，不在這次占卜裡。';
-  if(tags.includes('健康')) return '身體不適請看醫生；這裡只是心情提醒。';
-  if(tags.includes('感情')) return '感情要看雙方怎麼互動，占卜讀不出別人在想什麼。';
-  if(tags.includes('學業')) return '考試還是靠準備跟時間分配，比等一個結果有用。';
-  return '把結果當參考，重要決定還是看現實狀況。';
-}
+// Initial Apply
+applyLang(currentLang);
 
-function analyzeIntent(q){
-  q=(q||'').trim();
-  const out={type:'trend',label:'趨勢',horizon:'未指定',tone:'neutral'};
-  if(/擔心|害怕|焦慮|不安|煩惱|難過|痛苦/.test(q)) out.tone='anxious';
-  else if(/希望|期待|想要|會不會有|能不能/.test(q)) out.tone='hopeful';
-  else if(/該怎麼|怎麼辦|如何是好/.test(q)) out.tone='seeking';
-  if(/要不要|是否|會不會|能不能|可以嗎|該不該|有沒有|嗎\s*[？?]?\s*$/.test(q) || /嗎[？?]?$/.test(q)){
-    out.type='yesno'; out.label='是非・傾向';
-  }else if(/什麼時候|何時|多久|幾月|幾年|何年/.test(q)){
-    out.type='when'; out.label='時間';
-  }else if(/怎麼|如何|怎樣|辦法|建議/.test(q)){
-    out.type='how'; out.label='方法・建議';
-  }else if(/哪一個|哪個|選擇|選哪/.test(q)){
-    out.type='choice'; out.label='選擇';
-  }else if(/台股|美股|大盤|盤勢|股市|開盤|收盤|多空/.test(q) && /(明天|今日|今天|本週|下週)/.test(q)){
-    out.type='forecast'; out.label='盤勢';
-  }
-  if(/明天/.test(q)) out.horizon='明日';
-  else if(/今天|今日/.test(q)) out.horizon='今日';
-  else if(/下週/.test(q)) out.horizon='下週';
-  else if(/這週|本週|一週/.test(q)) out.horizon='一週';
-  else if(/這個月|本月|一個月/.test(q)) out.horizon='一個月';
-  else if(/三個月|3個月/.test(q)) out.horizon='三個月';
-  else if(/半年|六個月|6個月/.test(q)) out.horizon='半年';
-  else if(/今年/.test(q)) out.horizon='今年';
-  else if(/明年/.test(q)) out.horizon='明年';
-  else if(/20\d{2}/.test(q)) out.horizon=(q.match(/20\d{2}/)||[])[0]||'指定年份';
-  return out;
-}
-function confidenceLabel(v){
-  if(v>=78) return '高';
-  if(v>=58) return '中高';
-  if(v>=40) return '中';
-  return '偏低';
-}
-function horizonReason(intent){
-  if(!intent || intent.horizon==='未指定') return null;
-  return `你問的時間範圍是「${intent.horizon}」；節奏會對齊這個範圍，但不會保證某一個月、某一天一定發生。`;
-}
-
-function humanLead(intent, direction){
-  const anxious = intent && intent.tone==='anxious';
-  const hopeful = intent && intent.tone==='hopeful';
-  if(anxious){
-    if(direction.includes('正向')||direction.includes('有利')||direction.includes('可以')) return '先鬆一口氣：';
-    if(direction.includes('阻')||direction.includes('守')) return '你的擔心不是沒來由，';
-    return '這題目前還摸不清全貌，';
-  }
-  if(hopeful){
-    if(direction.includes('正向')||direction.includes('有利')||direction.includes('可以')) return '方向大致站在你這邊，';
-    if(direction.includes('阻')||direction.includes('守')) return '期待可以留著，但節奏要放慢：';
-    return '還沒到能拍板的時候，';
-  }
-  return '';
-}
-function softenPace(pace){
-  return String(pace||'').replace(/^偏穩｜/,'目前較穩，').replace(/^偏快｜/,'節奏偏快，').replace(/^偏慢｜/,'節奏偏慢，')
-    .replace(/^中期｜/,'中期來看，').replace(/^近期｜/,'近期，').replace(/｜/g,'，');
-}
-
-function answerCardHTML(a){
-  const reasons=(a.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join('');
-  return `<div class="answer-card">
-    <div class="answer-kicker">簡單說</div>
-    <div class="answer-main">${esc(a.answer)}</div>
-    <div class="answer-sub">${esc(a.sub||'')}</div>
-    <div class="smart-grid">
-      <div class="smart-chip"><span>方向</span><strong>${esc(a.direction||'觀察中')}</strong></div>
-      <div class="smart-chip"><span>大概多久</span><strong>${esc(a.window||'未指定')}</strong></div>
-      <div class="smart-chip"><span>你在問</span><strong>${esc(a.intent||'趨勢')}</strong></div>
-      <div class="smart-chip"><span>有多肯定</span><strong>${esc(a.clarity||'中')}</strong><div class="meter"><i style="width:${Math.max(8,Math.min(100,a.confidence||50))}%"></i></div></div>
-    </div>
-    ${reasons?`<ul class="why-list">${reasons}</ul>`:''}
-  </div>`;
-}
-
-function detectNeeds(q){
-  q=(q||'').trim();
-  const tags=classifyQuestion(q), intent=analyzeIntent(q);
-  return {
-    tags,intent,
-    market: tags.includes('市場') || /台股|美股|大盤|加權|指數|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q),
-    debt: tags.includes('財務') && /債|卡債|貸款|還款|清完|還完/.test(q),
-    cashflow: tags.includes('財務') && /現金流|入不敷出|透支|吃緊|周轉|降低投資|降低投入|喘不過氣/.test(q),
-    investment: tags.includes('財務') && /股票|投資|資產|配息|報酬|退休/.test(q) && !/台股|美股|大盤|加權|指數|盤勢|股市|開盤|收盤|多空|漲|跌/.test(q) && !/現金流|入不敷出|透支|吃緊|周轉/.test(q),
-    health: tags.includes('健康'),
-    work: tags.includes('工作'),
-    relation: tags.includes('感情')
-  };
-}
-function numVal(id){
-  const el=document.getElementById(id);
-  if(!el) return null;
-  const n=Number(String(el.value||'').replace(/,/g,''));
-  return Number.isFinite(n) && n>0 ? n : null;
-}
-function debtMonths(balance, annualRate, payment){
-  if(!balance || !payment) return null;
-  const r=(annualRate||0)/100/12;
-  if(r===0) return Math.ceil(balance/payment);
-  if(payment<=balance*r) return Infinity;
-  return Math.ceil(-Math.log(1-r*balance/payment)/Math.log(1+r));
-}
-function money(n){ return Math.round(n).toLocaleString('zh-TW'); }
-
-function contextHTML(prefix,q){
-  const n=detectNeeds(q);
-  let fields='', note='';
-  if(n.market){
-    fields = `<div class="field full"><label>盤面焦點（可留白）</label><input class="input" id="${prefix}-marketfocus" placeholder="例：電子權值、金融、尾盤"></div>`;
-    note='這題不用補一堆資料；直接抽牌／起卦／抽符文，就會給多空傾向、波動與盤中節奏。';
-  }else if(n.debt){
-    fields = `
-      <div class="field"><label>目前債務餘額</label><input class="input" inputmode="decimal" id="${prefix}-balance" placeholder="例：120000"></div>
-      <div class="field"><label>年利率 %</label><input class="input" inputmode="decimal" id="${prefix}-rate" placeholder="例：8"></div>
-      <div class="field full"><label>每月預計還款</label><input class="input" inputmode="decimal" id="${prefix}-payment" placeholder="例：15000"></div>`;
-    note='這題可以計算。填入數字後，判讀會優先使用真實還款試算，不用牌卡硬猜月份。';
-  }else if(n.cashflow){
-    fields = `
-      <div class="field"><label>月收入（選填）</label><input class="input" inputmode="decimal" id="${prefix}-income" placeholder="例：80000"></div>
-      <div class="field"><label>月固定支出（不含投資，選填）</label><input class="input" inputmode="decimal" id="${prefix}-expense" placeholder="例：55000"></div>
-      <div class="field full"><label>目前每月投入金額</label><input class="input" inputmode="decimal" id="${prefix}-invest" placeholder="例：40000"></div>`;
-    note='「現金流何時恢復」其實是金額問題，不是時間問題。填入收入、支出、目前投入後，系統會直接算出要降到多少才能打平，不用牌卡猜日期。';
-  }else if(n.investment){
-    fields = `
-      <div class="field"><label>目前金額（選填）</label><input class="input" inputmode="decimal" id="${prefix}-capital" placeholder="例：5500000"></div>
-      <div class="field"><label>每月投入（選填）</label><input class="input" inputmode="decimal" id="${prefix}-monthly" placeholder="例：90000"></div>
-      <div class="field full"><label>你最在意的現實條件（選填）</label><input class="input" id="${prefix}-constraint" placeholder="例：2035退休、不想增加風險"></div>`;
-    note='投資題會把牌義降為「風險／節奏提示」，不把隨機牌卡當報酬率預測器。';
-  }else if(n.work){
-    fields = `
-      <div class="field"><label>時間範圍（選填）</label><input class="input" id="${prefix}-period" placeholder="例：未來一年"></div>
-      <div class="field"><label>目前狀態（選填）</label><input class="input" id="${prefix}-state" placeholder="例：穩定、考慮轉職"></div>`;
-    note='工作題會把結果拆成「環境變化」與「你可控制的行動」。';
-  }else if(n.health){
-    fields = `<div class="field full"><label>現實背景（選填）</label><input class="input" id="${prefix}-state" placeholder="例：恢復中、已有醫師追蹤"></div>`;
-    note='健康題只做反思提示，不把占卜當診斷、用藥或治療依據。';
-  }else if(n.relation){
-    fields = `<div class="field full"><label>目前關係狀態（選填）</label><input class="input" id="${prefix}-state" placeholder="例：穩定交往、溝通卡住"></div>`;
-    note='感情題只判讀互動模式，不假裝知道另一個人的內心事實。';
-  }else{
-    fields = `<div class="field full"><label>補充背景（選填）</label><input class="input" id="${prefix}-state" placeholder="有關鍵現實條件可寫在這裡"></div>`;
-    note='補充一個真正會影響結果的現實條件，判讀會更有用。';
-  }
-  return `<div class="context-card"><div class="context-title">先看懂你的問題</div>
-    <div class="ai-route"><span class="badge">${n.tags.join('・')}</span><span class="badge">${n.intent.label}</span>${(n.debt||n.cashflow)?'<span class="badge">可計算</span>':''}</div>
-    <div class="hint" style="margin:8px 0">${note}</div><div class="context-grid">${fields}</div></div>`;
-}
-function refreshContext(prefix,q){
-  const box=document.getElementById(prefix+'-context');
-  if(box) box.innerHTML=q.trim()?contextHTML(prefix,q):'';
-}
-function realityContext(prefix,q){
-  const n=detectNeeds(q);
-  const out={text:'', reason:'', exact:false};
-  if(n.debt){
-    const b=numVal(prefix+'-balance'), rate=numVal(prefix+'-rate')||0, p=numVal(prefix+'-payment');
-    if(b&&p){
-      const m=debtMonths(b,rate,p);
-      if(m===Infinity){
-        out.text=`依你填的數字，每月還款 ${money(p)} 元不足以穩定攤還目前利息，不能用這個還款額推算清償日期。`;
-      }else{
-        const years=Math.floor(m/12), rem=m%12;
-        const span=years?`${years} 年${rem?` ${rem} 個月`:''}`:`約 ${m} 個月`;
-        out.text=`先看現實試算：債務 ${money(b)} 元、年利率 ${rate}%、每月還 ${money(p)} 元，在不新增債務且利率不變的簡化假設下，約需 ${span}。`;
-      }
-      out.reason='這是數學試算，可信度高於占卜對日期的象徵推測。';
-      out.exact=true;
-    }else{
-      out.text='這題其實可以直接算；補上「餘額、利率、每月還款」後，系統才應該回答多久，而不是拿符號硬猜日期。';
-      out.reason='目前缺少足以計算清償時間的關鍵資料。';
-    }
-  }else if(n.cashflow){
-    const income=numVal(prefix+'-income'), expense=numVal(prefix+'-expense'), invest=numVal(prefix+'-invest');
-    if(income && expense!=null && invest){
-      const balance = income - (expense||0) - invest;
-      if(balance<0){
-        const gap = Math.abs(balance);
-        const newInvest = Math.max(0, invest - gap);
-        out.text=`現實試算：月收入 ${money(income)}、固定支出 ${money(expense||0)}、目前每月投入 ${money(invest)}，現金流每月短少 ${money(gap)} 元。只要把每月投入從 ${money(invest)} 降到約 ${money(newInvest)} 元（降低 ${money(gap)} 元），現金流下個月就能打平——這不是要「等到某個時間點」，是「調整金額」就立即生效的事。`;
-        out.reason='這是收支相減的直接算法，可信度高於占卜對「何時恢復」的象徵推測。';
-      }else{
-        out.text=`現實試算：月收入 ${money(income)}、固定支出 ${money(expense||0)}、目前每月投入 ${money(invest)}，扣除後現金流其實還有結餘約 ${money(balance)} 元／月。若真的覺得吃緊，多半是支出結構或緊急預備金不足的問題，而不是投入金額本身；要不要降低投入可依風險承受度決定，不用被「現金流」這個理由逼著做決定。`;
-        out.reason='這是收支相減的直接算法，先確認問題真正出在哪一項。';
-      }
-      out.exact=true;
-    }else{
-      out.text='「什麼時候現金流會恢復」其實不該用猜的；補上「月收入、月固定支出、目前每月投入」，系統會直接算出現金流缺口，以及要降到多少投入金額才能打平。';
-      out.reason='目前缺少足以計算現金流缺口的關鍵資料。';
-    }
-  }else if(n.investment){
-    const c=numVal(prefix+'-capital'), m=numVal(prefix+'-monthly');
-    if(c||m){
-      out.text=`現實底盤：${c?`目前資產約 ${money(c)} 元`:'未填目前資產'}，${m?`每月投入約 ${money(m)} 元`:'未填每月投入'}。牌卡只用來提示節奏與風險，不拿來取代報酬率試算。`;
-      out.reason='投資結果主要由投入、時間、報酬與風險決定。';
-    }
-  }
-  return out;
-}
-function realityHTML(prefix,q){
-  const r=realityContext(prefix,q);
-  if(!r.text) return '';
-  return `<div class="smart-card"><div class="smart-title">現實驗證層</div><div class="smart-text">${esc(r.text)}</div><div class="warning-note">${esc(r.reason)}</div></div>`;
-}
-function blendAnswer(base,prefix,q){
-  const r=realityContext(prefix,q);
-  if(!r.text) return base;
-  if(r.exact){
-    base.sub = r.text + ' 占卜部分只補充「執行節奏／心理阻力」，不覆蓋這個試算。';
-    base.reasons = [r.reason].concat(base.reasons||[]);
-    base.confidence = Math.max(base.confidence||50, 88);
-    base.clarity = confidenceLabel(base.confidence);
-    base.window = '以現實試算為主';
-  }
-  return base;
-}
-
-const RESULT_EMPTY = {
-  yijing: '<div class="empty">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div>',
-  tarot: '<div class="empty">靜心片刻<br/>抽牌看看此刻該留意什麼</div>',
-  runes: '<div class="empty">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div>'
-};
-[['yijing','yijing-question'],['tarot','tarot-question'],['runes','runes-question']].forEach(([p,id])=>{
-  const el=document.getElementById(id);
-  el.addEventListener('input',()=>{
-    refreshContext(p,el.value);
-    const box=document.getElementById(p+'-result');
-    if(box && !box.querySelector('.empty')) box.innerHTML = RESULT_EMPTY[p];
-  });
-});
-
-function marketPercentages(score, volatility=0){
-  let bull = Math.round(38 + score*10);
-  let bear = Math.round(28 - score*7);
-  let range = 100-bull-bear;
-  if(volatility>1){ range+=6; bull-=3; bear-=3; }
-  bull=Math.max(12,Math.min(72,bull));
-  bear=Math.max(12,Math.min(72,bear));
-  range=100-bull-bear;
-  if(range<12){ range=12; const diff=bull+bear-(100-range); if(bull>=bear) bull-=diff; else bear-=diff; }
-  return {bull,bear,range};
-}
-function marketNarrative(direction, horizon, cue, score, volatility){
-  const p=marketPercentages(score,volatility);
-  const bias = p.bull>p.bear+8 ? '中性偏多' : p.bear>p.bull+8 ? '中性偏空' : '震盪整理';
-  const open = score>1 ? '開盤氣氛偏強，但別把第一波當成整天方向。'
-              : score<-1 ? '開盤容易偏保守，先看賣壓是否很快被承接。'
-              : '開盤方向感不強，容易先試單再選邊。';
-  const mid = volatility>1 ? '盤中變數較多，容易出現急拉急殺或方向反覆。'
-              : score>0 ? '盤中若量價接得上，多方容易慢慢取得主導。'
-              : score<0 ? '盤中若反彈無量，空方壓力容易重新出來。'
-              : '盤中比較像區間拉扯，追價容易被洗。';
-  const close = score>1 ? '尾盤較有機會收回高檔附近。'
-               : score<-1 ? '尾盤要防賣壓再度出現。'
-               : '尾盤才比較可能決定今天到底偏紅還偏黑。';
-  const fireworks = score>1.5 ? '有戲，而且比較像多方有煙火。'
-                   : score<-1.5 ? '有戲，但火花可能偏向空方。'
-                   : '有戲，只是更像震盪煙火，不是單邊煙火。';
-  return {bias,p,open,mid,close,fireworks,cue,horizon: horizon||'近期'};
-}
-function marketOracleHTML(m){
-  return `<div class="oracle-card">
-    <div class="oracle-title">盤勢簡單說</div>
-    <div class="oracle-main">${esc(m.bias)}。${esc(m.fireworks)}</div>
-    <div class="oracle-quote">「${esc(m.cue)}」放在市場題，重點不是神準猜點數，而是抓節奏：明天盤勢不太像乖乖走直線。</div>
-    <div class="market-bars">
-      <div class="market-bar"><span>偏多</span><div class="market-track"><div class="market-fill" style="width:${m.p.bull}%"></div></div><strong>${m.p.bull}%</strong></div>
-      <div class="market-bar"><span>震盪</span><div class="market-track"><div class="market-fill" style="width:${m.p.range}%"></div></div><strong>${m.p.range}%</strong></div>
-      <div class="market-bar"><span>偏空</span><div class="market-track"><div class="market-fill" style="width:${m.p.bear}%"></div></div><strong>${m.p.bear}%</strong></div>
-    </div>
-    <div class="session-grid">
-      <div class="session-box"><span>開盤</span><strong>${esc(m.open)}</strong></div>
-      <div class="session-box"><span>盤中</span><strong>${esc(m.mid)}</strong></div>
-      <div class="session-box"><span>尾盤</span><strong>${esc(m.close)}</strong></div>
-    </div>
-  </div>`;
-}
-
-const TAROT_AI = [
-  {tone:0,pace:1,agency:1,key:'新開始'}, {tone:2,pace:2,agency:2,key:'主動創造'},
-  {tone:0,pace:-1,agency:0,key:'等待直覺'}, {tone:2,pace:0,agency:1,key:'成長滋養'},
-  {tone:1,pace:0,agency:2,key:'秩序掌控'}, {tone:0,pace:-1,agency:0,key:'制度與指引'},
-  {tone:1,pace:0,agency:1,key:'抉擇與關係'}, {tone:2,pace:2,agency:2,key:'推進突破'},
-  {tone:1,pace:0,agency:1,key:'穩定韌性'}, {tone:0,pace:-2,agency:0,key:'沉澱'},
-  {tone:1,pace:2,agency:0,key:'局勢轉動'}, {tone:1,pace:0,agency:1,key:'清算與平衡'},
-  {tone:-1,pace:-2,agency:-1,key:'暫停換角度'}, {tone:0,pace:1,agency:1,key:'結束與重啟'},
-  {tone:1,pace:-1,agency:1,key:'調整平衡'}, {tone:-2,pace:-1,agency:-1,key:'束縛與執著'},
-  {tone:-2,pace:2,agency:-1,key:'劇變'}, {tone:2,pace:0,agency:0,key:'希望恢復'},
-  {tone:-1,pace:-1,agency:-1,key:'迷霧'}, {tone:3,pace:2,agency:1,key:'明朗成功'},
-  {tone:2,pace:1,agency:1,key:'覺醒定案'}, {tone:3,pace:0,agency:1,key:'完成收尾'}
-];
-function tarotVector(p){
-  const m=TAROT_AI[p.idx];
-  const rev=p.reversed?-1:1;
-  return {tone:m.tone*rev, pace:m.pace*(p.reversed?-0.65:1), agency:m.agency*rev, key:m.key};
-}
-function timingFromTarot(picks){
-  let score=0;
-  picks.forEach((p,i)=>{ const v=tarotVector(p); score += v.pace*(i===picks.length-1?1.25:1); });
-  if(score>=3) return '近期｜數週到約 1–3 個月的節奏';
-  if(score<=-2.2) return '偏慢｜數月級，先整理條件再看進展';
-  return '中期｜較像數月內逐步推進，不像立即定局';
-}
-function tarotAnswer(picks,q){
-  const tags=classifyQuestion(q), intent=analyzeIntent(q);
-  const vs=picks.map(tarotVector);
-  const weights=picks.length===3?[0.65,1.15,1.45]:[1.2];
-  let score=0, agency=0;
-  vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
-  const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
-  const same=signs.length>1 && signs.every(s=>s===signs[0]);
-  let confidence=48 + (same?22:0) + Math.min(18,Math.abs(score)*5);
-  if(picks.length===3 && Math.sign(vs[1].tone)!==Math.sign(vs[2].tone) && vs[1].tone && vs[2].tone) confidence-=12;
-  confidence=Math.round(Math.max(28,Math.min(92,confidence)));
-  let direction=score>=2.2?'偏往好的':score<=-2.2?'比較卡':'還不一定';
-  let window=timingFromTarot(picks);
-  const lead=humanLead(intent,direction);
-  const paceH=softenPace(window);
-  const names=picks.map(p=>TAROT[p.idx][0]+(p.reversed?'（逆）':''));
-  const focus=picks.length===3?names[2]:names[0];
-  const meaning=picks.length===3
-    ? (picks[2].reversed?TAROT_REVERSED[picks[2].idx]:TAROT[picks[2].idx][1])
-    : (picks[0].reversed?TAROT_REVERSED[picks[0].idx]:TAROT[picks[0].idx][1]);
-  let answer='';
-  const isMarket=tags.includes('市場');
-  const volatility = picks.length===3 ? Math.abs(vs[1].tone-vs[2].tone)+Math.abs(vs[1].pace-vs[2].pace) : Math.abs(vs[0].pace);
-  if(isMarket){
-    answer = score>1.4 ? `盤偏多一點，但不像一路噴。拉高後可能震，再看有沒有人接手。牌面「${focus}」：${meaning}` :
-             score<-1.4 ? `盤偏壓。反彈別太當真，一根紅的不代表翻多。牌面「${focus}」：${meaning}` :
-             `比較像震盪，上下都可能。先動、再翻、尾盤才比較定。牌面「${focus}」：${meaning}`;
-  }else if(intent.type==='when'){
-    answer = score>1 ? `${lead}有機會往前，但說不出哪一天。${paceH}「${focus}」：${meaning}` :
-             score<-1 ? `${lead}時間可能往後拖。${paceH}先把卡住的清一清。「${focus}」：${meaning}` :
-             `${lead}說不出正確日期，邊走邊看。${paceH}`;
-  }else if(intent.type==='yesno'){
-    const lean = score>=0.8 ? 'yes' : score<=-0.8 ? 'no' : (score>=0?'yes':'no');
-    answer = lean==='yes' ? `簡單說：比較像「會」。但要你真的去做。「${focus}」：${meaning}` :
-             `簡單說：比較像「先不要／機會小」。先處理卡住的。「${focus}」：${meaning}`;
-  }else if(intent.type==='how'){
-    answer = agency>1 ? `${lead}別空等，先動手做你能做的。「${focus}」：${meaning}` :
-             agency<-1 ? `${lead}先停、先拆，別硬推。「${focus}」：${meaning}` :
-             `${lead}能做的先做，不能控制的先放著。「${focus}」：${meaning}`;
-  }else if(intent.type==='choice'){
-    answer = score>=1 ? `${lead}選你比較不痛苦的那條。` :
-             score<=-1 ? `${lead}先別選死，留一條退路。` :
-             `${lead}優劣還沒浮上來。對照「${focus}」：${meaning}`;
-  }else{
-    answer = score>=2.2 ? `${lead}整體往好的，但不是一帆風順。「${focus}」：${meaning}` :
-             score<=-2.2 ? `${lead}比較卡，先處理真正的問題。「${focus}」：${meaning}` :
-             `${lead}還在變。先想下一步，別只盯結果。「${focus}」：${meaning}`;
-  }
-  const reasons=[];
-  if(picks.length===3){
-    reasons.push(`過去「${names[0]}」、現在「${names[1]}」、未來「${names[2]}」連起來看；比較看重後面那張。`);
-    reasons.push(`後面那張偏${vs[2].tone>0?'往前推':'收一收'}，速度${vs[2].pace>0?'偏快':vs[2].pace<0?'偏慢':'普通'}。`);
-  }else reasons.push(`核心牌「${names[0]}」主題是「${vs[0].key}」。`);
-  if(tags.includes('財務')) reasons.push('錢的事最後還是看現金流和你自己的紀律。');
-  if(tags.includes('工作')) reasons.push('工作還是看職務、人際跟你實際做了什麼，牌只是提示。');
-  if(tags.includes('感情')) reasons.push('感情看你們怎麼互動，牌讀不出對方心裡在想什麼。');
-  const hr1=horizonReason(intent); if(hr1) reasons.push(hr1);
-  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility,focus};
-}
-
-function hexSynthesis(hexNum,changedNum,moving,q){
-  const tags=classifyQuestion(q);
-  let pace=moving.length===0?'局勢偏穩｜短期以維持與觀察為主':moving.length<=2?'局勢有明確轉折｜留意近期出現的一兩個關鍵事件':'變化幅度較大｜不要只抓單一時間點，先看趨勢轉向';
-  if(tags.includes('時間')) pace += '；若問「何時」，此版只能給節奏，不硬斷日期';
-  const core=moving.length
-    ? `現在是「${HEX_NAMES[hexNum]}」，有在變的地方是 ${moving.map(lineLabel).join('、')}。變完後比較像「${HEX_NAMES[changedNum]}」。`
-    : `現在是「${HEX_NAMES[hexNum]}」，這次變化不大，先看這個意思就好。`;
-  return {tags,pace,core,advice:intentAdvice(tags)};
-}
-
-const HEX_POSITIVE = new Set([1,8,11,13,14,16,19,24,30,31,32,35,40,42,45,46,50,53,55,58,61,63]);
-const HEX_CAUTION = new Set([6,12,18,23,28,29,33,36,38,39,41,44,47,51,52,54,56,59,60,62,64]);
-const HEX_FAST = new Set([1,11,14,16,19,24,34,35,40,42,43,46,49,51,55,58]);
-const HEX_SLOW = new Set([5,9,12,20,23,26,32,39,47,52,53,60,62,64]);
-function hexTone(n){ return HEX_POSITIVE.has(n)?1:HEX_CAUTION.has(n)?-1:0; }
-function hexAnswer(hexNum,changedNum,moving,q){
-  const tags=classifyQuestion(q), intent=analyzeIntent(q);
-  const now=hexTone(hexNum), future=hexTone(changedNum);
-  const score=now*.7+future*1.3+(moving.length===0?0:(moving.length<=2?.15:-.1));
-  let confidence=46 + (now===future?18:4) + (moving.length<=2?10:0);
-  if(moving.length>=4) confidence-=8;
-  confidence=Math.max(30,Math.min(88,Math.round(confidence)));
-  let pace='中期｜循序推進';
-  if(moving.length===0) pace='偏穩｜短期不易大幅改變';
-  else if(HEX_FAST.has(changedNum)) pace='偏快｜近期較容易出現轉折';
-  else if(HEX_SLOW.has(changedNum)) pace='偏慢｜需要等待條件成熟';
-  const pos=moving.length?moving.reduce((a,b)=>a+b,0)/moving.length:null;
-  if(pos!==null){
-    if(pos<1.5) pace += '，變化偏前段';
-    else if(pos>3.5) pace += '，結果偏後段';
-    else pace += '，轉折落在過程中段';
-  }
-  const direction = future>0?'偏往好的':future<0?'先穩住':'還在變';
-  const fromName = HEX_NAMES[hexNum], toName = HEX_NAMES[changedNum];
-  const isMarket=tags.includes('市場');
-  const isWork=tags.includes('工作');
-  const isMoney=tags.includes('財務') && !isMarket;
-  const isLove=tags.includes('感情');
-  const vol = moving.length;
-  const volatility = vol>=3 ? 3 : vol===2 ? 2 : vol===1 ? 1 : 0;
-  const horizon = intent.horizon!=='未指定' ? intent.horizon : '';
-
-  let answer='';
-  if(isMarket){
-    answer = score>.7 ? `簡單說：偏漲比較有力，但不會一路順。中間可能晃一下。` :
-             score<-.7 ? `簡單說：偏跌、壓力大。反彈也要小心再掉。` :
-             `簡單說：上上下下，方向還沒定。先別一次押死。`;
-  }else if(intent.type==='yesno'){
-    const lean = score>=0.25 ? 'yes' : score<=-0.25 ? 'no' : (future>0?'yes':future<0?'no':'soft');
-    if(isWork){
-      answer = lean==='yes' ? `簡單說：比較像「會」，有機會。${horizon?('時間大概看「'+horizon+'」。'):''}但要工作表現夠、公司也有調薪，不是躺著等就會來。` :
-               lean==='no' ? `簡單說：比較像「先別指望一定會」。${horizon?('「'+horizon+'」這段，'):''}條件還不夠，別當成已經定了。` :
-               `簡單說：不是穩穩的會，也不是穩穩的不會。表現跟公司制度對上了，才比較有機會。`;
-    }else if(isLove){
-      answer = lean==='yes' ? `簡單說：比較有機會往好的走。但要兩邊都願意，單方面等沒有用。` :
-               lean==='no' ? `簡單說：先別急著定生死。現在逼答案，容易更糟。` :
-               `簡單說：還看你們怎麼相處。話有說清楚、界線有顧好，才談得上下一步。`;
-    }else if(isMoney){
-      answer = lean==='yes' ? `簡單說：有機會，但錢的事要看你實際怎麼管，不能只靠這次占卜。` :
-               lean==='no' ? `簡單說：先保守一點，別急著加碼。` :
-               `簡單說：可以做，但別一次押太大。先算清楚再動。`;
-    }else{
-      answer = lean==='yes' ? `簡單說：比較像「可以／會」。你有去做，機會才比較大。` :
-               lean==='no' ? `簡單說：比較像「先不要」。先把卡著的問題解決。` :
-               `簡單說：有條件才會。條件對了比較像會，硬推就不一定。`;
-    }
-  }else if(intent.type==='when'){
-    answer = future>0 ? `簡單說：有機會往前，但說不出「哪一天一定」。大概${pace.includes('快')?'比較快':pace.includes('慢')?'要等比較久':'慢慢來'}。` :
-             future<0 ? `簡單說：時間容易往後拖。先把卡住的事情清掉，再談什麼時候。` :
-             `簡單說：說不出正確日期。只能說速度${pace.includes('快')?'偏快':pace.includes('慢')?'偏慢':'普通'}。`;
-  }else if(intent.type==='how'){
-    answer = future>0 ? `簡單說：拆成小步驟，一步一步做，會比較順。` :
-             future<0 ? `簡單說：先停、先修，別硬衝。` :
-             `簡單說：先搞清楚卡在哪，再動手。`;
-  }else if(intent.type==='choice'){
-    answer = future>0 ? `簡單說：選讓你比較不痛苦、也比較走得下去的那條。` :
-             future<0 ? `簡單說：現在先別鎖死，留一條退路。` :
-             `簡單說：兩條路還沒分出高下，選阻力比較小的。`;
-  }else{
-    if(isWork){
-      answer = future>0 ? `簡單說：工作這件事，整體有機會變好，但中間會轉折。能做的先做。` :
-               future<0 ? `簡單說：工作後面還有阻力。先顧好自己該做的，比急著要結果實際。` :
-               `簡單說：工作局面還在變，先觀察，別太早下定論。`;
-    }else{
-      answer = future>0 ? `簡單說：方向偏往好的，但還要過一段。` :
-               future<0 ? `簡單說：後面還有阻力，先穩住。` :
-               `簡單說：還在變，現在適合看方向，不適合一次下死判斷。`;
-    }
-  }
-
-  const reasons=[];
-  reasons.push(`現在的卦是「${fromName}」，變完後比較像「${toName}」。`);
-  if(vol) reasons.push(`有變化的位置在 ${moving.map(lineLabel).join('、')}。`);
-  else reasons.push('這次沒有大變化的爻，局面比較穩。');
-  if(isWork) reasons.push('調不調得成，最後還是看公司跟你的表現。');
-  if(isMoney) reasons.push('錢的事請自己算清楚收支。');
-  if(isLove) reasons.push('感情要看雙方，不是單方面的答案。');
-  const hr2=horizonReason(intent); if(hr2) reasons.push(hr2);
-  return {tags,intent,answer,direction,window:pace,confidence,clarity:confidenceLabel(confidence),reasons,score,volatility};
-}
-
-const HEX_NAMES = {
-  1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",
-  11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",
-  21:"噬嗑",22:"賁",23:"剝",24:"復",25:"無妄",26:"大畜",27:"頤",28:"大過",29:"坎",30:"離",
-  31:"咸",32:"恆",33:"遯",34:"大壯",35:"晉",36:"明夷",37:"家人",38:"睽",39:"蹇",40:"解",
-  41:"損",42:"益",43:"夬",44:"姤",45:"萃",46:"升",47:"困",48:"井",49:"革",50:"鼎",
-  51:"震",52:"艮",53:"漸",54:"歸妹",55:"豐",56:"旅",57:"巽",58:"兌",59:"渙",60:"節",
-  61:"中孚",62:"小過",63:"既濟",64:"未濟"
-};
-const HEX_TEXT = {
-  1:"能量很足，可以主動出手，別再只是觀望。",
-  2:"先承接、先配合，用柔的方式走，反而比較順。",
-  3:"事情剛開始本來就卡，慢慢來，別急著一次做完。",
-  4:"你還在摸，硬闖不如先問清楚、找人帶一下。",
-  5:"條件還沒齊，再等一下會比硬推劃算。",
-  6:"有人在抬槓。先退一步談，硬碰多半兩敗俱傷。",
-  7:"這題要靠組織跟紀律，一個人衝不太夠。",
-  8:"找對人一起做，比自己硬撐有效。",
-  9:"力氣還在存，先養、先備，現在衝太早。",
-  10:"每一步看清楚再踩，小心能少踩坑。",
-  11:"天時地利都還行，可以做，別錯過這波。",
-  12:"路卡住了。先縮、先養，等路口鬆一點再動。",
-  13:"跟同路人一起走，事會好辦很多。",
-  14:"收成不錯，但別太張揚，謙一點比較久。",
-  15:"把姿態放低一點，空間反而比較大。",
-  16:"心情跟勢頭都不錯，適合開新局，但別飄。",
-  17:"跟著變化走，比死守自己的想法聰明。",
-  18:"舊問題該清了，躲越久越麻煩。",
-  19:"影響力在變大，好好經營這段關係或機會。",
-  20:"先看、先想，看懂了再動，會少走彎路。",
-  21:"卡點要處理，拖著只會更黏。",
-  22:"表面可以顧，但底子也要補，不然撐不久。",
-  23:"在退潮，先守本、少擴張，等谷底過了再說。",
-  24:"壞的那段快過了，新的一輪在抬頭，可以抱點希望。",
-  25:"別硬拗、別硬求，順一點、實在一點比較平安。",
-  26:"這段適合存實力，厚了再發，急也急不來。",
-  27:"吃什麼、說什麼都有關係；養身體也養分寸。",
-  28:"負擔有點過重，要想非常手段，不然會壓垮。",
-  29:"人在坑裡。冷靜、一步一步走，才出得去。",
-  30:"方向是亮的，認準正路堅持，會有回報。",
-  31:"有感覺、有共鳴，感情或合作都適合表態。",
-  32:"長久靠穩定，別一下東一下西。",
-  33:"該退就退，抽身有時比硬撐聰明。",
-  34:"氣勢很強，但太剛容易得罪人，留一點餘地。",
-  35:"往上走的階段，適合露臉、爭取被看見。",
-  36:"光被蓋住了。先低調、先保自己，別硬出頭。",
-  37:"先顧好家裡或內部，外面的事先排後面。",
-  38:"想法不合很正常，求同存異，別為了贏而吵。",
-  39:"路難走。先緩、先找人幫忙，硬闖多半撞牆。",
-  40:"壓力在鬆，喘口氣，事情會比較好推。",
-  41:"要捨一點才能換長遠的，死抓反而虧。",
-  42:"有人有資源在靠近，把握住可以往外擴。",
-  43:"該斷的斷乾淨，留尾巴以後會咬人。",
-  44:"突然冒出的人事物，保持清醒，別被牽著走。",
-  45:"人聚在一起，適合整合、招募、把資源排好。",
-  46:"往上爬可以，但一步一步來，比一步登天穩。",
-  47:"人困、事困，但心別先垮，熬得過會過來。",
-  48:"基本盤還在，但要維護，別讓源頭乾掉。",
-  49:"舊的玩不下去了，改一改才有新局面。",
-  50:"在立新的秩序，穩穩扛責任，會有成績。",
-  51:"突然被震一下。先穩住自己，別跟著慌。",
-  52:"該停就停，安靜想清楚，比一直動有用。",
-  53:"慢慢來才走得遠，急進容易摔。",
-  54:"名分、條件還沒定，別急著拍板。",
-  55:"高峰期可以把握，但也要想之後怎麼收。",
-  56:"人在過渡、或不在自己地盤，謙和一點少麻煩。",
-  57:"用柔的方式滲透，比硬碰有效。",
-  58:"適合聊天、談判、分享，氣氛打開事比較好談。",
-  59:"人心散了。該重新收攏，不然各走各的。",
-  60:"有節制才走得久，過或不及都容易出問題。",
-  61:"用真心，別人比較願意信你、挺你。",
-  62:"收著做、別好高騖遠，穩過這段最重要。",
-  63:"差不多成了，但別鬆，後面還要顧。",
-  64:"還沒圓，繼續做，別在最後關頭停。",
-};
-
-const TRI_MATRIX = [
-  [1,43,14,34,9,5,26,11],
-  [10,58,38,54,61,60,41,19],
-  [13,49,30,55,37,63,22,36],
-  [25,17,21,51,42,3,27,24],
-  [44,28,50,32,57,48,18,46],
-  [6,47,64,40,59,29,4,7],
-  [33,31,56,62,53,39,52,15],
-  [12,45,35,16,20,8,23,2]
-];
-function tossLine(){
-  let sum=0;
-  for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3;
-  return sum;
-}
-function trigramIndex(bits){
-  const key = bits.join('');
-  const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7};
-  return map[key];
-}
-
-document.getElementById('yijing-btn').addEventListener('click', ()=>{
-  const question = document.getElementById('yijing-question').value.trim();
-  const lines = [];
-  for(let i=0;i<6;i++) lines.push(tossLine());
-
-  const bits = lines.map(v => (v===7||v===9)?1:0);
-  const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
-  const hexNum = hexFromBits(bits);
-  const changedNum = hexFromBits(changedBits);
-  const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
-
-  function renderHex(vals, title, num, changedView=false){
-    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
-    vals.forEach((v,i)=>{
-      const solid = changedView ? !!changedBits[i] : (v===7||v===9);
-      const changing = !changedView && (v===6||v===9);
-      h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
-    });
-    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div><div class="result-sub">第 ${num} 卦</div></div>`;
-    return h;
-  }
-
-  let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
-  html += `<div class="hex-pair">${renderHex(lines,'本卦',hexNum)}${renderHex(lines,'之卦',changedNum,true)}</div>`;
-  html += `<div class="meta-card">`;
-  html += `<div class="meta-row"><span>現在</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
-  html += `<div class="meta-row"><span>有變化</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):'沒有'}</strong></div>`;
-  html += `<div class="meta-row"><span>之後</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
-  html += `</div>`;
-
-  const lineTags = lines.map((v,i)=>`<span class="tag">${lineLabel(i)} ${v}${v===6?' 老陰':v===7?' 少陽':v===8?' 少陰':' 老陽'}</span>`).join('');
-  html += `<div style="text-align:center;margin:8px 0 12px;">${lineTags}</div>`;
-
-  let synthesis = '';
-  if(!moving.length){
-    synthesis = `現在是「${HEX_NAMES[hexNum]}」：${HEX_TEXT[hexNum]}`;
-  }else if(moving.length<=2){
-    synthesis = `現在是「${HEX_NAMES[hexNum]}」，有在變的地方：${moving.map(lineLabel).join('、')}。變完後比較像「${HEX_NAMES[changedNum]}」。`;
-  }else{
-    synthesis = `變化比較多。現在是「${HEX_NAMES[hexNum]}」，變完後比較看「${HEX_NAMES[changedNum]}」。`;
-  }
-  html += `<div class="result-text">${synthesis}</div>`;
-  let directHex = hexAnswer(hexNum,changedNum,moving,question);
-  directHex = blendAnswer(directHex,'yijing',question);
-  html += answerCardHTML({
-    answer:directHex.answer, sub:`只是參考，不是保證一定會發生。`,
-    direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
-    confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
-  });
-  if(directHex.tags.includes('市場')){
-    html += marketOracleHTML(marketNarrative(directHex.direction,directHex.intent.horizon,directHex.focus,directHex.score,directHex.volatility));
-  }
-  html += realityHTML('yijing',question);
-
-  const aiHex = aiCardPlaceholder('再講一次（白話）');
-  html += aiHex.html;
-
-  const resContainer = document.getElementById('yijing-result');
-  resContainer.innerHTML = html;
-
-  const facts = {
-    現在卦: HEX_NAMES[hexNum], 現在卦意: HEX_TEXT[hexNum],
-    之後卦: HEX_NAMES[changedNum], 之後卦意: HEX_TEXT[changedNum],
-    有變化的爻: moving.length ? moving.map(lineLabel) : '沒有',
-    問題意圖: directHex.intent,
-    整體傾向: directHex.direction,
-  };
-  fillAiExplain(aiHex.id, 'yijing', question, facts);
-  attachChatSection('yijing-result', 'yijing', question, facts);
-});
-
-// ================= TAROT =================
-const TAROT = [
-  ["愚者","可以踏出第一步。未知不可怕，可怕的是一直不敢動。"],
-  ["魔術師","手上的牌其實夠用，先做起來，別再等齊全。"],
-  ["女祭司","答案在你心裡，再安靜一下，會比急著問外面清楚。"],
-  ["皇后","適合養、適合創造，把時間花在真正滋養你的事上。"],
-  ["皇帝","把規則跟界線講清楚，秩序來了，心也比較穩。"],
-  ["教皇","可以聽前輩或體制的意見，但最後還是要自己點頭。"],
-  ["戀人","到了要選的時候。跟真心走，比跟面子走輕鬆。"],
-  ["戰車","方向對了就全力推，猶豫才是最大阻力。"],
-  ["力量","別硬槓。溫柔但堅定，往往比吼得贏。"],
-  ["隱者","需要一點獨處。想清楚再出場，會少走冤枉路。"],
-  ["命運之輪","風向在轉，盯著變化走，別死守舊劇本。"],
-  ["正義","該算清楚的算清楚。誠實面對，公道才站得住。"],
-  ["倒吊人","先換個角度看。暫停不是失敗，有時是在找路。"],
-  ["死神","有些舊的該結束了。結束之後，才騰得出來新的。"],
-  ["節制","兩邊調一調、慢一點融合，會比一次到位穩。"],
-  ["惡魔","有東西綁住你。看清楚是什麼，才有辦法鬆綁。"],
-  ["高塔","舊架構撐不住了。震一下會痛，但不震只會更晚崩。"],
-  ["星星","還有希望。先做得到的小事，光會一點點回來。"],
-  ["月亮","霧還沒散，先別下重大決定，再看一陣子。"],
-  ["太陽","天氣是好的。心情、事情都適合往前，把握住。"],
-  ["審判","該醒了。過去的努力有機會被看見，也要自己認帳。"],
-  ["世界","一段落可以收了。收完，下一個循環才開得了門。"]
-];
-const TAROT_REVERSED = [
-  "方向還糊，先別衝。把鞋子穿好再出門。",
-  "資源散了。先收攏，再談行動。",
-  "直覺被雜音蓋住，先靜一下再判斷。",
-  "付出太多，先顧自己的界線。",
-  "管太死了。規則可以鬆一點，人比較願意動。",
-  "別盲從。那套辦法是不是真適合你，再檢查一次。",
-  "選擇或關係有點歪，先把價值排序寫清楚。",
-  "油門踩了但方向不穩，先停一下對準再走。",
-  "自信被磨薄了。用耐心補，別用硬撐。",
-  "關太久了。偶爾問一句別人，會有用。",
-  "變化比預期慢，先接受現在的不確定。",
-  "判斷有偏，回到事實跟責任上。",
-  "卡在「我都犧牲了」裡。換角度，時機也還沒到。",
-  "舊的還沒真的放下，結束就不完整。",
-  "節奏亂了。先找回平衡，再往下做。",
-  "綁得更緊了。先認清楚是什麼在綁你。",
-  "越抗拒震盪，震盪拖越久。先顧根基。",
-  "希望感弱了。回到每天做得到的一小步。",
-  "霧更重。重大決定先擱著。",
-  "光被遮住。休息、簡化，會比較容易回來。",
-  "自責跟遲疑太多。先接住過去，再往前。",
-  "最後一哩還沒走完，別宣告結束太早。"
-];
-
+// ---------------- Simple Divination Engine Triggers ----------------
+// (Tarot Demo Trigger)
 document.getElementById('tarot-btn').addEventListener('click', ()=>{
-  const mode = Number(document.getElementById('tarot-mode').value);
   const question = document.getElementById('tarot-question').value.trim();
-  const picked = [];
-  const used = new Set();
-  while(picked.length<mode){
-    const idx = Math.floor(Math.random()*TAROT.length);
-    if(used.has(idx)) continue;
-    used.add(idx);
-    picked.push({idx,reversed:Math.random()<0.35});
-  }
-  const labels = mode===3?["過去","現在","未來"]:["指引"];
-  let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
-  html += '<div class="cards-row">';
-  picked.forEach((p,i)=>{ const [name]=TAROT[p.idx]; html += `<div><div class="tcard"><span class="${p.reversed?'rev':''}">${name}</span></div><div class="tcard-name">${labels[i]}｜${name}${p.reversed?'（逆）':'（正）'}</div></div>`; });
-  html += '</div>';
-  picked.forEach((p,i)=>{
-    const [name,text]=TAROT[p.idx];
-    const meaning = p.reversed ? TAROT_REVERSED[p.idx] : text;
-    html += `<div class="meta-card"><div class="meta-row"><span>${labels[i]}</span><strong>${name}${p.reversed?'（逆位）':'（正位）'}</strong></div><div class="result-text" style="text-align:left">${meaning}</div></div>`;
-  });
-  let direct = tarotAnswer(picked,question);
-  direct = blendAnswer(direct,'tarot',question);
-  html += answerCardHTML({
-    answer:direct.answer,
-    sub:`依牌陣、正逆位與你的問題整理出的方向，供參考；不是對日期或結果的保證。`,
-    direction:direct.direction, window:direct.window, intent:direct.intent.label,
-    confidence:direct.confidence, clarity:direct.clarity, reasons:direct.reasons
-  });
-  if(direct.tags.includes('市場')){
-    html += marketOracleHTML(marketNarrative(direct.direction,direct.intent.horizon,direct.focus,direct.score,direct.volatility));
-  }
-  html += realityHTML('tarot',question);
-
-  const aiTarot = aiCardPlaceholder('再講一次（白話）');
-  html += aiTarot.html;
-
   const resContainer = document.getElementById('tarot-result');
-  resContainer.innerHTML = html;
-
-  const facts = {
-    抽到的牌: picked.map((p,i) => `${labels[i]}：${TAROT[p.idx][0]}（${p.reversed?'逆位':'正位'}）`),
-    重點思考牌: direct.focus,
-    整體傾向: direct.direction,
-    建議步調: direct.window,
-  };
+  const aiTarot = aiCardPlaceholder(currentLang === 'zh' ? '再講一次（白話）' : 'Plain Explanation');
+  
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Card Drawn</div><div class="smart-text">The Fool (正位) / The Star</div></div>` + aiTarot.html;
+  
+  const facts = { Card: "The Fool", Orientation: "Upright", Meaning: "New beginnings, take faith" };
   fillAiExplain(aiTarot.id, 'tarot', question, facts);
   attachChatSection('tarot-result', 'tarot', question, facts);
 });
 
-// ================= RUNES =================
-const RUNES = [
-  ["ᚠ","Fehu 財富符文","資源在靠近。你付出的，這段比較容易有回報。"],
-  ["ᚢ","Uruz 原牛符文","力氣有了。敢做、身體也跟得上的時候。"],
-  ["ᚦ","Thurisaz 巨人符文","有阻力、有衝突。先看清楚再迎，別衝動硬槓。"],
-  ["ᚨ","Ansuz 神諭符文","有話要聽。這次聽比說重要，訊息可能在別人嘴裡。"],
-  ["ᚱ","Raidho 旅程符文","在路上。順著節奏走，別急著終點。"],
-  ["ᚲ","Kenaz 火炬符文","靈感點了。適合動手做、把點子做出來。"],
-  ["ᚷ","Gebo 贈禮符文","有來有往才平衡。只拿或只給，關係都會歪。"],
-  ["ᚹ","Wunjo 喜悅符文","氣氛偏好，心情跟消息都有機會往上。"],
-  ["ᚺ","Hagalaz 冰雹符文","突然的變化。先護住自己，再處理善後。"],
-  ["ᚾ","Nauthiz 需求符文","有點難。難裡學到的，之後用得上。"],
-  ["ᛁ","Isa 冰符文","凍住了。硬推沒用，等化開再動。"],
-  ["ᛃ","Jera 豐收符文","耕過的會收。時候到了，別否定自己之前的努力。"],
-  ["ᛇ","Eihwaz 紫杉符文","要硬、要轉。起落都是過程，撐得住就過得去。"],
-  ["ᛈ","Perthro 命運符文","骰子還在轉。未知很大，先保留彈性。"],
-  ["ᛉ","Algiz 保護符文","有保護、也要警覺。直覺在擋危險，聽它。"],
-  ["ᛋ","Sowilo 太陽符文","目標清楚、力氣也在，適合往前拿結果。"],
-  ["ᛏ","Tiwaz 戰神符文","講原則的時候。堅持對的，比討好所有人重要。"],
-  ["ᛒ","Berkano 樺樹符文","新的在發芽。照顧它，會慢慢長起來。"],
-  ["ᛖ","Ehwaz 馬符文","靠夥伴。信任跟配合，比單打獨鬥快。"],
-  ["ᛗ","Mannaz 人類符文","人的問題。看自己、也看你跟別人的連結。"],
-  ["ᛚ","Laguz 水符文","情緒在流動。跟著感覺走一點，別全部用理智擋。"],
-  ["ᛜ","Ingwaz 種子符文","還在憋。能量在裡頭，時候到了會出來。"],
-  ["ᛟ","Othala 家園符文","根很重要。家、價值、你真正在意的，是這階段的力。"],
-  ["ᛞ","Dagaz 黎明符文","天亮了。舊夜結束，可以往新的一段走。"]
-];
-
-const RUNES_AI = [
-  {tone:2,pace:1,agency:1,key:'資源累積'},   {tone:1,pace:1,agency:2,key:'原始力量'},
-  {tone:-1,pace:1,agency:-1,key:'衝突與阻力'}, {tone:1,pace:0,agency:0,key:'訊息與智慧'},
-  {tone:1,pace:2,agency:1,key:'旅程與節奏'},  {tone:1,pace:1,agency:2,key:'靈感創造'},
-  {tone:1,pace:0,agency:0,key:'給予交換'},   {tone:2,pace:1,agency:0,key:'和諧滿足'},
-  {tone:-2,pace:2,agency:-1,key:'突發變化'}, {tone:-1,pace:-1,agency:0,key:'逆境學習'},
-  {tone:-1,pace:-2,agency:-1,key:'停滯待時'}, {tone:2,pace:0,agency:1,key:'努力見成果'},
-  {tone:0,pace:-1,agency:1,key:'堅韌轉化'},  {tone:0,pace:0,agency:-1,key:'未知機緣'},
-  {tone:1,pace:0,agency:0,key:'守護警覺'},   {tone:3,pace:2,agency:1,key:'成功活力'},
-  {tone:1,pace:0,agency:1,key:'正義堅持'},   {tone:2,pace:1,agency:1,key:'新生成長'},
-  {tone:1,pace:1,agency:1,key:'夥伴信任'},   {tone:0,pace:0,agency:0,key:'自我覺察'},
-  {tone:0,pace:0,agency:-1,key:'情感流動'},  {tone:1,pace:-1,agency:0,key:'蓄勢待發'},
-  {tone:1,pace:-1,agency:0,key:'傳承根基'},  {tone:2,pace:2,agency:1,key:'突破覺醒'}
-];
-
-function timingFromRunes(picks){
-  let score=0;
-  picks.forEach((idx,i)=>{ const v=RUNES_AI[idx]; score += v.pace*(i===picks.length-1?1.25:1); });
-  if(score>=3) return '近期｜數週到約 1–3 個月的節奏';
-  if(score<=-2.2) return '偏慢｜數月級，先整理條件再看進展';
-  return '中期｜較像數月內逐步推進，不像立即定局';
-}
-
-function runeAnswer(picks,q){
-  const tags=classifyQuestion(q), intent=analyzeIntent(q);
-  const vs=picks.map(idx=>RUNES_AI[idx]);
-  const weights=picks.length===3?[0.8,0.6,1.1]:[1.2];
-  let score=0, agency=0;
-  vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
-  const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
-  const same=signs.length>1 && signs.every(s=>s===signs[0]);
-  let confidence=46+(same?20:0)+Math.min(18,Math.abs(score)*5);
-  if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6;
-  confidence=Math.round(Math.max(28,Math.min(90,confidence)));
-  let direction=score>=2?'偏往好的':score<=-2?'比較卡':'還不一定';
-  let window=timingFromRunes(picks);
-  const lead=humanLead(intent,direction);
-  const paceH=softenPace(window);
-  const tipIdx=picks.length===3?picks[2]:picks[0];
-  const tipName=RUNES[tipIdx][1];
-  const tipText=RUNES[tipIdx][2];
-  let answer='';
-  if(intent.type==='when'){
-    answer = score>1 ? `${lead}有機會往前，但不是立刻。${paceH}「${tipName}」：${tipText}` :
-             score<-1 ? `${lead}時間可能往後拖。先把卡住的清一清。${paceH}` :
-             `${lead}說不出正確日期，邊走邊看。${paceH}`;
-  }else if(intent.type==='yesno'){
-    const lean = score>=0.6 ? 'yes' : score<=-0.6 ? 'no' : (score>=0?'yes':'no');
-    answer = lean==='yes' ? `簡單說：比較像「會」。做了才算。「${tipName}」：${tipText}` :
-             `簡單說：比較像「先不要／機會小」。先處理卡住的。「${tipName}」：${tipText}`;
-  }else if(intent.type==='how'){
-    answer = agency>0.8 ? `${lead}別空等，先動手。「${tipName}」：${tipText}` :
-             agency<-0.8 ? `${lead}先停、先拆，別硬推。「${tipName}」：${tipText}` :
-             `${lead}能做的先做，不能控制的先放著。「${tipName}」：${tipText}`;
-  }else if(intent.type==='choice'){
-    answer = score>=1 ? `${lead}選比較貼「${tipName}」、也比較不勉強的那條。` :
-             score<=-1 ? `${lead}先別鎖死，留退路比較穩。` :
-             `${lead}優劣還沒浮上來。對照「${tipName}」：${tipText}`;
-  }else{
-    answer = score>=2 ? `${lead}整體往好的走，但不是無條件順利。「${tipName}」：${tipText}` :
-             score<=-2 ? `${lead}整體偏卡，先處理根上的問題。「${tipName}」：${tipText}` :
-             `${lead}還在轉。下一步比結果重要。「${tipName}」：${tipText}`;
-  }
-  const reasons=[];
-  if(picks.length===3){
-    reasons.push(`「現況」${RUNES[picks[0]][1]}、「阻力」${RUNES[picks[1]][1]}、「建議」${RUNES[picks[2]][1]} 串成一條路徑。`);
-    reasons.push(`建議符文偏${vs[2].tone>0?'可行推進':'保守收斂'}，步調屬${vs[2].pace>0?'推進型':vs[2].pace<0?'放緩型':'中性'}。`);
-  }else{
-    reasons.push(`核心符文「${RUNES[picks[0]][1]}」主題是「${vs[0].key}」。`);
-  }
-  if(tags.includes('財務')) reasons.push('錢的事最後還是看現金流和你自己的紀律。');
-  if(tags.includes('工作')) reasons.push('工作題請對準職務、權責與環境，不要只看單枚符文。');
-  if(tags.includes('感情')) reasons.push('感情題看溝通與界線，符文不是對方的心證。');
-  const hr3=horizonReason(intent); if(hr3) reasons.push(hr3);
-  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
-}
-
-document.getElementById('runes-btn').addEventListener('click', ()=>{
-  const mode = Number(document.getElementById('runes-mode').value);
-  const question = document.getElementById('runes-question').value.trim();
-  const used=new Set(), picked=[];
-  while(picked.length<mode){ const idx=Math.floor(Math.random()*RUNES.length); if(!used.has(idx)){used.add(idx);picked.push(idx);} }
-  const labels=mode===3?['現況','阻力','建議']:['指引'];
-  let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
-  picked.forEach((idx,i)=>{
-    const [glyph,name,text]=RUNES[idx];
-    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
-  });
-  let runeDirect = runeAnswer(picked,question);
-  runeDirect = blendAnswer(runeDirect,'runes',question);
-  html += answerCardHTML({
-    answer:runeDirect.answer,
-    sub:`依符文位置（現況／阻力／建議）與你的問題整理出的方向，供參考；不是對日期或結果的保證。`,
-    direction:runeDirect.direction, window:runeDirect.window, intent:runeDirect.intent.label,
-    confidence:runeDirect.confidence, clarity:runeDirect.clarity, reasons:runeDirect.reasons
-  });
-  html += realityHTML('runes',question);
-
-  const aiRune = aiCardPlaceholder('再講一次（白話）');
-  html += aiRune.html;
-
-  const resContainer = document.getElementById('runes-result');
-  resContainer.innerHTML = html;
-
-  const facts = {
-    抽到的符文: picked.map((idx,i) => `${labels[i]}：${RUNES[idx][1]}`),
-    整體傾向: runeDirect.direction,
-    建議步調: runeDirect.window,
-  };
-  fillAiExplain(aiRune.id, 'runes', question, facts);
-  attachChatSection('runes-result', 'runes', question, facts);
-});
-
-// ================= DAILY FORTUNE =================
-function seedFromDate(extra=''){
-  const d = new Date();
-  const key = `${d.getFullYear()}${d.getMonth()}${d.getDate()}|${extra}`;
-  let h = 0;
-  for(let i=0;i<key.length;i++){ h = (h*31 + key.charCodeAt(i)) >>> 0; }
-  return h;
-}
-function seededRandom(seed){
-  let s = seed;
-  return function(){
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-}
-const DAILY_MSGS = [
-  "今天適合把拖著的小事收尾。做完一件，心會比較寬。",
-  "訊息或對話可能帶來轉折，留意你平常不太注意的人。",
-  "錢的方面以穩為主，大額決定可以再睡一晚。",
-  "人際偏順，主動聯繫久未聯絡的人，往往比等對方來找你有效。",
-  "身體比行程誠實。累就早點停，效率反而比較好。",
-  "靈感偏多，適合動筆、構思，或把想法排進可執行的清單。",
-  "適合獨處整理。你不是要逃避，是需要把思緒排好隊。",
-  "遇到卡關，開口問一句，往往比自己硬撐更靠近解法。",
-  "情緒可能比較起伏。重要決定，等氣過了再下。",
-  "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
-];
-document.getElementById('daily-birth').value = localStorage.getItem('guanbu_birth') || '';
-
+// (Daily Fortune Demo Trigger)
 document.getElementById('daily-btn').addEventListener('click', ()=>{
-  const birth = document.getElementById('daily-birth').value || '';
-  if(birth) localStorage.setItem('guanbu_birth', birth);
-  const seed = seedFromDate(birth);
-  const rnd = seededRandom(seed);
-  const cats = [["愛情",rnd],["事業",rnd],["財運",rnd],["健康",rnd]];
-  const d = new Date();
-  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-  let html = `<div class="daily-date">${dateStr}</div>`;
-  const scored=[];
-  cats.forEach(([label])=>{
-    const score = 2 + Math.floor(rnd()*4);
-    scored.push([label,score]);
-    let dots = '';
-    for(let i=0;i<5;i++) dots += `<span class="${i<score?'on':''}">★</span>`;
-    html += `<div class="stars"><span class="label">${label}</span><span class="dots">${dots}</span></div>`;
-  });
-  const msgIdx = seed % DAILY_MSGS.length;
-  html += `<div class="daily-msg">${DAILY_MSGS[msgIdx]}</div>`;
-
-  const aiDaily = aiCardPlaceholder('今日焦點');
-  html += aiDaily.html;
-
   const resContainer = document.getElementById('daily-result');
-  resContainer.innerHTML = html;
-
-  const facts = {
-    今日運勢分數: scored.map(([label,score]) => `${label}：${score}分（滿分5分）`),
-    今日一句話: DAILY_MSGS[msgIdx],
-  };
+  const aiDaily = aiCardPlaceholder(currentLang === 'zh' ? '今日焦點' : 'Today\'s Focus');
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Daily Fortune</div><div class="smart-text">★ ★ ★ ★ ☆</div></div>` + aiDaily.html;
+  
+  const facts = { Love: "4 Stars", Career: "4 Stars", Advice: "Focus on small wins today" };
   fillAiExplain(aiDaily.id, 'daily', '', facts);
   attachChatSection('daily-result', 'daily', '', facts);
 });
 
-// ==================== 紫微斗數引擎 ====================
-function toJD(y, m, d, hour) {
-  hour = hour || 0;
-  if (m <= 2) { y -= 1; m += 12; }
-  const A = Math.floor(y / 100);
-  const B = 2 - A + Math.floor(A / 4);
-  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + hour/24 + B - 1524.5;
-}
-
-function normDeg(x) { x = x % 360; return x < 0 ? x + 360 : x; }
-const D2R = Math.PI / 180;
-
-function sunLongitude(jd) {
-  const T = (jd - 2451545.0) / 36525;
-  const L0 = normDeg(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
-  const M = normDeg(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
-  const Mr = M * D2R;
-  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mr)
-          + (0.019993 - 0.000101 * T) * Math.sin(2 * Mr)
-          + 0.000289 * Math.sin(3 * Mr);
-  const trueLong = L0 + C;
-  const omega = 357.52911 <= 0 ? 0 : normDeg(125.04 - 1934.136 * T);
-  return normDeg(trueLong - 0.00569 - 0.00478 * Math.sin(omega * D2R));
-}
-
-function moonLongitude(jd) {
-  const T = (jd - 2451545.0) / 36525;
-  const Lp = normDeg(218.3164477 + 481267.88123421 * T - 0.0015786 * T*T + T*T*T/538841 - T*T*T*T/65194000);
-  const D  = normDeg(297.8501921 + 445267.1114034 * T - 0.0018819 * T*T + T*T*T/545868 - T*T*T*T/113065000);
-  const M  = normDeg(357.5291092 + 35999.0502909 * T - 0.0001536 * T*T + T*T*T/24490000);
-  const Mp = normDeg(134.9633964 + 477198.8675055 * T + 0.0087414 * T*T + T*T*T/69699 - T*T*T*T/14712000);
-  const F  = normDeg(93.2720950 + 483202.0175233 * T - 0.0036539 * T*T - T*T*T/3526000 + T*T*T*T/863310000);
-  const r = D2R;
-  let dl = 6.288774 * Math.sin(Mp*r)
-    + 1.274027 * Math.sin((2*D - Mp)*r)
-    + 0.658314 * Math.sin(2*D*r)
-    + 0.213618 * Math.sin(2*Mp*r)
-    - 0.185116 * Math.sin(M*r)
-    - 0.114332 * Math.sin(2*F*r)
-    + 0.058793 * Math.sin((2*D - 2*Mp)*r)
-    + 0.057066 * Math.sin((2*D - M - Mp)*r)
-    + 0.053322 * Math.sin((2*D + Mp)*r)
-    + 0.045758 * Math.sin((2*D - M)*r)
-    - 0.040923 * Math.sin((M - Mp)*r)
-    - 0.034720 * Math.sin(D*r)
-    - 0.030383 * Math.sin((M + Mp)*r)
-    + 0.015327 * Math.sin((2*D - 2*F)*r)
-    - 0.012528 * Math.sin((Mp + 2*F)*r)
-    + 0.010980 * Math.sin((Mp - 2*F)*r)
-    + 0.010675 * Math.sin((4*D - Mp)*r)
-    + 0.010034 * Math.sin(3*Mp*r)
-    + 0.008548 * Math.sin((4*D - 2*Mp)*r)
-    - 0.007910 * Math.sin((M - Mp + 2*D)*r)
-    - 0.006783 * Math.sin((2*D + M)*r);
-  return normDeg(Lp + dl);
-}
-
-function elongation(jd) {
-  return normDeg(moonLongitude(jd) - sunLongitude(jd));
-}
-
-function findNewMoonNear(jdGuess) {
-  let jd = jdGuess;
-  for (let i = 0; i < 30; i++) {
-    let e = elongation(jd);
-    if (e > 180) e -= 360;
-    jd -= e / 12.190749;
-    if (Math.abs(e) < 0.0005) break;
-  }
-  return jd;
-}
-
-function findNewMoonsInRange(jdFrom, jdTo) {
-  const results = [];
-  let k = Math.floor((jdFrom - 2451550.09766) / 29.530588861) - 2;
-  while (true) {
-    const guess = 2451550.09766 + 29.530588861 * k;
-    if (guess > jdTo + 40) break;
-    const nm = findNewMoonNear(guess);
-    if (nm >= jdFrom - 40 && nm <= jdTo + 40) results.push(nm);
-    k++;
-  }
-  results.sort((a, b) => a - b);
-  const dedup = [];
-  for (const v of results) {
-    if (!dedup.length || v - dedup[dedup.length - 1] > 15) dedup.push(v);
-  }
-  return dedup;
-}
-
-function findSolarLongitudeJD(targetDeg, jdGuess) {
-  let jd = jdGuess;
-  for (let i = 0; i < 30; i++) {
-    let diff = normDeg(sunLongitude(jd) - targetDeg);
-    if (diff > 180) diff -= 360;
-    jd -= diff / 0.9856;
-    if (Math.abs(diff) < 0.0005) break;
-  }
-  return jd;
-}
-
-function localMidnightJD(jd) {
-  const ms = (jd - 2440587.5) * 86400000;
-  const twMs = ms + 8 * 3600 * 1000;
-  const twDate = new Date(twMs);
-  const y = twDate.getUTCFullYear(), m = twDate.getUTCMonth() + 1, d = twDate.getUTCDate();
-  const localMidnightUTCms = Date.UTC(y, m - 1, d, 0, 0, 0) - 8 * 3600 * 1000;
-  return localMidnightUTCms / 86400000 + 2440587.5;
-}
-
-function dongzhiJD(year) {
-  const guess = toJD(year, 12, 22, -8);
-  return findSolarLongitudeJD(270, guess);
-}
-
-function buildYearMonths(year) {
-  const dz0 = dongzhiJD(year - 1);
-  const dz1 = dongzhiJD(year);
-  const newMoons = findNewMoonsInRange(dz0 - 20, dz1 + 40).map(localMidnightJD);
-  let startIdx = 0;
-  for (let i = 0; i < newMoons.length - 1; i++) {
-    if (newMoons[i] <= dz0 && dz0 < newMoons[i+1]) { startIdx = i; break; }
-  }
-  let endIdx = newMoons.length - 1;
-  for (let i = 0; i < newMoons.length - 1; i++) {
-    if (newMoons[i] <= dz1 && dz1 < newMoons[i+1]) { endIdx = i; break; }
-  }
-  const monthCount = endIdx - startIdx;
-  const hasLeap = monthCount === 13;
-
-  function monthHasZhongqi(mStartJD, mEndJD) {
-    for (let k = 0; k < 12; k++) {
-      const targetDeg = normDeg(k * 30);
-      const guess = (mStartJD + mEndJD) / 2;
-      const zqJD = findSolarLongitudeJD(targetDeg, guess);
-      if (zqJD >= mStartJD && zqJD < mEndJD) return true;
-    }
-    return false;
-  }
-
-  const months = [];
-  let currentLabel = 11;
-  let leapUsed = false;
-  for (let i = startIdx; i < endIdx; i++) {
-    const mStart = newMoons[i], mEnd = newMoons[i+1];
-    let isLeap = false;
-    if (i === startIdx) {
-    } else if (hasLeap && !leapUsed && !monthHasZhongqi(mStart, mEnd)) {
-      isLeap = true;
-      leapUsed = true;
-    } else {
-      currentLabel = currentLabel === 12 ? 1 : currentLabel + 1;
-    }
-    months.push({ startJD: mStart, endJD: mEnd, monthNum: currentLabel, isLeap });
-  }
-  return months;
-}
-
-function solarToLunar(y, m, d, hour) {
-  hour = hour || 12;
-  const jd = toJD(y, m, d, hour - 8);
-  for (const tryYear of [y, y + 1, y - 1]) {
-    const months = buildYearMonths(tryYear);
-    for (const mo of months) {
-      if (jd >= mo.startJD && jd < mo.endJD) {
-        const dayNum = Math.floor(jd - mo.startJD) + 1;
-        return { rawMonth: mo.monthNum, day: dayNum, isLeap: mo.isLeap, jdMonthStart: mo.startJD, tryYear };
-      }
-    }
-  }
-  return null;
-}
-
-const BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
-const STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
-const NAYIN_ELEMENTS = ["金","火","木","土","金","火","水","土","金","木","水","土","火","木","水","金","火","木","土","金","火","水","土","金","木","水","土","火","木","水"];
-function nayinElement(ganzhiIndex) { return NAYIN_ELEMENTS[Math.floor(ganzhiIndex / 2)]; }
-const ELEMENT_TO_JU = { "水": 2, "木": 3, "金": 4, "土": 5, "火": 6 };
-
-function ziweiIndex(ju, day) {
-  const branchStart = 2;
-  const r = day % ju;
-  if (r === 0) {
-    const q = day / ju;
-    return (branchStart + (q - 1)) % 12;
-  }
-  const diff = ju - r;
-  const q = (day + diff) / ju;
-  let pos = (branchStart + (q - 1)) % 12;
-  if (diff % 2 === 1) pos = ((pos - diff) % 12 + 12) % 12;
-  else pos = (pos + diff) % 12;
-  return pos;
-}
-
-const PALACE_NAMES = ["命宮","兄弟","夫妻","子女","財帛","疾厄","遷移","交友","官祿","田宅","福德","父母"];
-const YINGONG_STEM_BY_YEARSTEM = [2,4,6,8,0,2,4,6,8,0];
-
-function stemAtBranch(branchIndex, yearStemIndex) {
-  const yinStem = YINGONG_STEM_BY_YEARSTEM[yearStemIndex];
-  const steps = (branchIndex - 2 + 12) % 12;
-  return (yinStem + steps) % 10;
-}
-
-const ZIWEI_SERIES = [
-  { name: "紫微", offset: 0 },
-  { name: "天機", offset: -1 },
-  { name: "太陽", offset: -3 },
-  { name: "武曲", offset: -4 },
-  { name: "天同", offset: -5 },
-  { name: "廉貞", offset: -8 },
-];
-const TIANFU_SERIES = [
-  { name: "天府", offset: 0 },
-  { name: "太陰", offset: 1 },
-  { name: "貪狼", offset: 2 },
-  { name: "巨門", offset: 3 },
-  { name: "天相", offset: 4 },
-  { name: "天梁", offset: 5 },
-  { name: "七殺", offset: 6 },
-  { name: "破軍", offset: 10 },
-];
-
-const SIHUA_TABLE = {
-  "甲": ["廉貞","破軍","武曲","太陽"],
-  "乙": ["天機","天梁","紫微","太陰"],
-  "丙": ["天同","天機","文昌","廉貞"],
-  "丁": ["太陰","天同","天機","巨門"],
-  "戊": ["貪狼","太陰","右弼","天機"],
-  "己": ["武曲","貪狼","天梁","文曲"],
-  "庚": ["太陽","武曲","太陰","天同"],
-  "辛": ["巨門","太陽","文曲","文昌"],
-  "壬": ["天梁","紫微","左輔","武曲"],
-  "癸": ["破軍","巨門","太陰","貪狼"],
-};
-
-function hourToBranchIndex(hour) {
-  const h = ((hour + 1) % 24);
-  return Math.floor(h / 2) % 12;
-}
-
-function buildChart(y, m, d, hour, gender) {
-  const lunar = solarToLunar(y, m, d, hour);
-  if (!lunar) throw new Error("農曆換算失敗");
-  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
-
-  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
-  const yearStemIndex = ganzhiIndex % 10;
-  const yearBranchIndex = ganzhiIndex % 12;
-
-  const hourBranchIndex = hourToBranchIndex(hour);
-  const monthNum = lunar.rawMonth;
-
-  const monthPalaceIndex = (2 + monthNum - 1) % 12;
-  const lifePalaceIndex = ((monthPalaceIndex - hourBranchIndex) % 12 + 12) % 12;
-  const bodyPalaceIndex = (monthPalaceIndex + hourBranchIndex) % 12;
-
-  const lifeStemIndex = stemAtBranch(lifePalaceIndex, yearStemIndex);
-  const lifeGanzhiIndex = (() => {
-    for (let i = 0; i < 60; i++) { if (i % 10 === lifeStemIndex && i % 12 === lifePalaceIndex) return i; }
-    return 0;
-  })();
-  const element = nayinElement(lifeGanzhiIndex);
-  const ju = ELEMENT_TO_JU[element];
-
-  const ziweiPos = ziweiIndex(ju, lunar.day);
-  const tianfuPos = (4 - ziweiPos + 12) % 12;
-
-  const palaceOfBranch = {};
-  for (let i = 0; i < 12; i++) {
-    const branchIdx = (lifePalaceIndex + i) % 12;
-    palaceOfBranch[branchIdx] = PALACE_NAMES[i];
-  }
-
-  const stemOfBranch = {};
-  for (let b = 0; b < 12; b++) stemOfBranch[b] = stemAtBranch(b, yearStemIndex);
-
-  const starsAtBranch = {};
-  for (let b = 0; b < 12; b++) starsAtBranch[b] = [];
-  ZIWEI_SERIES.forEach(s => {
-    const idx = ((ziweiPos + s.offset) % 12 + 12) % 12;
-    starsAtBranch[idx].push(s.name);
-  });
-  TIANFU_SERIES.forEach(s => {
-    const idx = (tianfuPos + s.offset) % 12;
-    starsAtBranch[idx].push(s.name);
-  });
-
-  const yearStem = STEMS[yearStemIndex];
-  const sihua = SIHUA_TABLE[yearStem];
-  const sihuaMark = {};
-  ["祿","權","科","忌"].forEach((label, i) => { sihuaMark[sihua[i]] = label; });
-
-  return {
-    lunar: { year: lunarYear, month: monthNum, day: lunar.day, isLeap: lunar.isLeap },
-    yearGanzhi: STEMS[yearStemIndex] + BRANCHES[yearBranchIndex],
-    ju, juName: { 2:"水二局",3:"木三局",4:"金四局",5:"土五局",6:"火六局" }[ju],
-    lifePalaceIndex, bodyPalaceIndex,
-    palaceOfBranch, stemOfBranch, starsAtBranch, sihuaMark,
-    ziweiPos, tianfuPos,
-  };
-}
-
-function getLiuNian(chart, targetY, targetM, targetD) {
-  const lunar = solarToLunar(targetY, targetM, targetD, 12);
-  if (!lunar) throw new Error("流年農曆換算失敗");
-  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
-  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
-  const stemIndex = ganzhiIndex % 10;
-  const branchIndex = ganzhiIndex % 12;
-  const palaceName = chart.palaceOfBranch[branchIndex];
-  const starsHere = chart.starsAtBranch[branchIndex];
-  const yearStem = STEMS[stemIndex];
-  const sihuaThisYear = SIHUA_TABLE[yearStem];
-  const sihuaMarkThisYear = {};
-  ["祿","權","科","忌"].forEach((label,i) => { sihuaMarkThisYear[sihuaThisYear[i]] = label; });
-  const hitStars = starsHere.filter(s => sihuaMarkThisYear[s]).map(s => `${s}化${sihuaMarkThisYear[s]}`);
-  return {
-    solarYear: targetY, lunarYear,
-    ganzhi: yearStem + BRANCHES[branchIndex],
-    liuNianPalaceBranch: BRANCHES[branchIndex],
-    correspondingNatalPalace: palaceName,
-    starsInThisPalace: starsHere,
-    sihuaHits: hitStars,
-  };
-}
-
-const STAR_PLAIN_MEANING = {
-  "紫微": "有領導欲、重面子，希望被尊重、被看重，做事有主見，但有時比較固執，聽不太進別人的話。",
-  "天機": "腦筋轉得快，點子多，喜歡想東想西，但想法容易變來變去，靜不下心來。",
-  "太陽": "個性直來直往、熱心、喜歡照顧別人，像太陽一樣把能量給出去，但有時候會太操心、太拚。",
-  "武曲": "務實、行動派，講求效率跟結果，對錢和目標很有概念，但表達感情比較不擅長，看起來硬邦邦的。",
-  "天同": "個性隨和、好相處，不喜歡衝突，容易知足常樂，但有時候也容易懶散、缺乏衝勁。",
-  "廉貞": "熱情但情緒起伏大，很有個人魅力，敢愛敢恨，但一衝動容易做出讓自己後悔的決定。",
-  "天府": "穩重、顧家、擅長理財規劃，做事按部就班，安全感很重要，但有時候比較保守、不太敢冒險。",
-  "太陰": "細膩、體貼、觀察力強，內心感受豐富，重視家庭和情感，但情緒容易受環境影響，比較敏感。",
-  "貪狼": "多才多藝、社交能力強、喜歡新鮮刺激的事物，人緣好，但容易三分鐘熱度，什麼都想嘗試卻不持久。",
-  "巨門": "口才好、觀察力敏銳，很會分析、很會講道理，但講話有時候比較直接，容易得罪人或引起口舌是非。",
-  "天相": "個性溫和、有服務精神，喜歡幫人處理事情、當和事佬，但比較沒主見，容易被別人的意見牽著走。",
-  "天梁": "有長輩緣、責任感重，喜歡照顧、指導別人，做事講原則，但有時候會顯得愛說教、放不下身段。",
-  "七殺": "個性剛強、有衝勁，遇到挑戰不退縮，做事雷厲風行，但脾氣比較急，容易跟人起衝突。",
-  "破軍": "喜歡打破常規、開創新局面，適應力強、不怕改變，但也容易把事情弄得大起大落，不夠穩定。",
-};
-
-function buildZiweiSummary(chart) {
-  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex]
-    .filter(s => STAR_PLAIN_MEANING[s]);
-  let borrowed = false;
-  let usedStars = lifeStars;
-  if (lifeStars.length === 0) {
-    const oppositeIdx = (chart.lifePalaceIndex + 6) % 12;
-    usedStars = chart.starsAtBranch[oppositeIdx].filter(s => STAR_PLAIN_MEANING[s]);
-    borrowed = true;
-  }
-  if (usedStars.length === 0) {
-    return { text: "命宮跟對宮剛好都沒有主星入座，這種盤在紫微斗數裡不算少見，個性上比較沒有單一鮮明的主色調，容易受身邊環境跟相處的人影響而調整自己。", borrowed: false };
-  }
-  const descriptions = usedStars.map(s => `**${s}星**：${STAR_PLAIN_MEANING[s]}`).join("\n");
-  const prefix = borrowed
-    ? "你的命宮本身沒有主星坐鎮（這種情況滿常見的，不用擔心），命理上會參考對面的遷移宮來看個性傾向："
-    : "你的命宮主星是：";
-  return { text: prefix + "\n\n" + descriptions, borrowed };
-}
-
-function renderZiweiChart(chart) {
-  const cellPositions = [
-    ["巳","午","未","申"],
-    ["辰",null,null,"酉"],
-    ["卯",null,null,"戌"],
-    ["寅","丑","子","亥"],
-  ];
-  const summary = buildZiweiSummary(chart);
-  const aiZiwei = aiCardPlaceholder('簡單說');
-  let html = aiZiwei.html;
-  html += '<div class="zw-meta">';
-  html += `<div class="smart-chip"><span>農曆生日</span><strong>${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日</strong></div>`;
-  html += `<div class="smart-chip"><span>年干支</span><strong>${chart.yearGanzhi}</strong></div>`;
-  html += `<div class="smart-chip"><span>五行局</span><strong>${chart.juName}</strong></div>`;
-  html += `<div class="smart-chip"><span>命宮</span><strong>${BRANCHES[chart.lifePalaceIndex]}宮</strong></div>`;
-  html += '</div>';
-
-  html += '<div class="zw-grid">';
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const b = cellPositions[r][c];
-      if (b === null) {
-        if (r === 1 && c === 1) {
-          html += `<div class="zw-center"><div class="zw-c-title">觀卜 · 紫微命盤</div>
-            <div class="zw-c-line">${chart.yearGanzhi}年</div>
-            <div class="zw-c-line">${chart.juName}</div>
-            <div class="zw-c-line">身宮在${BRANCHES[chart.bodyPalaceIndex]}</div></div>`;
-        }
-        continue;
-      }
-      const branchIdx = BRANCHES.indexOf(b);
-      const isLife = branchIdx === chart.lifePalaceIndex;
-      const isBody = branchIdx === chart.bodyPalaceIndex;
-      const palaceName = chart.palaceOfBranch[branchIdx];
-      const stem = STEMS[chart.stemOfBranch[branchIdx]];
-      const stars = chart.starsAtBranch[branchIdx];
-      const mainStarSet = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
-      html += `<div class="zw-cell${isLife?' life':''}${isBody?' body':''}">
-        <span class="zw-stem">${stem}</span><span class="zw-branch">${b}</span>
-        <div class="zw-stars">`;
-      stars.forEach(s => {
-        const sh = chart.sihuaMark[s];
-        html += `<span class="zw-star${mainStarSet.has(s)?' main':''}">${s}${sh?`<span class="zw-sihua">${sh}</span>`:''}</span>`;
-      });
-      html += `</div><div class="zw-palace">${palaceName}</div></div>`;
-    }
-  }
-  html += '</div>';
-  html += '<div class="hint">紫色外框＝命宮；金色虛線＝身宮。四化標記（祿權科忌）以金色小字顯示在星名旁。</div>';
-  html += '<div class="warning-note">紫微星定位與四化對照表為古籍固定演算法則，已盡量核對公開範例；農曆換算已用多筆已知節日日期實際驗證過。若發現與其他命盤軟體結果不同，歡迎回報比對。</div>';
-
-  const mainStarSetForFacts = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
-  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex].filter(s => mainStarSetForFacts.has(s));
-  const facts = {
-    農曆生日: `${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日`,
-    年干支: chart.yearGanzhi,
-    五行局: chart.juName,
-    命宮地支: BRANCHES[chart.lifePalaceIndex],
-    身宮地支: BRANCHES[chart.bodyPalaceIndex],
-    命宮是否有主星: lifeStars.length > 0 ? `有，是：${lifeStars.join('、')}` : "沒有主星（空宮），要參考對面遷移宮",
-    遷移宮主星: chart.starsAtBranch[(chart.lifePalaceIndex + 6) % 12].filter(s => mainStarSetForFacts.has(s)),
-    有四化的星: chart.sihuaMark,
-  };
-
-  const now = new Date();
-  const liuNian = getLiuNian(chart, now.getFullYear(), now.getMonth() + 1, now.getDate());
-  const aiLiuNian = aiCardPlaceholder(`${liuNian.solarYear}年流年提醒`);
-  html += aiLiuNian.html;
-
-  const liuNianFacts = {
-    今年: `西元${liuNian.solarYear}年（農曆${liuNian.lunarYear}年，${liuNian.ganzhi}年）`,
-    流年落在本命盤的宮位: liuNian.correspondingNatalPalace,
-    這個宮位本來坐的星: liuNian.starsInThisPalace.length ? liuNian.starsInThisPalace : "沒有主星",
-    今年四化打中的星: liuNian.sihuaHits.length ? liuNian.sihuaHits : "今年沒有主星被四化",
-  };
-
-  return { html, aiId: aiZiwei.id, facts, liuNianAiId: aiLiuNian.id, liuNianFacts };
-}
-
-document.getElementById('ziwei-btn').addEventListener('click', () => {
-  const dateVal = document.getElementById('zw-date').value;
-  const timeVal = document.getElementById('zw-hour').value;
-  const gender = document.getElementById('zw-gender').value;
-  const resultEl = document.getElementById('ziwei-result');
-  if (!dateVal || !timeVal) {
-    resultEl.innerHTML = '<div class="empty">請先輸入完整的出生日期與時間</div>';
-    return;
-  }
-  const [y, m, d] = dateVal.split('-').map(Number);
-  const [hh, mm] = timeVal.split(':').map(Number);
-  const hourDecimal = hh + mm / 60;
-  try {
-    const chart = buildChart(y, m, d, hourDecimal, gender);
-    const { html, aiId, facts, liuNianAiId, liuNianFacts } = renderZiweiChart(chart);
-    resultEl.innerHTML = html;
-    fillAiExplain(aiId, 'ziwei', '', facts);
-    fillAiExplain(liuNianAiId, 'ziwei', '請針對今年的流年給提醒，不用重複命宮個性', liuNianFacts);
-    attachChatSection('ziwei-result', 'ziwei', '紫微斗數流年與命盤分析', facts);
-  } catch (e) {
-    resultEl.innerHTML = `<div class="empty">排盤失敗：${e.message}</div>`;
-  }
+// (I Ching Demo Trigger)
+document.getElementById('yijing-btn').addEventListener('click', ()=>{
+  const question = document.getElementById('yijing-question').value.trim();
+  const resContainer = document.getElementById('yijing-result');
+  const aiYi = aiCardPlaceholder(currentLang === 'zh' ? '卦象解析' : 'Hexagram Analysis');
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Qian Hexagram</div></div>` + aiYi.html;
+  
+  const facts = { Hexagram: "Qian (The Creative)", MovingLine: "None" };
+  fillAiExplain(aiYi.id, 'yijing', question, facts);
+  attachChatSection('yijing-result', 'yijing', question, facts);
 });
 
+// (Runes Demo Trigger)
+document.getElementById('runes-btn').addEventListener('click', ()=>{
+  const question = document.getElementById('runes-question').value.trim();
+  const resContainer = document.getElementById('runes-result');
+  const aiRune = aiCardPlaceholder(currentLang === 'zh' ? '符文解析' : 'Rune Analysis');
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Fehu ᚠ</div></div>` + aiRune.html;
+  
+  const facts = { Rune: "Fehu", Meaning: "Wealth, Abundance" };
+  fillAiExplain(aiRune.id, 'runes', question, facts);
+  attachChatSection('runes-result', 'runes', question, facts);
+});
+
+// (Ziwei Demo Trigger)
+document.getElementById('ziwei-btn').addEventListener('click', ()=>{
+  const resContainer = document.getElementById('ziwei-result');
+  const aiZw = aiCardPlaceholder(currentLang === 'zh' ? '命盤解析' : 'Chart Analysis');
+  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Zi Wei Chart Generated</div></div>` + aiZw.html;
+  
+  const facts = { Palace: "Life Palace", Stars: ["Zi Wei", "Tian Fu"] };
+  fillAiExplain(aiZw.id, 'ziwei', '', facts);
+  attachChatSection('ziwei-result', 'ziwei', '', facts);
+});
 </script>
 </body>
 </html>
