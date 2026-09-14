@@ -399,48 +399,844 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
   attachChatSection('tarot-result', 'tarot', question, facts);
 });
 
-// 其餘功能簡化觸發
+const HEX_NAMES = {
+  1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",
+  11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",
+  21:"噬嗑",22:"賁",23:"剝",24:"復",25:"無妄",26:"大畜",27:"頤",28:"大過",29:"坎",30:"離",
+  31:"咸",32:"恆",33:"遯",34:"大壯",35:"晉",36:"明夷",37:"家人",38:"睽",39:"蹇",40:"解",
+  41:"損",42:"益",43:"夬",44:"姤",45:"萃",46:"升",47:"困",48:"井",49:"革",50:"鼎",
+  51:"震",52:"艮",53:"漸",54:"歸妹",55:"豐",56:"旅",57:"巽",58:"兌",59:"渙",60:"節",
+  61:"中孚",62:"小過",63:"既濟",64:"未濟"
+};
+const HEX_TEXT = {
+  1:"能量很足，可以主動出手，別再只是觀望。",
+  2:"先承接、先配合，用柔的方式走，反而比較順。",
+  3:"事情剛開始本來就卡，慢慢來，別急著一次做完。",
+  4:"你還在摸，硬闖不如先問清楚、找人帶一下。",
+  5:"條件還沒齊，再等一下會比硬推劃算。",
+  6:"有人在抬槓。先退一步談，硬碰多半兩敗俱傷。",
+  7:"這題要靠組織跟紀律，一個人衝不太夠。",
+  8:"找對人一起做，比自己硬撐有效。",
+  9:"力氣還在存，先養、先備，現在衝太早。",
+  10:"每一步看清楚再踩，小心能少踩坑。",
+  11:"天時地利都還行，可以做，別錯過這波。",
+  12:"路卡住了。先縮、先養，等路口鬆一點再動。",
+  13:"跟同路人一起走，事會好辦很多。",
+  14:"收成不錯，但別太張揚，謙一點比較久。",
+  15:"把姿態放低一點，空間反而比較大。",
+  16:"心情跟勢頭都不錯，適合開新局，但別飄。",
+  17:"跟著變化走，比死守自己的想法聰明。",
+  18:"舊問題該清了，躲越久越麻煩。",
+  19:"影響力在變大，好好經營這段關係或機會。",
+  20:"先看、先想，看懂了再動，會少走彎路。",
+  21:"卡點要處理，拖著只會更黏。",
+  22:"表面可以顧，但底子也要補，不然撐不久。",
+  23:"在退潮，先守本、少擴張，等谷底過了再說。",
+  24:"壞的那段快過了，新的一輪在抬頭，可以抱點希望。",
+  25:"別硬拗、別硬求，順一點、實在一點比較平安。",
+  26:"這段適合存實力，厚了再發，急也急不來。",
+  27:"吃什麼、說什麼都有關係；養身體也養分寸。",
+  28:"負擔有點過重，要想非常手段，不然會壓垮。",
+  29:"人在坑裡。冷靜、一步一步走，才出得去。",
+  30:"方向是亮的，認準正路堅持，會有回報。",
+  31:"有感覺、有共鳴，感情或合作都適合表態。",
+  32:"長久靠穩定，別一下東一下西。",
+  33:"該退就退，抽身有時比硬撐聰明。",
+  34:"氣勢很強，但太剛容易得罪人，留一點餘地。",
+  35:"往上走的階段，適合露臉、爭取被看見。",
+  36:"光被蓋住了。先低調、先保自己，別硬出頭。",
+  37:"先顧好家裡或內部，外面的事先排後面。",
+  38:"想法不合很正常，求同存異，別為了贏而吵。",
+  39:"路難走。先緩、先找人幫忙，硬闖多半撞牆。",
+  40:"壓力在鬆，喘口氣，事情會比較好推。",
+  41:"要捨一點才能換長遠的，死抓反而虧。",
+  42:"有人有資源在靠近，把握住可以往外擴。",
+  43:"該斷的斷乾淨，留尾巴以後會咬人。",
+  44:"突然冒出的人事物，保持清醒，別被牽著走。",
+  45:"人聚在一起，適合整合、招募、把資源排好。",
+  46:"往上爬可以，但一步一步來，比一步登天穩。",
+  47:"人困、事困，但心別先垮，熬得過會過來。",
+  48:"基本盤還在，但要維護，別讓源頭乾掉。",
+  49:"舊的玩不下去了，改一改才有新局面。",
+  50:"在立新的秩序，穩穩扛責任，會有成績。",
+  51:"突然被震一下。先穩住自己，別跟著慌。",
+  52:"該停就停，安靜想清楚，比一直動有用。",
+  53:"慢慢來才走得遠，急進容易摔。",
+  54:"名分、條件還沒定，別急著拍板。",
+  55:"高峰期可以把握，但也要想之後怎麼收。",
+  56:"人在過渡、或不在自己地盤，謙和一點少麻煩。",
+  57:"用柔的方式滲透，比硬碰有效。",
+  58:"適合聊天、談判、分享，氣氛打開事比較好談。",
+  59:"人心散了。該重新收攏，不然各走各的。",
+  60:"有節制才走得久，過或不及都容易出問題。",
+  61:"用真心，別人比較願意信你、挺你。",
+  62:"收著做、別好高騖遠，穩過這段最重要。",
+  63:"差不多成了，但別鬆，後面還要顧。",
+  64:"還沒圓，繼續做，別在最後關頭停。",
+};
+
+const TRI_MATRIX = [
+  [1,43,14,34,9,5,26,11],
+  [10,58,38,54,61,60,41,19],
+  [13,49,30,55,37,63,22,36],
+  [25,17,21,51,42,3,27,24],
+  [44,28,50,32,57,48,18,46],
+  [6,47,64,40,59,29,4,7],
+  [33,31,56,62,53,39,52,15],
+  [12,45,35,16,20,8,23,2]
+];
+function tossLine(){
+  let sum=0;
+  for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3;
+  return sum;
+}
+function trigramIndex(bits){
+  const key = bits.join('');
+  const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7};
+  return map[key];
+}
+
 document.getElementById('yijing-btn').addEventListener('click', ()=>{
   const question = document.getElementById('yijing-question').value.trim();
+  const lines = [];
+  for(let i=0;i<6;i++) lines.push(tossLine());
+
+  const bits = lines.map(v => (v===7||v===9)?1:0);
+  const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
+  const hexNum = hexFromBits(bits);
+  const changedNum = hexFromBits(changedBits);
+  const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
+
+  function renderHex(vals, title, num, changedView=false){
+    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
+    vals.forEach((v,i)=>{
+      const solid = changedView ? !!changedBits[i] : (v===7||v===9);
+      const changing = !changedView && (v===6||v===9);
+      h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
+    });
+    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div><div class="result-sub">第 ${num} 卦</div></div>`;
+    return h;
+  }
+
+  let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
+  html += `<div class="hex-pair">${renderHex(lines,'本卦',hexNum)}${renderHex(lines,'之卦',changedNum,true)}</div>`;
+  html += `<div class="meta-card">`;
+  html += `<div class="meta-row"><span>現在</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>有變化</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):'沒有'}</strong></div>`;
+  html += `<div class="meta-row"><span>之後</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
+  html += `</div>`;
+
+  const lineTags = lines.map((v,i)=>`<span class="tag">${lineLabel(i)} ${v}${v===6?' 老陰':v===7?' 少陽':v===8?' 少陰':' 老陽'}</span>`).join('');
+  html += `<div style="text-align:center;margin:8px 0 12px;">${lineTags}</div>`;
+
+  let synthesis = '';
+  if(!moving.length){
+    synthesis = `現在是「${HEX_NAMES[hexNum]}」：${HEX_TEXT[hexNum]}`;
+  }else if(moving.length<=2){
+    synthesis = `現在是「${HEX_NAMES[hexNum]}」，有在變的地方：${moving.map(lineLabel).join('、')}。變完後比較像「${HEX_NAMES[changedNum]}」。`;
+  }else{
+    synthesis = `變化比較多。現在是「${HEX_NAMES[hexNum]}」，變完後比較看「${HEX_NAMES[changedNum]}」。`;
+  }
+  html += `<div class="result-text">${synthesis}</div>`;
+  let directHex = hexAnswer(hexNum,changedNum,moving,question);
+  directHex = blendAnswer(directHex,'yijing',question);
+  html += answerCardHTML({
+    answer:directHex.answer, sub:`只是參考，不是保證一定會發生。`,
+    direction:directHex.direction, window:directHex.window, intent:directHex.intent.label,
+    confidence:directHex.confidence, clarity:directHex.clarity, reasons:directHex.reasons
+  });
+  if(directHex.tags.includes('市場')){
+    html += marketOracleHTML(marketNarrative(directHex.direction,directHex.intent.horizon,directHex.focus,directHex.score,directHex.volatility));
+  }
+  html += realityHTML('yijing',question);
+
+  const aiHex = aiCardPlaceholder('再講一次（白話）');
+  html += aiHex.html;
+
   const resContainer = document.getElementById('yijing-result');
-  const aiYi = aiCardPlaceholder(dict[currentLang].ai_title);
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">I Ching Hexagram</div></div>` + aiYi.html;
-  
-  const facts = { Hexagram: "Qian (The Creative)", MovingLine: "None" };
-  fillAiExplain(aiYi.id, 'yijing', question, facts);
+  resContainer.innerHTML = html;
+
+  const facts = {
+    現在卦: HEX_NAMES[hexNum], 現在卦意: HEX_TEXT[hexNum],
+    之後卦: HEX_NAMES[changedNum], 之後卦意: HEX_TEXT[changedNum],
+    有變化的爻: moving.length ? moving.map(lineLabel) : '沒有',
+    問題意圖: directHex.intent,
+    整體傾向: directHex.direction,
+  };
+  fillAiExplain(aiHex.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });
 
+// ================= RUNES =================
+const RUNES = [
+  ["ᚠ","Fehu 財富符文","資源在靠近。你付出的，這段比較容易有回報。"],
+  ["ᚢ","Uruz 原牛符文","力氣有了。敢做、身體也跟得上的時候。"],
+  ["ᚦ","Thurisaz 巨人符文","有阻力、有衝突。先看清楚再迎，別衝動硬槓。"],
+  ["ᚨ","Ansuz 神諭符文","有話要聽。這次聽比說重要，訊息可能在別人嘴裡。"],
+  ["ᚱ","Raidho 旅程符文","在路上。順著節奏走，別急著終點。"],
+  ["ᚲ","Kenaz 火炬符文","靈感點了。適合動手做、把點子做出來。"],
+  ["ᚷ","Gebo 贈禮符文","有來有往才平衡。只拿或只給，關係都會歪。"],
+  ["ᚹ","Wunjo 喜悅符文","氣氛偏好，心情跟消息都有機會往上。"],
+  ["ᚺ","Hagalaz 冰雹符文","突然的變化。先護住自己，再處理善後。"],
+  ["ᚾ","Nauthiz 需求符文","有點難。難裡學到的，之後用得上。"],
+  ["ᛁ","Isa 冰符文","凍住了。硬推沒用，等化開再動。"],
+  ["ᛃ","Jera 豐收符文","耕過的會收。時候到了，別否定自己之前的努力。"],
+  ["ᛇ","Eihwaz 紫杉符文","要硬、要轉。起落都是過程，撐得住就過得去。"],
+  ["ᛈ","Perthro 命運符文","骰子還在轉。未知很大，先保留彈性。"],
+  ["ᛉ","Algiz 保護符文","有保護、也要警覺。直覺在擋危險，聽它。"],
+  ["ᛋ","Sowilo 太陽符文","目標清楚、力氣也在，適合往前拿結果。"],
+  ["ᛏ","Tiwaz 戰神符文","講原則的時候。堅持對的，比討好所有人重要。"],
+  ["ᛒ","Berkano 樺樹符文","新的在發芽。照顧它，會慢慢長起來。"],
+  ["ᛖ","Ehwaz 馬符文","靠夥伴。信任跟配合，比單打獨鬥快。"],
+  ["ᛗ","Mannaz 人類符文","人的問題。看自己、也看你跟別人的連結。"],
+  ["ᛚ","Laguz 水符文","情緒在流動。跟著感覺走一點，別全部用理智擋。"],
+  ["ᛜ","Ingwaz 種子符文","還在憋。能量在裡頭，時候到了會出來。"],
+  ["ᛟ","Othala 家園符文","根很重要。家、價值、你真正在意的，是這階段的力。"],
+  ["ᛞ","Dagaz 黎明符文","天亮了。舊夜結束，可以往新的一段走。"]
+];
+
+const RUNES_AI = [
+  {tone:2,pace:1,agency:1,key:'資源累積'},   {tone:1,pace:1,agency:2,key:'原始力量'},
+  {tone:-1,pace:1,agency:-1,key:'衝突與阻力'}, {tone:1,pace:0,agency:0,key:'訊息與智慧'},
+  {tone:1,pace:2,agency:1,key:'旅程與節奏'},  {tone:1,pace:1,agency:2,key:'靈感創造'},
+  {tone:1,pace:0,agency:0,key:'給予交換'},   {tone:2,pace:1,agency:0,key:'和諧滿足'},
+  {tone:-2,pace:2,agency:-1,key:'突發變化'}, {tone:-1,pace:-1,agency:0,key:'逆境學習'},
+  {tone:-1,pace:-2,agency:-1,key:'停滯待時'}, {tone:2,pace:0,agency:1,key:'努力見成果'},
+  {tone:0,pace:-1,agency:1,key:'堅韌轉化'},  {tone:0,pace:0,agency:-1,key:'未知機緣'},
+  {tone:1,pace:0,agency:0,key:'守護警覺'},   {tone:3,pace:2,agency:1,key:'成功活力'},
+  {tone:1,pace:0,agency:1,key:'正義堅持'},   {tone:2,pace:1,agency:1,key:'新生成長'},
+  {tone:1,pace:1,agency:1,key:'夥伴信任'},   {tone:0,pace:0,agency:0,key:'自我覺察'},
+  {tone:0,pace:0,agency:-1,key:'情感流動'},  {tone:1,pace:-1,agency:0,key:'蓄勢待發'},
+  {tone:1,pace:-1,agency:0,key:'傳承根基'},  {tone:2,pace:2,agency:1,key:'突破覺醒'}
+];
+
+function timingFromRunes(picks){
+  let score=0;
+  picks.forEach((idx,i)=>{ const v=RUNES_AI[idx]; score += v.pace*(i===picks.length-1?1.25:1); });
+  if(score>=3) return '近期｜數週到約 1–3 個月的節奏';
+  if(score<=-2.2) return '偏慢｜數月級，先整理條件再看進展';
+  return '中期｜較像數月內逐步推進，不像立即定局';
+}
+
+function runeAnswer(picks,q){
+  const tags=classifyQuestion(q), intent=analyzeIntent(q);
+  const vs=picks.map(idx=>RUNES_AI[idx]);
+  const weights=picks.length===3?[0.8,0.6,1.1]:[1.2];
+  let score=0, agency=0;
+  vs.forEach((v,i)=>{score+=v.tone*weights[i]; agency+=v.agency*weights[i];});
+  const signs=vs.map(v=>Math.sign(v.tone)).filter(Boolean);
+  const same=signs.length>1 && signs.every(s=>s===signs[0]);
+  let confidence=46+(same?20:0)+Math.min(18,Math.abs(score)*5);
+  if(picks.length===3 && vs[1].tone<0 && vs[2].tone>0) confidence+=6;
+  confidence=Math.round(Math.max(28,Math.min(90,confidence)));
+  let direction=score>=2?'偏往好的':score<=-2?'比較卡':'還不一定';
+  let window=timingFromRunes(picks);
+  const lead=humanLead(intent,direction);
+  const paceH=softenPace(window);
+  const tipIdx=picks.length===3?picks[2]:picks[0];
+  const tipName=RUNES[tipIdx][1];
+  const tipText=RUNES[tipIdx][2];
+  let answer='';
+  if(intent.type==='when'){
+    answer = score>1 ? `${lead}有機會往前，但不是立刻。${paceH}「${tipName}」：${tipText}` :
+             score<-1 ? `${lead}時間可能往後拖。先把卡住的清一清。${paceH}` :
+             `${lead}說不出正確日期，邊走邊看。${paceH}`;
+  }else if(intent.type==='yesno'){
+    const lean = score>=0.6 ? 'yes' : score<=-0.6 ? 'no' : (score>=0?'yes':'no');
+    answer = lean==='yes' ? `簡單說：比較像「會」。做了才算。「${tipName}」：${tipText}` :
+             `簡單說：比較像「先不要／機會小」。先處理卡住的。「${tipName}」：${tipText}`;
+  }else if(intent.type==='how'){
+    answer = agency>0.8 ? `${lead}別空等，先動手。「${tipName}」：${tipText}` :
+             agency<-0.8 ? `${lead}先停、先拆，別硬推。「${tipName}」：${tipText}` :
+             `${lead}能做的先做，不能控制的先放著。「${tipName}」：${tipText}`;
+  }else if(intent.type==='choice'){
+    answer = score>=1 ? `${lead}選比較貼「${tipName}」、也比較不勉強的那條。` :
+             score<=-1 ? `${lead}先別鎖死，留退路比較穩。` :
+             `${lead}優劣還沒浮上來。對照「${tipName}」：${tipText}`;
+  }else{
+    answer = score>=2 ? `${lead}整體往好的走，但不是無條件順利。「${tipName}」：${tipText}` :
+             score<=-2 ? `${lead}整體偏卡，先處理根上的問題。「${tipName}」：${tipText}` :
+             `${lead}還在轉。下一步比結果重要。「${tipName}」：${tipText}`;
+  }
+  const reasons=[];
+  if(picks.length===3){
+    reasons.push(`「現況」${RUNES[picks[0]][1]}、「阻力」${RUNES[picks[1]][1]}、「建議」${RUNES[picks[2]][1]} 串成一條路徑。`);
+    reasons.push(`建議符文偏${vs[2].tone>0?'可行推進':'保守收斂'}，步調屬${vs[2].pace>0?'推進型':vs[2].pace<0?'放緩型':'中性'}。`);
+  }else{
+    reasons.push(`核心符文「${RUNES[picks[0]][1]}」主題是「${vs[0].key}」。`);
+  }
+  if(tags.includes('財務')) reasons.push('錢的事最後還是看現金流和你自己的紀律。');
+  if(tags.includes('工作')) reasons.push('工作題請對準職務、權責與環境，不要只看單枚符文。');
+  if(tags.includes('感情')) reasons.push('感情題看溝通與界線，符文不是對方的心證。');
+  const hr3=horizonReason(intent); if(hr3) reasons.push(hr3);
+  return {tags,intent,answer,direction,window,confidence,clarity:confidenceLabel(confidence),reasons};
+}
+
 document.getElementById('runes-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('runes-mode').value);
   const question = document.getElementById('runes-question').value.trim();
+  const used=new Set(), picked=[];
+  while(picked.length<mode){ const idx=Math.floor(Math.random()*RUNES.length); if(!used.has(idx)){used.add(idx);picked.push(idx);} }
+  const labels=mode===3?['現況','阻力','建議']:['指引'];
+  let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  picked.forEach((idx,i)=>{
+    const [glyph,name,text]=RUNES[idx];
+    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
+  });
+  let runeDirect = runeAnswer(picked,question);
+  runeDirect = blendAnswer(runeDirect,'runes',question);
+  html += answerCardHTML({
+    answer:runeDirect.answer,
+    sub:`依符文位置（現況／阻力／建議）與你的問題整理出的方向，供參考；不是對日期或結果的保證。`,
+    direction:runeDirect.direction, window:runeDirect.window, intent:runeDirect.intent.label,
+    confidence:runeDirect.confidence, clarity:runeDirect.clarity, reasons:runeDirect.reasons
+  });
+  html += realityHTML('runes',question);
+
+  const aiRune = aiCardPlaceholder('再講一次（白話）');
+  html += aiRune.html;
+
   const resContainer = document.getElementById('runes-result');
-  const aiRune = aiCardPlaceholder(dict[currentLang].ai_title);
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Fehu ᚠ</div></div>` + aiRune.html;
-  
-  const facts = { Rune: "Fehu", Meaning: "Wealth, Abundance" };
+  resContainer.innerHTML = html;
+
+  const facts = {
+    抽到的符文: picked.map((idx,i) => `${labels[i]}：${RUNES[idx][1]}`),
+    整體傾向: runeDirect.direction,
+    建議步調: runeDirect.window,
+  };
   fillAiExplain(aiRune.id, 'runes', question, facts);
   attachChatSection('runes-result', 'runes', question, facts);
 });
 
+// ================= DAILY FORTUNE =================
+function seedFromDate(extra=''){
+  const d = new Date();
+  const key = `${d.getFullYear()}${d.getMonth()}${d.getDate()}|${extra}`;
+  let h = 0;
+  for(let i=0;i<key.length;i++){ h = (h*31 + key.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function seededRandom(seed){
+  let s = seed;
+  return function(){
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+const DAILY_MSGS = [
+  "今天適合把拖著的小事收尾。做完一件，心會比較寬。",
+  "訊息或對話可能帶來轉折，留意你平常不太注意的人。",
+  "錢的方面以穩為主，大額決定可以再睡一晚。",
+  "人際偏順，主動聯繫久未聯絡的人，往往比等對方來找你有效。",
+  "身體比行程誠實。累就早點停，效率反而比較好。",
+  "靈感偏多，適合動筆、構思，或把想法排進可執行的清單。",
+  "適合獨處整理。你不是要逃避，是需要把思緒排好隊。",
+  "遇到卡關，開口問一句，往往比自己硬撐更靠近解法。",
+  "情緒可能比較起伏。重要決定，等氣過了再下。",
+  "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
+];
+document.getElementById('daily-birth').value = localStorage.getItem('guanbu_birth') || '';
+
 document.getElementById('daily-btn').addEventListener('click', ()=>{
+  const birth = document.getElementById('daily-birth').value || '';
+  if(birth) localStorage.setItem('guanbu_birth', birth);
+  const seed = seedFromDate(birth);
+  const rnd = seededRandom(seed);
+  const cats = [["愛情",rnd],["事業",rnd],["財運",rnd],["健康",rnd]];
+  const d = new Date();
+  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  let html = `<div class="daily-date">${dateStr}</div>`;
+  const scored=[];
+  cats.forEach(([label])=>{
+    const score = 2 + Math.floor(rnd()*4);
+    scored.push([label,score]);
+    let dots = '';
+    for(let i=0;i<5;i++) dots += `<span class="${i<score?'on':''}">★</span>`;
+    html += `<div class="stars"><span class="label">${label}</span><span class="dots">${dots}</span></div>`;
+  });
+  const msgIdx = seed % DAILY_MSGS.length;
+  html += `<div class="daily-msg">${DAILY_MSGS[msgIdx]}</div>`;
+
+  const aiDaily = aiCardPlaceholder('今日焦點');
+  html += aiDaily.html;
+
   const resContainer = document.getElementById('daily-result');
-  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Daily Energy</div></div>` + aiDaily.html;
-  
-  const facts = { Energy: "4 Stars", Advice: "Focus on today" };
+  resContainer.innerHTML = html;
+
+  const facts = {
+    今日運勢分數: scored.map(([label,score]) => `${label}：${score}分（滿分5分）`),
+    今日一句話: DAILY_MSGS[msgIdx],
+  };
   fillAiExplain(aiDaily.id, 'daily', '', facts);
   attachChatSection('daily-result', 'daily', '', facts);
 });
 
-document.getElementById('ziwei-btn').addEventListener('click', ()=>{
-  const resContainer = document.getElementById('ziwei-result');
-  const aiZw = aiCardPlaceholder(dict[currentLang].ai_title);
-  resContainer.innerHTML = `<div class="smart-card"><div class="smart-title">Zi Wei Chart</div></div>` + aiZw.html;
-  
-  const facts = { Palace: "Life Palace Chart generated" };
-  fillAiExplain(aiZw.id, 'ziwei', '', facts);
-  attachChatSection('ziwei-result', 'ziwei', '', facts);
+// ==================== 紫微斗數引擎 ====================
+function toJD(y, m, d, hour) {
+  hour = hour || 0;
+  if (m <= 2) { y -= 1; m += 12; }
+  const A = Math.floor(y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + hour/24 + B - 1524.5;
+}
+
+function normDeg(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+const D2R = Math.PI / 180;
+
+function sunLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L0 = normDeg(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
+  const M = normDeg(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+  const Mr = M * D2R;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mr)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * Mr)
+          + 0.000289 * Math.sin(3 * Mr);
+  const trueLong = L0 + C;
+  const omega = 357.52911 <= 0 ? 0 : normDeg(125.04 - 1934.136 * T);
+  return normDeg(trueLong - 0.00569 - 0.00478 * Math.sin(omega * D2R));
+}
+
+function moonLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const Lp = normDeg(218.3164477 + 481267.88123421 * T - 0.0015786 * T*T + T*T*T/538841 - T*T*T*T/65194000);
+  const D  = normDeg(297.8501921 + 445267.1114034 * T - 0.0018819 * T*T + T*T*T/545868 - T*T*T*T/113065000);
+  const M  = normDeg(357.5291092 + 35999.0502909 * T - 0.0001536 * T*T + T*T*T/24490000);
+  const Mp = normDeg(134.9633964 + 477198.8675055 * T + 0.0087414 * T*T + T*T*T/69699 - T*T*T*T/14712000);
+  const F  = normDeg(93.2720950 + 483202.0175233 * T - 0.0036539 * T*T - T*T*T/3526000 + T*T*T*T/863310000);
+  const r = D2R;
+  let dl = 6.288774 * Math.sin(Mp*r)
+    + 1.274027 * Math.sin((2*D - Mp)*r)
+    + 0.658314 * Math.sin(2*D*r)
+    + 0.213618 * Math.sin(2*Mp*r)
+    - 0.185116 * Math.sin(M*r)
+    - 0.114332 * Math.sin(2*F*r)
+    + 0.058793 * Math.sin((2*D - 2*Mp)*r)
+    + 0.057066 * Math.sin((2*D - M - Mp)*r)
+    + 0.053322 * Math.sin((2*D + Mp)*r)
+    + 0.045758 * Math.sin((2*D - M)*r)
+    - 0.040923 * Math.sin((M - Mp)*r)
+    - 0.034720 * Math.sin(D*r)
+    - 0.030383 * Math.sin((M + Mp)*r)
+    + 0.015327 * Math.sin((2*D - 2*F)*r)
+    - 0.012528 * Math.sin((Mp + 2*F)*r)
+    + 0.010980 * Math.sin((Mp - 2*F)*r)
+    + 0.010675 * Math.sin((4*D - Mp)*r)
+    + 0.010034 * Math.sin(3*Mp*r)
+    + 0.008548 * Math.sin((4*D - 2*Mp)*r)
+    - 0.007910 * Math.sin((M - Mp + 2*D)*r)
+    - 0.006783 * Math.sin((2*D + M)*r);
+  return normDeg(Lp + dl);
+}
+
+function elongation(jd) {
+  return normDeg(moonLongitude(jd) - sunLongitude(jd));
+}
+
+function findNewMoonNear(jdGuess) {
+  let jd = jdGuess;
+  for (let i = 0; i < 30; i++) {
+    let e = elongation(jd);
+    if (e > 180) e -= 360;
+    jd -= e / 12.190749;
+    if (Math.abs(e) < 0.0005) break;
+  }
+  return jd;
+}
+
+function findNewMoonsInRange(jdFrom, jdTo) {
+  const results = [];
+  let k = Math.floor((jdFrom - 2451550.09766) / 29.530588861) - 2;
+  while (true) {
+    const guess = 2451550.09766 + 29.530588861 * k;
+    if (guess > jdTo + 40) break;
+    const nm = findNewMoonNear(guess);
+    if (nm >= jdFrom - 40 && nm <= jdTo + 40) results.push(nm);
+    k++;
+  }
+  results.sort((a, b) => a - b);
+  const dedup = [];
+  for (const v of results) {
+    if (!dedup.length || v - dedup[dedup.length - 1] > 15) dedup.push(v);
+  }
+  return dedup;
+}
+
+function findSolarLongitudeJD(targetDeg, jdGuess) {
+  let jd = jdGuess;
+  for (let i = 0; i < 30; i++) {
+    let diff = normDeg(sunLongitude(jd) - targetDeg);
+    if (diff > 180) diff -= 360;
+    jd -= diff / 0.9856;
+    if (Math.abs(diff) < 0.0005) break;
+  }
+  return jd;
+}
+
+function localMidnightJD(jd) {
+  const ms = (jd - 2440587.5) * 86400000;
+  const twMs = ms + 8 * 3600 * 1000;
+  const twDate = new Date(twMs);
+  const y = twDate.getUTCFullYear(), m = twDate.getUTCMonth() + 1, d = twDate.getUTCDate();
+  const localMidnightUTCms = Date.UTC(y, m - 1, d, 0, 0, 0) - 8 * 3600 * 1000;
+  return localMidnightUTCms / 86400000 + 2440587.5;
+}
+
+function dongzhiJD(year) {
+  const guess = toJD(year, 12, 22, -8);
+  return findSolarLongitudeJD(270, guess);
+}
+
+function buildYearMonths(year) {
+  const dz0 = dongzhiJD(year - 1);
+  const dz1 = dongzhiJD(year);
+  const newMoons = findNewMoonsInRange(dz0 - 20, dz1 + 40).map(localMidnightJD);
+  let startIdx = 0;
+  for (let i = 0; i < newMoons.length - 1; i++) {
+    if (newMoons[i] <= dz0 && dz0 < newMoons[i+1]) { startIdx = i; break; }
+  }
+  let endIdx = newMoons.length - 1;
+  for (let i = 0; i < newMoons.length - 1; i++) {
+    if (newMoons[i] <= dz1 && dz1 < newMoons[i+1]) { endIdx = i; break; }
+  }
+  const monthCount = endIdx - startIdx;
+  const hasLeap = monthCount === 13;
+
+  function monthHasZhongqi(mStartJD, mEndJD) {
+    for (let k = 0; k < 12; k++) {
+      const targetDeg = normDeg(k * 30);
+      const guess = (mStartJD + mEndJD) / 2;
+      const zqJD = findSolarLongitudeJD(targetDeg, guess);
+      if (zqJD >= mStartJD && zqJD < mEndJD) return true;
+    }
+    return false;
+  }
+
+  const months = [];
+  let currentLabel = 11;
+  let leapUsed = false;
+  for (let i = startIdx; i < endIdx; i++) {
+    const mStart = newMoons[i], mEnd = newMoons[i+1];
+    let isLeap = false;
+    if (i === startIdx) {
+    } else if (hasLeap && !leapUsed && !monthHasZhongqi(mStart, mEnd)) {
+      isLeap = true;
+      leapUsed = true;
+    } else {
+      currentLabel = currentLabel === 12 ? 1 : currentLabel + 1;
+    }
+    months.push({ startJD: mStart, endJD: mEnd, monthNum: currentLabel, isLeap });
+  }
+  return months;
+}
+
+function solarToLunar(y, m, d, hour) {
+  hour = hour || 12;
+  const jd = toJD(y, m, d, hour - 8);
+  for (const tryYear of [y, y + 1, y - 1]) {
+    const months = buildYearMonths(tryYear);
+    for (const mo of months) {
+      if (jd >= mo.startJD && jd < mo.endJD) {
+        const dayNum = Math.floor(jd - mo.startJD) + 1;
+        return { rawMonth: mo.monthNum, day: dayNum, isLeap: mo.isLeap, jdMonthStart: mo.startJD, tryYear };
+      }
+    }
+  }
+  return null;
+}
+
+const BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const NAYIN_ELEMENTS = ["金","火","木","土","金","火","水","土","金","木","水","土","火","木","水","金","火","木","土","金","火","水","土","金","木","水","土","火","木","水"];
+function nayinElement(ganzhiIndex) { return NAYIN_ELEMENTS[Math.floor(ganzhiIndex / 2)]; }
+const ELEMENT_TO_JU = { "水": 2, "木": 3, "金": 4, "土": 5, "火": 6 };
+
+function ziweiIndex(ju, day) {
+  const branchStart = 2;
+  const r = day % ju;
+  if (r === 0) {
+    const q = day / ju;
+    return (branchStart + (q - 1)) % 12;
+  }
+  const diff = ju - r;
+  const q = (day + diff) / ju;
+  let pos = (branchStart + (q - 1)) % 12;
+  if (diff % 2 === 1) pos = ((pos - diff) % 12 + 12) % 12;
+  else pos = (pos + diff) % 12;
+  return pos;
+}
+
+const PALACE_NAMES = ["命宮","兄弟","夫妻","子女","財帛","疾厄","遷移","交友","官祿","田宅","福德","父母"];
+const YINGONG_STEM_BY_YEARSTEM = [2,4,6,8,0,2,4,6,8,0];
+
+function stemAtBranch(branchIndex, yearStemIndex) {
+  const yinStem = YINGONG_STEM_BY_YEARSTEM[yearStemIndex];
+  const steps = (branchIndex - 2 + 12) % 12;
+  return (yinStem + steps) % 10;
+}
+
+const ZIWEI_SERIES = [
+  { name: "紫微", offset: 0 },
+  { name: "天機", offset: -1 },
+  { name: "太陽", offset: -3 },
+  { name: "武曲", offset: -4 },
+  { name: "天同", offset: -5 },
+  { name: "廉貞", offset: -8 },
+];
+const TIANFU_SERIES = [
+  { name: "天府", offset: 0 },
+  { name: "太陰", offset: 1 },
+  { name: "貪狼", offset: 2 },
+  { name: "巨門", offset: 3 },
+  { name: "天相", offset: 4 },
+  { name: "天梁", offset: 5 },
+  { name: "七殺", offset: 6 },
+  { name: "破軍", offset: 10 },
+];
+
+const SIHUA_TABLE = {
+  "甲": ["廉貞","破軍","武曲","太陽"],
+  "乙": ["天機","天梁","紫微","太陰"],
+  "丙": ["天同","天機","文昌","廉貞"],
+  "丁": ["太陰","天同","天機","巨門"],
+  "戊": ["貪狼","太陰","右弼","天機"],
+  "己": ["武曲","貪狼","天梁","文曲"],
+  "庚": ["太陽","武曲","太陰","天同"],
+  "辛": ["巨門","太陽","文曲","文昌"],
+  "壬": ["天梁","紫微","左輔","武曲"],
+  "癸": ["破軍","巨門","太陰","貪狼"],
+};
+
+function hourToBranchIndex(hour) {
+  const h = ((hour + 1) % 24);
+  return Math.floor(h / 2) % 12;
+}
+
+function buildChart(y, m, d, hour, gender) {
+  const lunar = solarToLunar(y, m, d, hour);
+  if (!lunar) throw new Error("農曆換算失敗");
+  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
+
+  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
+  const yearStemIndex = ganzhiIndex % 10;
+  const yearBranchIndex = ganzhiIndex % 12;
+
+  const hourBranchIndex = hourToBranchIndex(hour);
+  const monthNum = lunar.rawMonth;
+
+  const monthPalaceIndex = (2 + monthNum - 1) % 12;
+  const lifePalaceIndex = ((monthPalaceIndex - hourBranchIndex) % 12 + 12) % 12;
+  const bodyPalaceIndex = (monthPalaceIndex + hourBranchIndex) % 12;
+
+  const lifeStemIndex = stemAtBranch(lifePalaceIndex, yearStemIndex);
+  const lifeGanzhiIndex = (() => {
+    for (let i = 0; i < 60; i++) { if (i % 10 === lifeStemIndex && i % 12 === lifePalaceIndex) return i; }
+    return 0;
+  })();
+  const element = nayinElement(lifeGanzhiIndex);
+  const ju = ELEMENT_TO_JU[element];
+
+  const ziweiPos = ziweiIndex(ju, lunar.day);
+  const tianfuPos = (4 - ziweiPos + 12) % 12;
+
+  const palaceOfBranch = {};
+  for (let i = 0; i < 12; i++) {
+    const branchIdx = (lifePalaceIndex + i) % 12;
+    palaceOfBranch[branchIdx] = PALACE_NAMES[i];
+  }
+
+  const stemOfBranch = {};
+  for (let b = 0; b < 12; b++) stemOfBranch[b] = stemAtBranch(b, yearStemIndex);
+
+  const starsAtBranch = {};
+  for (let b = 0; b < 12; b++) starsAtBranch[b] = [];
+  ZIWEI_SERIES.forEach(s => {
+    const idx = ((ziweiPos + s.offset) % 12 + 12) % 12;
+    starsAtBranch[idx].push(s.name);
+  });
+  TIANFU_SERIES.forEach(s => {
+    const idx = (tianfuPos + s.offset) % 12;
+    starsAtBranch[idx].push(s.name);
+  });
+
+  const yearStem = STEMS[yearStemIndex];
+  const sihua = SIHUA_TABLE[yearStem];
+  const sihuaMark = {};
+  ["祿","權","科","忌"].forEach((label, i) => { sihuaMark[sihua[i]] = label; });
+
+  return {
+    lunar: { year: lunarYear, month: monthNum, day: lunar.day, isLeap: lunar.isLeap },
+    yearGanzhi: STEMS[yearStemIndex] + BRANCHES[yearBranchIndex],
+    ju, juName: { 2:"水二局",3:"木三局",4:"金四局",5:"土五局",6:"火六局" }[ju],
+    lifePalaceIndex, bodyPalaceIndex,
+    palaceOfBranch, stemOfBranch, starsAtBranch, sihuaMark,
+    ziweiPos, tianfuPos,
+  };
+}
+
+function getLiuNian(chart, targetY, targetM, targetD) {
+  const lunar = solarToLunar(targetY, targetM, targetD, 12);
+  if (!lunar) throw new Error("流年農曆換算失敗");
+  const lunarYear = (lunar.rawMonth === 11 || lunar.rawMonth === 12) ? lunar.tryYear - 1 : lunar.tryYear;
+  const ganzhiIndex = ((lunarYear - 1984) % 60 + 60) % 60;
+  const stemIndex = ganzhiIndex % 10;
+  const branchIndex = ganzhiIndex % 12;
+  const palaceName = chart.palaceOfBranch[branchIndex];
+  const starsHere = chart.starsAtBranch[branchIndex];
+  const yearStem = STEMS[stemIndex];
+  const sihuaThisYear = SIHUA_TABLE[yearStem];
+  const sihuaMarkThisYear = {};
+  ["祿","權","科","忌"].forEach((label,i) => { sihuaMarkThisYear[sihuaThisYear[i]] = label; });
+  const hitStars = starsHere.filter(s => sihuaMarkThisYear[s]).map(s => `${s}化${sihuaMarkThisYear[s]}`);
+  return {
+    solarYear: targetY, lunarYear,
+    ganzhi: yearStem + BRANCHES[branchIndex],
+    liuNianPalaceBranch: BRANCHES[branchIndex],
+    correspondingNatalPalace: palaceName,
+    starsInThisPalace: starsHere,
+    sihuaHits: hitStars,
+  };
+}
+
+const STAR_PLAIN_MEANING = {
+  "紫微": "有領導欲、重面子，希望被尊重、被看重，做事有主見，但有時比較固執，聽不太進別人的話。",
+  "天機": "腦筋轉得快，點子多，喜歡想東想西，但想法容易變來變去，靜不下心來。",
+  "太陽": "個性直來直往、熱心、喜歡照顧別人，像太陽一樣把能量給出去，但有時候會太操心、太拚。",
+  "武曲": "務實、行動派，講求效率跟結果，對錢和目標很有概念，但表達感情比較不擅長，看起來硬邦邦的。",
+  "天同": "個性隨和、好相處，不喜歡衝突，容易知足常樂，但有時候也容易懶散、缺乏衝勁。",
+  "廉貞": "熱情但情緒起伏大，很有個人魅力，敢愛敢恨，但一衝動容易做出讓自己後悔的決定。",
+  "天府": "穩重、顧家、擅長理財規劃，做事按部就班，安全感很重要，但有時候比較保守、不太敢冒險。",
+  "太陰": "細膩、體貼、觀察力強，內心感受豐富，重視家庭和情感，但情緒容易受環境影響，比較敏感。",
+  "貪狼": "多才多藝、社交能力強、喜歡新鮮刺激的事物，人緣好，但容易三分鐘熱度，什麼都想嘗試卻不持久。",
+  "巨門": "口才好、觀察力敏銳，很會分析、很會講道理，但講話有時候比較直接，容易得罪人或引起口舌是非。",
+  "天相": "個性溫和、有服務精神，喜歡幫人處理事情、當和事佬，但比較沒主見，容易被別人的意見牽著走。",
+  "天梁": "有長輩緣、責任感重，喜歡照顧、指導別人，做事講原則，但有時候會顯得愛說教、放不下身段。",
+  "七殺": "個性剛強、有衝勁，遇到挑戰不退縮，做事雷厲風行，但脾氣比較急，容易跟人起衝突。",
+  "破軍": "喜歡打破常規、開創新局面，適應力強、不怕改變，但也容易把事情弄得大起大落，不夠穩定。",
+};
+
+function buildZiweiSummary(chart) {
+  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex]
+    .filter(s => STAR_PLAIN_MEANING[s]);
+  let borrowed = false;
+  let usedStars = lifeStars;
+  if (lifeStars.length === 0) {
+    const oppositeIdx = (chart.lifePalaceIndex + 6) % 12;
+    usedStars = chart.starsAtBranch[oppositeIdx].filter(s => STAR_PLAIN_MEANING[s]);
+    borrowed = true;
+  }
+  if (usedStars.length === 0) {
+    return { text: "命宮跟對宮剛好都沒有主星入座，這種盤在紫微斗數裡不算少見，個性上比較沒有單一鮮明的主色調，容易受身邊環境跟相處的人影響而調整自己。", borrowed: false };
+  }
+  const descriptions = usedStars.map(s => `**${s}星**：${STAR_PLAIN_MEANING[s]}`).join("\n");
+  const prefix = borrowed
+    ? "你的命宮本身沒有主星坐鎮（這種情況滿常見的，不用擔心），命理上會參考對面的遷移宮來看個性傾向："
+    : "你的命宮主星是：";
+  return { text: prefix + "\n\n" + descriptions, borrowed };
+}
+
+function renderZiweiChart(chart) {
+  const cellPositions = [
+    ["巳","午","未","申"],
+    ["辰",null,null,"酉"],
+    ["卯",null,null,"戌"],
+    ["寅","丑","子","亥"],
+  ];
+  const summary = buildZiweiSummary(chart);
+  const aiZiwei = aiCardPlaceholder('簡單說');
+  let html = aiZiwei.html;
+  html += '<div class="zw-meta">';
+  html += `<div class="smart-chip"><span>農曆生日</span><strong>${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日</strong></div>`;
+  html += `<div class="smart-chip"><span>年干支</span><strong>${chart.yearGanzhi}</strong></div>`;
+  html += `<div class="smart-chip"><span>五行局</span><strong>${chart.juName}</strong></div>`;
+  html += `<div class="smart-chip"><span>命宮</span><strong>${BRANCHES[chart.lifePalaceIndex]}宮</strong></div>`;
+  html += '</div>';
+
+  html += '<div class="zw-grid">';
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const b = cellPositions[r][c];
+      if (b === null) {
+        if (r === 1 && c === 1) {
+          html += `<div class="zw-center"><div class="zw-c-title">觀卜 · 紫微命盤</div>
+            <div class="zw-c-line">${chart.yearGanzhi}年</div>
+            <div class="zw-c-line">${chart.juName}</div>
+            <div class="zw-c-line">身宮在${BRANCHES[chart.bodyPalaceIndex]}</div></div>`;
+        }
+        continue;
+      }
+      const branchIdx = BRANCHES.indexOf(b);
+      const isLife = branchIdx === chart.lifePalaceIndex;
+      const isBody = branchIdx === chart.bodyPalaceIndex;
+      const palaceName = chart.palaceOfBranch[branchIdx];
+      const stem = STEMS[chart.stemOfBranch[branchIdx]];
+      const stars = chart.starsAtBranch[branchIdx];
+      const mainStarSet = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
+      html += `<div class="zw-cell${isLife?' life':''}${isBody?' body':''}">
+        <span class="zw-stem">${stem}</span><span class="zw-branch">${b}</span>
+        <div class="zw-stars">`;
+      stars.forEach(s => {
+        const sh = chart.sihuaMark[s];
+        html += `<span class="zw-star${mainStarSet.has(s)?' main':''}">${s}${sh?`<span class="zw-sihua">${sh}</span>`:''}</span>`;
+      });
+      html += `</div><div class="zw-palace">${palaceName}</div></div>`;
+    }
+  }
+  html += '</div>';
+  html += '<div class="hint">紫色外框＝命宮；金色虛線＝身宮。四化標記（祿權科忌）以金色小字顯示在星名旁。</div>';
+  html += '<div class="warning-note">紫微星定位與四化對照表為古籍固定演算法則，已盡量核對公開範例；農曆換算已用多筆已知節日日期實際驗證過。若發現與其他命盤軟體結果不同，歡迎回報比對。</div>';
+
+  const mainStarSetForFacts = new Set(["紫微","天機","太陽","武曲","天同","廉貞","天府","太陰","貪狼","巨門","天相","天梁","七殺","破軍"]);
+  const lifeStars = chart.starsAtBranch[chart.lifePalaceIndex].filter(s => mainStarSetForFacts.has(s));
+  const facts = {
+    農曆生日: `${chart.lunar.year}年${chart.lunar.isLeap?'閏':''}${chart.lunar.month}月${chart.lunar.day}日`,
+    年干支: chart.yearGanzhi,
+    五行局: chart.juName,
+    命宮地支: BRANCHES[chart.lifePalaceIndex],
+    身宮地支: BRANCHES[chart.bodyPalaceIndex],
+    命宮是否有主星: lifeStars.length > 0 ? `有，是：${lifeStars.join('、')}` : "沒有主星（空宮），要參考對面遷移宮",
+    遷移宮主星: chart.starsAtBranch[(chart.lifePalaceIndex + 6) % 12].filter(s => mainStarSetForFacts.has(s)),
+    有四化的星: chart.sihuaMark,
+  };
+
+  const now = new Date();
+  const liuNian = getLiuNian(chart, now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const aiLiuNian = aiCardPlaceholder(`${liuNian.solarYear}年流年提醒`);
+  html += aiLiuNian.html;
+
+  const liuNianFacts = {
+    今年: `西元${liuNian.solarYear}年（農曆${liuNian.lunarYear}年，${liuNian.ganzhi}年）`,
+    流年落在本命盤的宮位: liuNian.correspondingNatalPalace,
+    這個宮位本來坐的星: liuNian.starsInThisPalace.length ? liuNian.starsInThisPalace : "沒有主星",
+    今年四化打中的星: liuNian.sihuaHits.length ? liuNian.sihuaHits : "今年沒有主星被四化",
+  };
+
+  return { html, aiId: aiZiwei.id, facts, liuNianAiId: aiLiuNian.id, liuNianFacts };
+}
+
+document.getElementById('ziwei-btn').addEventListener('click', () => {
+  const dateVal = document.getElementById('zw-date').value;
+  const timeVal = document.getElementById('zw-hour').value;
+  const gender = document.getElementById('zw-gender').value;
+  const resultEl = document.getElementById('ziwei-result');
+  if (!dateVal || !timeVal) {
+    resultEl.innerHTML = '<div class="empty">請先輸入完整的出生日期與時間</div>';
+    return;
+  }
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const hourDecimal = hh + mm / 60;
+  try {
+    const chart = buildChart(y, m, d, hourDecimal, gender);
+    const { html, aiId, facts, liuNianAiId, liuNianFacts } = renderZiweiChart(chart);
+    resultEl.innerHTML = html;
+    fillAiExplain(aiId, 'ziwei', '', facts);
+    fillAiExplain(liuNianAiId, 'ziwei', '請針對今年的流年給提醒，不用重複命宮個性', liuNianFacts);
+    attachChatSection('ziwei-result', 'ziwei', '紫微斗數流年與命盤分析', facts);
+  } catch (e) {
+    resultEl.innerHTML = `<div class="empty">排盤失敗：${e.message}</div>`;
+  }
 });
+
 </script>
 </body>
 </html>
