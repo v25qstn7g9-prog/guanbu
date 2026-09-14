@@ -1,13 +1,13 @@
 /**
- * functions/ask.js — 觀卜 AI 白話說明與靈活追問對話 API
+ * functions/ask.js — 觀卜 AI 白話說明與對話 API（含 Gemini 3.5 Flash-Lite 自動備援）
  *
  * POST /ask  : Body { module, question, facts } -> 白話解讀
  * POST /chat : Body { module, question, facts, history, message } -> 追問對話
- *
- * Cloudflare 專案 → Settings → Functions → AI bindings → Variable name: AI
  */
-const ASK_VERSION = "guanbu-ask-2.0";
-const MODEL = "@cf/openai/gpt-oss-120b";
+const ASK_VERSION = "guanbu-ask-2.1-fallback";
+const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
+const GEMINI_MODEL = "gemini-3.5-flash-lite";
+
 const MAX_QUESTION_LEN = 200;
 const MAX_FACTS_LEN = 2500;
 const MAX_TOKENS = 600;
@@ -48,13 +48,49 @@ function buildUserPrompt(mod, question, factsText) {
   return `【占卜類型】：${modLabel}\n${qLine}【系統事實資料】：\n${factsText}\n\n請以溫暖、靈活且富有同理心的口吻，為使用者提供深入淺出的白話解讀與心態建議。`;
 }
 
+/**
+ * 備援 AI：呼叫 Google Gemini 3.5 Flash-Lite API
+ */
+async function callGeminiFallback(env, systemPrompt, messagesArray) {
+  const apiKey = env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("備援機制啟動失敗：未設定 GEMINI_API_KEY");
+  }
+
+  // 將通用 messages 結構轉為 Gemini generateContent 格式
+  const contents = messagesArray.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: contents,
+      generationConfig: {
+        maxOutputTokens: MAX_TOKENS,
+      },
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data?.error?.message || `Gemini API 回傳錯誤 (${response.status})`);
+  }
+
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) {
+    throw new Error("Gemini API 未能回傳有效文字");
+  }
+  return text;
+}
+
 export async function onRequestPost(context) {
   try {
-    const ai = context.env.AI;
-    if (!ai) {
-      return jsonResponse({ error: "尚未設定 AI 綁定，請到 Cloudflare 專案 Settings → Functions → AI bindings 加上 Variable name 為 AI 的綁定。", version: ASK_VERSION }, 500);
-    }
-
     const body = await context.request.json().catch(() => null);
     const mod = String(body?.module || "").trim();
     const allowedModules = new Set(["yijing", "tarot", "runes", "ziwei", "daily"]);
@@ -69,33 +105,44 @@ export async function onRequestPost(context) {
     }
 
     const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
-    const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserPrompt(mod, question, factsText) },
-    ];
+    const userPromptText = buildUserPrompt(mod, question, factsText);
 
-    const result = await ai.run(MODEL, { messages, max_tokens: MAX_TOKENS });
-    let explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
-    if (!explanation) {
-      return jsonResponse({ error: "AI 沒有回傳文字內容", version: ASK_VERSION }, 502);
+    let explanation = "";
+    let usedProvider = "Cloudflare Workers AI";
+
+    // 1. 優先嘗試使用 Cloudflare Workers AI
+    try {
+      const ai = context.env.AI;
+      if (!ai) throw new Error("未綁定 Workers AI");
+
+      const result = await ai.run(PRIMARY_MODEL, {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPromptText },
+        ],
+        max_tokens: MAX_TOKENS,
+      });
+
+      explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
+      if (!explanation) throw new Error("Primary AI 未產生回覆");
+    } catch (primaryErr) {
+      console.warn("主模型呼叫失敗，嘗試啟動 Gemini 3.5 Flash-Lite 備援...", primaryErr.message);
+      
+      // 2. 自動切換備援至 Gemini 3.5 Flash-Lite
+      explanation = await callGeminiFallback(context.env, SYSTEM_PROMPT, [
+        { role: "user", content: userPromptText },
+      ]);
+      usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
     }
 
-    return jsonResponse({ ok: true, version: ASK_VERSION, explanation });
+    return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, explanation });
   } catch (e) {
-    const msg = String(e?.message || "");
-    let friendly = msg || "ask function failed";
-    if (/neuron|quota|limit|daily|exceeded|usage/i.test(msg)) friendly = "今日 AI 免費額度可能已用完，等額度重置後再試。";
-    return jsonResponse({ error: friendly, version: ASK_VERSION }, 500);
+    return jsonResponse({ error: e?.message || "所有 AI 服務暫時無法存取", version: ASK_VERSION }, 500);
   }
 }
 
 export async function onRequestPostChat(context) {
   try {
-    const ai = context.env.AI;
-    if (!ai) {
-      return jsonResponse({ error: "尚未設定 AI 綁定", version: ASK_VERSION }, 500);
-    }
-
     const body = await context.request.json().catch(() => null);
     const userMessage = String(body?.message || "").slice(0, MAX_QUESTION_LEN).trim();
     const facts = body?.facts;
@@ -106,20 +153,34 @@ export async function onRequestPostChat(context) {
     }
 
     const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
-    const messages = [
-      { role: "system", content: CHAT_SYSTEM_PROMPT + `\n\n【本次占卜事實資料】：\n${factsText}` },
-      ...history,
-      { role: "user", content: userMessage }
-    ];
+    const sysPromptWithFacts = CHAT_SYSTEM_PROMPT + `\n\n【本次占卜事實資料】：\n${factsText}`;
+    const conversationHistory = [...history, { role: "user", content: userMessage }];
 
-    const result = await ai.run(MODEL, { messages, max_tokens: 350 });
-    let reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
-    if (!reply) {
-      return jsonResponse({ error: "AI 未能生成對話回覆", version: ASK_VERSION }, 502);
+    let reply = "";
+    let usedProvider = "Cloudflare Workers AI";
+
+    // 1. 優先嘗試使用 Cloudflare Workers AI
+    try {
+      const ai = context.env.AI;
+      if (!ai) throw new Error("未綁定 Workers AI");
+
+      const result = await ai.run(PRIMARY_MODEL, {
+        messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
+        max_tokens: 350,
+      });
+
+      reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
+      if (!reply) throw new Error("Primary AI 未產生回覆");
+    } catch (primaryErr) {
+      console.warn("主模型對話失敗，嘗試啟動 Gemini 3.5 Flash-Lite 備援...", primaryErr.message);
+
+      // 2. 自動切換備援至 Gemini 3.5 Flash-Lite
+      reply = await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory);
+      usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
     }
 
-    return jsonResponse({ ok: true, version: ASK_VERSION, reply });
+    return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, reply });
   } catch (e) {
-    return jsonResponse({ error: e?.message || "chat function failed", version: ASK_VERSION }, 500);
+    return jsonResponse({ error: e?.message || "所有 AI 對話服務暫時無法存取", version: ASK_VERSION }, 500);
   }
 }
