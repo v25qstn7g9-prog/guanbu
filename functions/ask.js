@@ -10,6 +10,7 @@ const MAX_FACTS_LEN = 2500;
 const MAX_TOKENS = 600;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_MSG_LEN = 500;
+const MAX_BODY_BYTES = 20000;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 
 function jsonResponse(data, status = 200) {
@@ -77,6 +78,7 @@ async function callGeminiFallback(env, systemPrompt, messagesArray) {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(20000),
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemPrompt }] },
       contents: contents,
@@ -91,6 +93,8 @@ async function callGeminiFallback(env, systemPrompt, messagesArray) {
 
 export async function onRequestPost(context) {
   try {
+    const contentLength = Number(context.request.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
     const body = await context.request.json().catch(() => null);
     const mod = String(body?.module || "").trim();
     const lang = String(body?.lang || "zh").toLowerCase();
@@ -135,6 +139,8 @@ export async function onRequestPost(context) {
 
 export async function onRequestPostChat(context) {
   try {
+    const contentLength = Number(context.request.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
     const body = await context.request.json().catch(() => null);
     const userMessage = String(body?.message || "").slice(0, MAX_QUESTION_LEN).trim();
     const lang = String(body?.lang || "zh").toLowerCase();
