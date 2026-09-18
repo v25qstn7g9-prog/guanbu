@@ -624,81 +624,105 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{
 function getChineseCalendarParts(dateVal, timeVal){
   const [y,m,d] = dateVal.split('-').map(Number);
   const [hh,mm] = timeVal.split(':').map(Number);
-  const dt = new Date(y, m-1, d, hh, mm || 0);
-  const parts = new Intl.DateTimeFormat('zh-Hant-u-ca-chinese', {
-    year:'numeric', month:'numeric', day:'numeric'
-  }).formatToParts(dt);
-  const monthPart = parts.find(p=>p.type==='month')?.value || '';
-  const dayPart = parts.find(p=>p.type==='day')?.value || '';
-  const yearPart = parts.find(p=>p.type==='relatedYear')?.value || '';
-  const monthMatch = monthPart.match(/\d+/);
-  const dayMatch = dayPart.match(/\d+/);
-  if(!monthMatch || !dayMatch) throw new Error('Chinese calendar unavailable');
-  return { lunarYear:Number(yearPart)||y, lunarMonth:Number(monthMatch[0]), lunarDay:Number(dayMatch[0]) };
+  const dt = new Date(y,m-1,d,hh,mm||0);
+  const parts = new Intl.DateTimeFormat('zh-Hant-u-ca-chinese',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(dt);
+  const monthPart=parts.find(p=>p.type==='month')?.value||'';
+  const dayPart=parts.find(p=>p.type==='day')?.value||'';
+  const yearPart=parts.find(p=>p.type==='relatedYear')?.value||'';
+  const mn=Number((monthPart.match(/\d+/)||['0'])[0]), dn=Number((dayPart.match(/\d+/)||['0'])[0]);
+  if(!mn||!dn) throw new Error('Chinese calendar conversion unavailable');
+  return {lunarYear:Number(yearPart)||y,lunarMonth:mn,lunarDay:dn};
 }
-function earthlyBranchIndexForHour(hour){
-  // 子時 23:00–00:59，之後每兩小時一支
-  return Math.floor(((hour + 1) % 24) / 2);
-}
-function palaceBranchIndex(lunarMonth, hourBranch, direction){
-  // 地支索引：子0、丑1、寅2...亥11；寅宮起正月。
-  const monthBase = (2 + (lunarMonth - 1)) % 12;
-  return (monthBase + direction * hourBranch + 12) % 12;
-}
+function earthlyBranchIndexForHour(hour){ return Math.floor(((hour+1)%24)/2); }
+function mod12(n){ return (n%12+12)%12; }
+const ZW_BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const ZW_STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const ZW_PALACES=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
+const ZW_FOUR_TRANSFORMS={
+  '甲':[['廉貞','祿'],['破軍','權'],['武曲','科'],['太陽','忌']],
+  '乙':[['天機','祿'],['天梁','權'],['紫微','科'],['太陰','忌']],
+  '丙':[['天同','祿'],['天機','權'],['文昌','科'],['廉貞','忌']],
+  '丁':[['太陰','祿'],['天同','權'],['天機','科'],['巨門','忌']],
+  '戊':[['貪狼','祿'],['太陰','權'],['右弼','科'],['天機','忌']],
+  '己':[['武曲','祿'],['貪狼','權'],['天梁','科'],['文曲','忌']],
+  '庚':[['太陽','祿'],['武曲','權'],['太陰','科'],['天同','忌']],
+  '辛':[['巨門','祿'],['太陽','權'],['文曲','科'],['文昌','忌']],
+  '壬':[['天梁','祿'],['紫微','權'],['左輔','科'],['武曲','忌']],
+  '癸':[['破軍','祿'],['巨門','權'],['太陰','科'],['貪狼','忌']]
+};
+const ZW_NA_YIN={
+  '甲子':'金','乙丑':'金','丙寅':'火','丁卯':'火','戊辰':'木','己巳':'木','庚午':'土','辛未':'土','壬申':'金','癸酉':'金','甲戌':'火','乙亥':'火',
+  '丙子':'水','丁丑':'水','戊寅':'土','己卯':'土','庚辰':'金','辛巳':'金','壬午':'木','癸未':'木','甲申':'水','乙酉':'水','丙戌':'土','丁亥':'土',
+  '戊子':'火','己丑':'火','庚寅':'木','辛卯':'木','壬辰':'水','癸巳':'水','甲午':'金','乙未':'金','丙申':'火','丁酉':'火','戊戌':'木','己亥':'木',
+  '庚子':'土','辛丑':'土','壬寅':'金','癸卯':'金','甲辰':'火','乙巳':'火','丙午':'水','丁未':'水','戊申':'土','己酉':'土','庚戌':'金','辛亥':'金',
+  '壬子':'木','癸丑':'木','甲寅':'水','乙卯':'水','丙辰':'土','丁巳':'土','戊午':'火','己未':'火','庚申':'木','辛酉':'木','壬戌':'水','癸亥':'水'
+};
+const ZW_BUREAU_BY_STEM_BRANCH={
+  '甲':{'子':'水二局','丑':'水二局','寅':'火六局','卯':'火六局','辰':'木三局','巳':'木三局','午':'水二局','未':'水二局','申':'金四局','酉':'金四局','戌':'火六局','亥':'火六局'},
+  '乙':{'子':'火六局','丑':'火六局','寅':'土五局','卯':'土五局','辰':'金四局','巳':'金四局','午':'木三局','未':'木三局','申':'水二局','酉':'水二局','戌':'土五局','亥':'土五局'},
+  '丙':{'子':'土五局','丑':'土五局','寅':'木三局','卯':'木三局','辰':'水二局','巳':'水二局','午':'金四局','未':'金四局','申':'火六局','酉':'火六局','戌':'木三局','亥':'木三局'},
+  '丁':{'子':'木三局','丑':'木三局','寅':'金四局','卯':'金四局','辰':'火六局','巳':'火六局','午':'水二局','未':'水二局','申':'土五局','酉':'土五局','戌':'金四局','亥':'金四局'},
+  '戊':{'子':'金四局','丑':'金四局','寅':'水二局','卯':'水二局','辰':'土五局','巳':'土五局','午':'火六局','未':'火六局','申':'木三局','酉':'木三局','戌':'水二局','亥':'水二局'}
+};
+function yearStemIndex(lunarYear){ return (lunarYear-4+10)%10; }
+function stemAtLunarMonth(yearStemIdx,lunarMonth){ return ([2,2,4,4,6,6,8,8,0,0][yearStemIdx]+lunarMonth-1)%10; }
 function buildZiweiFramework(dateVal,timeVal,gender){
-  const [hour] = timeVal.split(':').map(Number);
-  const lunar = getChineseCalendarParts(dateVal,timeVal);
-  const hourBranch = earthlyBranchIndexForHour(hour);
-  const lifeBranch = palaceBranchIndex(lunar.lunarMonth, hourBranch, -1);
-  const bodyBranch = palaceBranchIndex(lunar.lunarMonth, hourBranch, 1);
-  const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-  const palaceNames=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','奴僕','官祿','田宅','福德','父母'];
-  const cells = branches.map((branch,i)=>{
-    const offset=(i-lifeBranch+12)%12;
-    const palace=palaceNames[offset];
-    const flags=[];
-    if(i===lifeBranch) flags.push('life');
-    if(i===bodyBranch) flags.push('body');
-    return {branch,palace,flags};
-  });
-  return {lunar,hourBranch,lifeBranch,bodyBranch,cells,gender};
+  const [hour]=timeVal.split(':').map(Number), lunar=getChineseCalendarParts(dateVal,timeVal);
+  const yearStemIdx=yearStemIndex(lunar.lunarYear), yearStem=ZW_STEMS[yearStemIdx], yearBranch=ZW_BRANCHES[mod12(lunar.lunarYear-4)];
+  const hourBranch=earthlyBranchIndexForHour(hour), monthBranch=mod12(2+lunar.lunarMonth-1), monthStemIdx=stemAtLunarMonth(yearStemIdx,lunar.lunarMonth);
+  const lifeBranch=mod12(monthBranch-hourBranch), bodyBranch=mod12(monthBranch+hourBranch);
+  const lifeStemIdx=(monthStemIdx+mod12(lifeBranch-2))%10, lifeStem=ZW_STEMS[lifeStemIdx];
+  const bureau=ZW_BUREAU_BY_STEM_BRANCH[yearStem]?.[ZW_BRANCHES[lifeBranch]];
+  if(!bureau) throw new Error('Five-element bureau unavailable for this chart');
+  const bureauNum=Number((bureau.match(/\d+/)||['0'])[0]);
+  const naYin=ZW_NA_YIN[lifeStem+ZW_BRANCHES[lifeBranch]]||'';
+  const palaceCells=ZW_BRANCHES.map((branch,i)=>({branch,palace:ZW_PALACES[mod12(i-lifeBranch)],stars:[],transforms:[],stem:ZW_STEMS[(lifeStemIdx+mod12(i-lifeBranch))%10]}));
+  const put=(star,idx)=>palaceCells[mod12(idx)].stars.push(star);
+  const purpleByBureau={
+    2:['丑','寅','寅','卯','卯','辰','辰','巳','巳','午','午','未','未','申','申','酉','酉','戌','戌','亥','亥','子','子','丑','丑','寅','寅','卯','卯','辰'],
+    3:['辰','丑','寅','巳','寅','卯','午','卯','辰','未','辰','巳','申','巳','午','戌','午','未','戌','未','申','亥','申','酉','子','酉','戌','丑','戌','亥'],
+    4:['亥','辰','丑','寅','子','巳','寅','卯','丑','午','卯','辰','寅','未','辰','巳','卯','申','巳','午','辰','酉','午','未','巳','戌','未','申','午','亥'],
+    5:['午','亥','辰','丑','寅','未','子','巳','寅','卯','申','丑','午','卯','辰','酉','寅','未','辰','巳','戌','卯','申','巳','午','亥','辰','酉','午','未'],
+    6:['酉','午','亥','辰','丑','寅','戌','未','子','巳','寅','卯','亥','申','丑','午','卯','辰','子','酉','寅','未','辰','巳','丑','戌','卯','申','巳','午']
+  };
+  const purpleBranch=purpleByBureau[bureauNum]?.[lunar.lunarDay-1];
+  if(!purpleBranch) throw new Error('Lunar day outside supported 1–30 range');
+  const purpleIdx=ZW_BRANCHES.indexOf(purpleBranch);
+  put('紫微',purpleIdx);
+  [['天機',-1],['太陽',-3],['武曲',-4],['天同',-5],['廉貞',-8]].forEach(([star,off])=>put(star,purpleIdx+off));
+  const tianfuMirror={0:4,1:3,2:2,3:1,4:0,5:11,6:10,7:9,8:8,9:7,10:6,11:5};
+  const tianfuIdx=tianfuMirror[purpleIdx];
+  [['天府',0],['太陰',1],['貪狼',2],['巨門',3],['天相',4],['天梁',5],['七殺',6],['破軍',10]].forEach(([star,off])=>put(star,tianfuIdx+off));
+  const four=ZW_FOUR_TRANSFORMS[yearStem]||[];
+  four.forEach(([star,mark])=>{const cell=palaceCells.find(c=>c.stars.includes(star)); if(cell) cell.transforms.push(mark);});
+  const isYangYear=yearStemIdx%2===0, forward=(gender==='M')===isYangYear;
+  const ageNow=lunar.lunarYear-Number(dateVal.slice(0,4))+1;
+  const currentIndex=Math.max(0,Math.min(11,Math.floor(Math.max(0,ageNow-bureauNum)/10)));
+  const daxian=Array.from({length:12},(_,i)=>{const idx=mod12(lifeBranch+(forward?i:-i));return {ageStart:bureauNum+i*10,ageEnd:bureauNum+i*10+9,palace:ZW_PALACES[mod12(i)],branch:ZW_BRANCHES[idx],index:idx};});
+  return {lunar,yearStem,yearBranch,yearStemIdx,hourBranch,lifeBranch,bodyBranch,lifeStem,bureau,bureauNum,naYin,palaceCells,four,forward,daxian,currentIndex,ageNow};
 }
 
 document.getElementById('ziwei-btn').addEventListener('click', () => {
-  const dateVal = document.getElementById('zw-date').value;
-  const timeVal = document.getElementById('zw-hour').value;
-  const gender = document.getElementById('zw-gender').value;
-  const resultEl = document.getElementById('ziwei-result');
-  if (!dateVal || !timeVal) {
-    resultEl.innerHTML = `<div class="empty">${dict[currentLang].zw_err_date}</div>`;
-    return;
-  }
-  try {
-    const chart = buildZiweiFramework(dateVal,timeVal,gender);
-    const genderLabel = gender === 'F' ? dict[currentLang].opt_female : dict[currentLang].opt_male;
-    const aiZiwei = aiCardPlaceholder(dict[currentLang].ai_title);
-    let html = `<div class="zw-meta">`;
-    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_dob}</span><strong>${esc(dateVal)}</strong></div>`;
-    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_tob}</span><strong>${esc(timeVal)}</strong></div>`;
-    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_gender}</span><strong>${esc(genderLabel)}</strong></div>`;
-    html += `<div class="smart-chip"><span>${dict[currentLang].lunar}</span><strong>${chart.lunar.lunarYear} 年 ${chart.lunar.lunarMonth} 月 ${chart.lunar.lunarDay} 日</strong></div>`;
-    html += `</div>`;
-    html += `<div class="zw-grid">`;
-    const branchOrder=[2,3,4,5,6,7,8,9,10,11,0,1];
-    branchOrder.forEach(i=>{
-      const c=chart.cells[i];
-      html += `<div class="zw-cell ${c.flags.join(' ')}"><span class="zw-branch">${c.branch}</span><div class="zw-palace">${c.palace}</div><div class="zw-stars"><span class="zw-star">${i===chart.lifeBranch?'命宮定位':''}</span>${i===chart.bodyBranch?'<span class="zw-aux lucky">身宮</span>':''}</div></div>`;
-    });
-    html += `<div class="zw-center"><div class="zw-c-title">${dict[currentLang].zw_center_title}</div><div class="zw-c-line">命宮：${branches[chart.lifeBranch]}　身宮：${branches[chart.bodyBranch]}<br/>時辰：${branches[chart.hourBranch]}　性別：${esc(genderLabel)}</div></div></div>`;
-    html += `<div class="hint">${dict[currentLang].zw_hint}</div>`;
-    html += aiZiwei.html;
-    resultEl.innerHTML = html;
-    const facts = { BirthDate: dateVal, BirthTime: timeVal, Gender: genderLabel, LunarDate: `${chart.lunar.lunarYear}-${chart.lunar.lunarMonth}-${chart.lunar.lunarDay}`, HourBranch: branches[chart.hourBranch], LifePalace: branches[chart.lifeBranch], BodyPalace: branches[chart.bodyBranch], ChartStatus: '12-palace framework calculated' };
-    fillAiExplain(aiZiwei.id, 'ziwei', '', facts);
-    attachChatSection('ziwei-result', 'ziwei', 'Zi Wei Chart Analysis', facts);
-  } catch(e) {
-    resultEl.innerHTML = `<div class="empty">${esc(e.message || 'Chart calculation failed')}</div>`;
-  }
+  const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
+  if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty">'+dict[currentLang].zw_err_date+'</div>';return;}
+  try{
+    const c=buildZiweiFramework(dateVal,timeVal,gender), genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male, ai=aiCardPlaceholder(dict[currentLang].ai_title), cur=c.daxian[c.currentIndex];
+    let html='<div class="zw-meta">';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_dob+'</span><strong>'+esc(dateVal)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_tob+'</span><strong>'+esc(timeVal)+' · '+ZW_BRANCHES[c.hourBranch]+dict[currentLang].zw_hour_suffix+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_gender+'</span><strong>'+esc(genderLabel)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lunar+'</span><strong>'+c.lunar.lunarYear+' / '+c.lunar.lunarMonth+' / '+c.lunar.lunarDay+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_bureau+'</span><strong>'+c.bureau+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_current+'</span><strong>'+c.ageNow+'歲 · '+cur.ageStart+'–'+cur.ageEnd+'歲</strong></div></div>';
+    html+='<div class="zw-grid">';
+    [2,3,4,5,6,7,8,9,10,11,0,1].forEach(i=>{const x=c.palaceCells[i], tf=x.transforms.length?'<span class="zw-transform">'+x.transforms.join('、')+'</span>':''; html+='<div class="zw-cell '+(i===c.lifeBranch?'life ':'')+(i===c.bodyBranch?'body':'')+'"><span class="zw-branch">'+x.branch+'</span><div class="zw-palace">'+x.palace+(i===c.lifeBranch?' ★':'')+'</div><div class="zw-stars">'+(x.stars.map(z=>'<span class="zw-star">'+z+'</span>').join('')||'<span class="zw-star">—</span>')+tf+'</div><div class="zw-stem">'+x.stem+(i===c.bodyBranch?' · '+dict[currentLang].zw_body:'')+'</div></div>';});
+    html+='<div class="zw-center"><div class="zw-c-title">'+dict[currentLang].zw_center_title+'</div><div class="zw-c-line">'+dict[currentLang].zw_life+'：'+ZW_BRANCHES[c.lifeBranch]+'　'+dict[currentLang].zw_body+'：'+ZW_BRANCHES[c.bodyBranch]+'<br/>'+dict[currentLang].zw_year+'：'+c.yearStem+c.yearBranch+'　'+dict[currentLang].zw_nayin+'：'+c.naYin+dict[currentLang].zw_element_suffix+'<br/>'+dict[currentLang].zw_direction+'：'+(c.forward?dict[currentLang].zw_forward:dict[currentLang].zw_backward)+'</div></div></div>';
+    html+='<div class="meta-card"><div class="meta-row"><span>'+dict[currentLang].zw_four+'</span><strong>'+c.four.map(x=>x[0]+'化'+x[1]).join('　')+'</strong></div><div class="meta-row"><span>'+dict[currentLang].zw_current_daxian+'</span><strong>'+cur.ageStart+'–'+cur.ageEnd+'歲｜'+cur.palace+'｜'+cur.branch+'</strong></div></div>';
+    html+='<div class="hint">'+dict[currentLang].zw_v3_hint+'</div>'+ai.html;
+    resultEl.innerHTML=html;
+    const facts={BirthDate:dateVal,BirthTime:timeVal,Gender:genderLabel,LunarDate:c.lunar.lunarYear+'-'+c.lunar.lunarMonth+'-'+c.lunar.lunarDay,YearPillar:c.yearStem+c.yearBranch,HourBranch:ZW_BRANCHES[c.hourBranch],LifePalace:ZW_BRANCHES[c.lifeBranch],BodyPalace:ZW_BRANCHES[c.bodyBranch],LifeStem:c.lifeStem,Bureau:c.bureau,MainStars:c.palaceCells.map(x=>x.palace+':'+(x.stars.join('、')||'空宮')),FourTransformations:c.four.map(x=>x[0]+'化'+x[1]),CurrentDecadal:cur.ageStart+'-'+cur.ageEnd+'歲 '+cur.palace,ChartStatus:'v3.0 14-main-star framework + four transformations + decadal cycle'};
+    fillAiExplain(ai.id,'ziwei','',facts); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
+  }catch(e){resultEl.innerHTML='<div class="empty">'+esc(e.message||'Chart calculation failed')+'</div>';}
 });
 </script>
 </body>
