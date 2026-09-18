@@ -617,18 +617,25 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{
 document.getElementById('ziwei-btn').addEventListener('click', () => {
   const dateVal = document.getElementById('zw-date').value;
   const timeVal = document.getElementById('zw-hour').value;
+  const gender = document.getElementById('zw-gender').value;
   const resultEl = document.getElementById('ziwei-result');
   if (!dateVal || !timeVal) {
     resultEl.innerHTML = `<div class="empty">${dict[currentLang].zw_err_date}</div>`;
     return;
   }
-  
+  // v2.4：先建立「排盤資料卡」；不宣稱未實作的十二宮星曜計算。
   const aiZiwei = aiCardPlaceholder(dict[currentLang].ai_title);
-  let html = aiZiwei.html;
-  html += `<div class="smart-card"><div class="smart-title">${dict[currentLang].zw_center_title}</div><div class="smart-text">DOB: ${dateVal} ${timeVal}</div></div>`;
-
+  const genderLabel = gender === 'F' ? dict[currentLang].opt_female : dict[currentLang].opt_male;
+  let html = `<div class="zw-meta">`;
+  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_dob}</span><strong>${esc(dateVal)}</strong></div>`;
+  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_tob}</span><strong>${esc(timeVal)}</strong></div>`;
+  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_gender}</span><strong>${esc(genderLabel)}</strong></div>`;
+  html += `<div class="smart-chip"><span>Status</span><strong>Birth data ready</strong></div>`;
+  html += `</div>`;
+  html += `<div class="smart-card"><div class="smart-title">${dict[currentLang].zw_center_title}</div><div class="smart-text">${esc(dateVal)} ${esc(timeVal)} · ${esc(genderLabel)}</div><div class="hint">目前版本先以出生資料提供 AI 輔助解讀；十二宮與星曜仍待正式曆法／排盤引擎接入。</div></div>`;
+  html += aiZiwei.html;
   resultEl.innerHTML = html;
-  const facts = { BirthDate: dateVal, BirthTime: timeVal, ChartStatus: "Calculated" };
+  const facts = { BirthDate: dateVal, BirthTime: timeVal, Gender: genderLabel, ChartStatus: 'Birth data ready' };
   fillAiExplain(aiZiwei.id, 'ziwei', '', facts);
   attachChatSection('ziwei-result', 'ziwei', 'Zi Wei Chart Analysis', facts);
 });
