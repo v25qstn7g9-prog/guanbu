@@ -314,7 +314,7 @@ const dict = {
     opt_r1: "1 Rune Panduan", opt_r3: "3 Rune | Status · Hambatan · Saran",
     opt_male: "Pria", opt_female: "Wanita",
     lbl_birth: "Tanggal Lahir (Opsional)", lbl_dob: "Tanggal Lahir", lbl_tob: "Waktu Lahir", lbl_gender: "Jenis Kelamin",
-    footer: "Hanya untuk hiburan | v2.3 | Tetap buat keputusan hidup secara bijak",
+    footer: "Hanya untuk hiburan | v2.5 | Tetap buat keputusan hidup secara bijak",
     ai_title: "Interpretasi AI", ai_chat_title: "💡 Ada pertanyaan? Tanyakan pada asisten AI",
     chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim",
     hints: ["Menerjemahkan pesan untuk Anda...", "Menyusun pola energi saat ini...", "Menyiapkan saran langkah yang ramah..."],
@@ -599,16 +599,21 @@ const DAILY_MSGS = [
 document.getElementById('daily-btn').addEventListener('click', ()=>{
   const birth = document.getElementById('daily-birth').value || '';
   const d = new Date();
-  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
+  const dateStr = `${y}/${String(m).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
+  const birthSeed = birth ? Number(birth.replaceAll('-', '')) : 0;
+  const seed = Math.abs((y * 10000 + m * 100 + day) * 31 + birthSeed * 17);
+  const adviceIndex = seed % DAILY_MSGS.length;
+  const advice = DAILY_MSGS[adviceIndex];
+  const energy = 3 + (seed % 3);
   let html = `<div class="daily-date">${dateStr}</div>`;
-  
+  html += `<div class="stars"><span class="label">${dict[currentLang].daily_energy}</span><span class="dots">${'●'.repeat(energy)}${'○'.repeat(5-energy)}</span></div>`;
+  html += `<div class="daily-msg">${esc(advice)}</div>`;
   const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
   html += aiDaily.html;
-
   const resContainer = document.getElementById('daily-result');
   resContainer.innerHTML = html;
-
-  const facts = { DailyEnergy: "4 Stars", Advice: DAILY_MSGS[0] };
+  const facts = { DailyEnergy: `${energy}/5 Stars`, Advice: advice, BirthDate: birth || 'Not provided', Date: dateStr };
   fillAiExplain(aiDaily.id, 'daily', '', facts);
   attachChatSection('daily-result', 'daily', '', facts);
 });
@@ -693,310 +698,6 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
   } catch(e) {
     resultEl.innerHTML = `<div class="empty">${esc(e.message || 'Chart calculation failed')}</div>`;
   }
-});
-</script>
-</body>
-</html>document.getElementById('daily-btn').addEventListener('click',()=>{
-  const birth = document.getElementById('daily-birth').value || '';
-  const d = new Date();
-  const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
-  const dateStr = `${y}/${String(m).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
-  // 同一天、同一生日會得到相同結果；換日自動換運勢。
-  const birthSeed = birth ? Number(birth.replaceAll('-','')) : 0;
-  const seed = Math.abs((y * 10000 + m * 100 + day) * 31 + birthSeed * 17);
-  const adviceIndex = seed % DAILY_MSGS.length;
-  const advice = DAILY_MSGS[adviceIndex];
-  const energy = 3 + (seed % 3);
-  let html = `<div class="daily-date">${dateStr}</div>`;
-  html += `<div class="stars"><span class="label">Energy</span><span class="dots">${'●'.repeat(energy)}${'○'.repeat(5-energy)}</span></div>`;
-  html += `<div class="daily-msg">${esc(advice)}</div>`;
-  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
-  html += aiDaily.html;
-  const resContainer = document.getElementById('daily-result');
-  resContainer.innerHTML = html;
-  const facts = { DailyEnergy: `${energy}/5 Stars`, Advice: advice, BirthDate: birth || 'Not provided', Date: dateStr };
-  fillAiExplain(aiDaily.id, 'daily', '', facts);
-  attachChatSection('daily-result', 'daily', '', facts);
-});
-
-function esc(s){
-  return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-}
-
-// ---------------- AI Functions ----------------
-let aiCardSeq = 0;
-function aiCardPlaceholder(title) {
-  const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
-  const hints = dict[currentLang].hints;
-  const hint = hints[Math.floor(Math.random() * hints.length)];
-  return {
-    id,
-    html: `<div class="smart-card" id="${id}"><div class="smart-title">${esc(title)}</div><div class="smart-text" style="color:var(--sub);font-style:italic;">${hint}</div></div>`,
-  };
-}
-
-async function fillAiExplain(id, module, question, facts) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  try {
-    const res = await fetch('/ask', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ module, question: question || '', facts, lang: currentLang }),
-    });
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
-  } catch (e) {
-    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text" style="color:var(--sub);">Failed: ${esc(e.message)}</div>`;
-  }
-}
-
-function attachChatSection(containerId, moduleName, question, facts) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const chatBoxId = `chat-box-${Date.now()}`;
-  const inputId = `chat-input-${Date.now()}`;
-  const history = [];
-
-  const chatHTML = `
-    <div class="smart-card" style="border-color:rgba(92,122,153,0.4);">
-      <div class="smart-title" style="color:var(--runic);">${dict[currentLang].ai_chat_title}</div>
-      <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn secondary small" id="${chatBoxId}-q1">${dict[currentLang].chat_q1}</button>
-        <button class="btn secondary small" id="${chatBoxId}-q2">${dict[currentLang].chat_q2}</button>
-      </div>
-      <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
-      <div style="display:flex; gap:6px;">
-        <input class="input" id="${inputId}" placeholder="${dict[currentLang].chat_ph}" style="font-size:13px;" />
-        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_send}</button>
-      </div>
-    </div>
-  `;
-  container.insertAdjacentHTML('beforeend', chatHTML);
-
-  const sendMsg = async (msgText) => {
-    if (!msgText) return;
-    const historyEl = document.getElementById(`${chatBoxId}-history`);
-    historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>You:</strong> ${esc(msgText)}</div>`);
-    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI thinking...</div>`);
-
-    try {
-      const res = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText, lang: currentLang })
-      });
-      const data = await res.json().catch(() => null);
-      document.getElementById(`${chatBoxId}-temp`)?.remove();
-      if (res.ok && data?.ok) {
-        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--text); font-size:14px; background:#0F0E17; padding:8px 10px; border-radius:8px; border:1px solid var(--panel-border);">${esc(data.reply).replace(/\n+/g,'<br/>')}</div>`);
-        history.push({ role: 'user', content: msgText });
-        history.push({ role: 'assistant', content: data.reply });
-      } else {
-        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Error: ${esc(data?.error || 'Failed')}</div>`);
-      }
-    } catch (e) {
-      document.getElementById(`${chatBoxId}-temp`)?.remove();
-      historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Network Error</div>`);
-    }
-  };
-
-  document.getElementById(`${chatBoxId}-send`).onclick = () => {
-    const el = document.getElementById(inputId);
-    const txt = el.value.trim();
-    if (txt) { sendMsg(txt); el.value = ''; }
-  };
-
-  document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg(dict[currentLang].chat_q1);
-  document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg(dict[currentLang].chat_q2);
-}
-
-// 預設套用語言
-applyLang(currentLang);
-
-// ---------------- 完全不改動核心算術與演算法 ----------------
-const TAROT = [["The Fool愚者","可以踏出第一步"],["The Magician魔術師","手上的牌其實夠用"],["The High Priestess女祭司","答案在你心裡"],["The Empress皇后","適合養與創造"],["The Emperor皇帝","把規則界線講清楚"],["The Hierophant教皇","可以聽前輩建議"],["The Lovers戀人","到了要選的時候"],["The Chariot戰車","方向對了就全力推"],["Strength力量","溫柔堅定比硬槓贏"],["The Hermit隱者","想清楚再出場"],["Wheel of Fortune命運之輪","風向在轉順勢走"],["Justice正義","誠實面對算清楚"],["The Hanged Man倒吊人","換個角度看問題"],["Death死神","舊的結束新的才會來"],["Temperance節制","慢一點融合會更穩"],["The Devil惡魔","看清是什麼綁住你"],["The Tower高塔","舊架構該震一下崩掉"],["The Star星星","希望與微光漸回"],["The Moon月亮","霧沒散先別大決定"],["The Sun太陽","天氣好適合往前"],["Judgement審判","該醒了認帳往前"],["The World世界","完成收尾開新章"]];
-
-document.getElementById('tarot-btn').addEventListener('click', ()=>{
-  const mode = Number(document.getElementById('tarot-mode').value);
-  const question = document.getElementById('tarot-question').value.trim();
-  const picked = [];
-  const used = new Set();
-  while(picked.length<mode){
-    const idx = Math.floor(Math.random()*TAROT.length);
-    if(used.has(idx)) continue;
-    used.add(idx);
-    picked.push({idx,reversed:Math.random()<0.35});
-  }
-
-  let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
-  picked.forEach((p,i)=>{
-    const [name,text]=TAROT[p.idx];
-    html += `<div class="meta-card"><div class="meta-row"><span>Card ${i+1}</span><strong>${name} ${p.reversed?'(Rev)':'(Upright)'}</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
-  });
-
-  const aiTarot = aiCardPlaceholder(dict[currentLang].ai_title);
-  html += aiTarot.html;
-  const resContainer = document.getElementById('tarot-result');
-  resContainer.innerHTML = html;
-
-  const facts = { DrawnCards: picked.map((p,i) => `Card ${i+1}: ${TAROT[p.idx][0]} (${p.reversed?'Reversed':'Upright'})`) };
-  fillAiExplain(aiTarot.id, 'tarot', question, facts);
-  attachChatSection('tarot-result', 'tarot', question, facts);
-});
-
-const HEX_NAMES = {1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",21:"噬嗑",22:"賁",23:"剝",24:"復",25:"無妄",26:"大畜",27:"頤",28:"大過",29:"坎",30:"離",31:"咸",32:"恆",33:"遯",34:"大壯",35:"晉",36:"明夷",37:"家人",38:"睽",39:"蹇",40:"解",41:"損",42:"益",43:"夬",44:"姤",45:"萃",46:"升",47:"困",48:"井",49:"革",50:"鼎",51:"震",52:"艮",53:"漸",54:"歸妹",55:"豐",56:"旅",57:"巽",58:"兌",59:"渙",60:"節",61:"中孚",62:"小過",63:"既濟",64:"未濟"};
-const HEX_TEXT = {1:"能量很足，可以主動出手，別再只是觀望。",2:"先承接、先配合，用柔的方式走，反而比較順。",3:"事情剛開始本來就卡，慢慢來，別急著一次做完。",4:"你還在摸，硬闖不如先問清楚、找人帶一下。",5:"條件還沒齊，再等一下會比硬推劃算。",6:"有人在抬槓。先退一步談，硬碰多半兩敗俱傷。",7:"這題要靠組織跟紀律，一個人衝不太夠。",8:"找對人一起做，比自己硬撐有效。",9:"力氣還在存，先養、先備，現在衝太早。",10:"每一步看清楚再踩，小心能少踩坑。",11:"天時地利都還行，可以做，別錯過這波。",12:"路卡住了。先縮、先養，等路口鬆一點再動。",13:"跟同路人一起走，事會好辦很多。",14:"收成不錯，但別太張揚，謙一點比較久。",15:"把姿態放低一點，空間反而比較大。",16:"心情跟勢頭都不錯，適合開新局，但別飄。",17:"跟著變化走，比死守自己的想法聰明。",18:"舊問題該清了，躲越久越麻煩。",19:"影響力在變大，好好經營這段關係或機會。",20:"先看、先想，看懂了再動，會少走彎路。",21:"卡點要處理，拖著只會更黏。",22:"表面可以顧，但底子也要補，不然撐不久。",23:"在退潮，先守本、少擴張，等谷底過了再說。",24:"壞的那段快過了，新的一輪在抬頭，可以抱點希望。",25:"別硬拗、別硬求，順一點、實在一點比較平安。",26:"這段適合存實力，厚了再發，急也急不來。",27:"吃什麼、說什麼都有關係；養身體也養分寸。",28:"負擔有點過重，要想非常手段，不然會壓垮。",29:"人在坑裡。冷靜、一步一步走，才出得去。",30:"方向是亮的，認準正路堅持，會有回報。",31:"有感覺、有共鳴，感情或合作都適合表態。",32:"長久靠穩定，別一下東一下西。",33:"該退就退，抽身有時比硬撐聰明。",34:"氣勢很強，但太剛容易得罪人，留一點餘地。",35:"往上走的階段，適合露臉、爭取被看見。",36:"光被蓋住了。先低調、先保自己，別硬出頭。",37:"先顧好家裡或內部，外面的事先排後面。",38:"想法不合很正常，求同存異，別為了贏而吵。",39:"路難走。先緩、先找人幫忙，硬闖多半撞牆。",40:"壓力在鬆，喘口氣，事情會比較好推。",41:"要捨一點才能換長遠的，死抓反而虧。",42:"有人有資源在靠近，把握住可以往外擴。",43:"該斷的斷乾淨，留尾巴以後會咬人。",44:"突然冒出的人事物，保持清醒，別被牽著走。",45:"人聚在一起，適合整合、招募、把資源排好。",46:"往上爬可以，但一步一步來，比一步登天穩。",47:"人困、事困，但心別先垮，熬得過會過來。",48:"基本盤還在，但要維護，別讓源頭乾掉。",49:"舊的玩不下去了，改一改才有新局面。",50:"在立新的秩序，穩穩扛責任，會有成績。",51:"突然被震一下。先穩住自己，別跟著慌。",52:"該停就停，安靜想清楚，比一直動有用。",53:"慢慢來才走得遠，急進容易摔。",54:"名分、條件還沒定，別急著拍板。",55:"高峰期可以把握，但也要想之後怎麼收。",56:"人在過渡、或不在自己地盤，謙和一點少麻煩。",57:"用柔的方式滲透，比硬碰有效。",58:"適合聊天、談判、分享，氣氛打開事比較好談。",59:"人心散了。該重新收攏，不然各走各的。",60:"有節制才走得久，過或不及都容易出問題。",61:"用真心，別人比較願意信你、挺你。",62:"收著做、別好高騖遠，穩過這段最重要。",63:"差不多成了，但別鬆，後面還要顧。",64:"還沒圓，繼續做，別在最後關頭停。"};
-
-const TRI_MATRIX = [[1,43,14,34,9,5,26,11],[10,58,38,54,61,60,41,19],[13,49,30,55,37,63,22,36],[25,17,21,51,42,3,27,24],[44,28,50,32,57,48,18,46],[6,47,64,40,59,29,4,7],[33,31,56,62,53,39,52,15],[12,45,35,16,20,8,23,2]];
-function tossLine(){ let sum=0; for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3; return sum; }
-function trigramIndex(bits){ const key = bits.join(''); const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7}; return map[key]; }
-function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[upperIdx][lowerIdx]; }
-function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
-
-document.getElementById('yijing-btn').addEventListener('click', ()=>{
-  const question = document.getElementById('yijing-question').value.trim();
-  const lines = [];
-  for(let i=0;i<6;i++) lines.push(tossLine());
-
-  const bits = lines.map(v => (v===7||v===9)?1:0);
-  const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
-  const hexNum = hexFromBits(bits);
-  const changedNum = hexFromBits(changedBits);
-  const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
-
-  function renderHex(vals, title, num, changedView=false){
-    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
-    vals.forEach((v,i)=>{
-      const solid = changedView ? !!changedBits[i] : (v===7||v===9);
-      const changing = !changedView && (v===6||v===9);
-      h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
-    });
-    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div></div>`;
-    return h;
-  }
-
-  let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
-  html += `<div class="hex-pair">${renderHex(lines, dict[currentLang].hex_orig, hexNum)}${renderHex(lines, dict[currentLang].hex_change, changedNum, true)}</div>`;
-  html += `<div class="meta-card">`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_now}</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_moving}</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):dict[currentLang].label_none}</strong></div>`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_after}</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
-  html += `</div>`;
-
-  const aiHex = aiCardPlaceholder(dict[currentLang].ai_title);
-  html += aiHex.html;
-
-  const resContainer = document.getElementById('yijing-result');
-  resContainer.innerHTML = html;
-
-  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], MovingLines: moving.length ? moving.map(lineLabel) : 'None' };
-  fillAiExplain(aiHex.id, 'yijing', question, facts);
-  attachChatSection('yijing-result', 'yijing', question, facts);
-});
-
-// ================= RUNES =================
-const RUNES = [
-  ["ᚠ","Fehu 財富符文","資源在靠近。你付出的，這段比較容易有回報。"],
-  ["ᚢ","Uruz 原牛符文","力氣有了。敢做、身體也跟得上的時候。"],
-  ["ᚦ","Thurisaz 巨人符文","有阻力、有衝突。先看清楚再迎，別衝動硬槓。"],
-  ["ᚨ","Ansuz 神諭符文","有話要聽。這次聽比說重要，訊息可能在別人嘴裡。"],
-  ["ᚱ","Raidho 旅程符文","在路上。順著節奏走，別急著終點。"],
-  ["ᚲ","Kenaz 火炬符文","靈感點了。適合動手做、把點子做出來。"],
-  ["ᚷ","Gebo 贈禮符文","有來有往才平衡。只拿或只給，關係都會歪。"],
-  ["ᚹ","Wunjo 喜悅符文","氣氛偏好，心情跟消息都有機會往上。"],
-  ["ᚺ","Hagalaz 冰雹符文","突然的變化。先護住自己，再處理善後。"],
-  ["ᚾ","Nauthiz 需求符文","有點難。難裡學到的，之後用得上。"],
-  ["ᛁ","Isa 冰符文","凍住了。硬推沒用，等化開再動。"],
-  ["ᛃ","Jera 豐收符文","耕過的會收。時候到了，別否定自己之前的努力。"],
-  ["ᛇ","Eihwaz 紫杉符文","要硬、要轉。起落都是過程，撐得住就過得去。"],
-  ["ᛈ","Perthro 命運符文","骰子還在轉。未知很大，先保留彈性。"],
-  ["ᛉ","Algiz 保護符文","有保護、也要警覺。直覺在擋危險，聽它。"],
-  ["ᛋ","Sowilo 太陽符文","目標清楚、力氣也在，適合往前拿結果。"],
-  ["ᛏ","Tiwaz 戰神符文","講原則的時候。堅持對的，比討好所有人重要。"],
-  ["ᛒ","Berkano 樺樹符文","新的在發芽。照顧它，會慢慢長起來。"],
-  ["ᛖ","Ehwaz 馬符文","靠夥伴。信任跟配合，比單打獨鬥快。"],
-  ["ᛗ","Mannaz 人類符文","人的問題。看自己、也看你跟別人的連結。"],
-  ["ᛚ","Laguz 水符文","情緒在流動。跟著感覺走一點，別全部用理智擋。"],
-  ["ᛜ","Ingwaz 種子符文","還在憋。能量在裡頭，時候到了會出來。"],
-  ["ᛟ","Othala 家園符文","根很重要。家、價值、你真正在意的，是這階段的力。"],
-  ["ᛞ","Dagaz 黎明符文","天亮了。舊夜結束，可以往新的一段走。"]
-];
-
-document.getElementById('runes-btn').addEventListener('click', ()=>{
-  const mode = Number(document.getElementById('runes-mode').value);
-  const question = document.getElementById('runes-question').value.trim();
-  const used=new Set(), picked=[];
-  while(picked.length<mode){ const idx=Math.floor(Math.random()*RUNES.length); if(!used.has(idx)){used.add(idx);picked.push(idx);} }
-  const labels=mode===3?dict[currentLang].rune_labels:[dict[currentLang].rune_single];
-  let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
-  picked.forEach((idx,i)=>{
-    const [glyph,name,text]=RUNES[idx];
-    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
-  });
-
-  const aiRune = aiCardPlaceholder(dict[currentLang].ai_title);
-  html += aiRune.html;
-
-  const resContainer = document.getElementById('runes-result');
-  resContainer.innerHTML = html;
-
-  const facts = { CastRunes: picked.map((idx,i) => `${labels[i]}: ${RUNES[idx][1]} (${RUNES[idx][2]})`) };
-  fillAiExplain(aiRune.id, 'runes', question, facts);
-  attachChatSection('runes-result', 'runes', question, facts);
-});
-
-// ================= DAILY FORTUNE =================
-const DAILY_MSGS = [
-  "今天適合把拖著的小事收尾。做完一件，心會比較寬。",
-  "訊息或對話可能帶來轉折，留意你平常不太注意的人。",
-  "錢的方面以穩為主，大額決定可以再睡一晚。",
-  "人際偏順，主動聯繫久未聯絡的人，往往比等對方來找你有效。",
-  "身體比行程誠實。累就早點停，效率反而比較好。",
-  "靈感偏多，適合動筆、構思，或把想法排進可執行的清單。",
-  "適合獨處整理。你不是要逃避，是需要把思緒排好隊。",
-  "遇到卡關，開口問一句，往往比自己硬撐更靠近解法。",
-  "情緒可能比較起伏。重要決定，等氣過了再下。",
-  "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
-];
-
-document.getElementById('daily-btn').addEventListener('click', ()=>{
-  const birth = document.getElementById('daily-birth').value || '';
-  const d = new Date();
-  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-  let html = `<div class="daily-date">${dateStr}</div>`;
-  
-  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
-  html += aiDaily.html;
-
-  const resContainer = document.getElementById('daily-result');
-  resContainer.innerHTML = html;
-
-  const facts = { DailyEnergy: "4 Stars", Advice: DAILY_MSGS[0] };
-  fillAiExplain(aiDaily.id, 'daily', '', facts);
-  attachChatSection('daily-result', 'daily', '', facts);
-});
-
-// ==================== 紫微斗數 ====================
-document.getElementById('ziwei-btn').addEventListener('click', () => {
-  const dateVal = document.getElementById('zw-date').value;
-  const timeVal = document.getElementById('zw-hour').value;
-  const resultEl = document.getElementById('ziwei-result');
-  if (!dateVal || !timeVal) {
-    resultEl.innerHTML = `<div class="empty">${dict[currentLang].zw_err_date}</div>`;
-    return;
-  }
-  
-  const aiZiwei = aiCardPlaceholder(dict[currentLang].ai_title);
-  let html = aiZiwei.html;
-  html += `<div class="smart-card"><div class="smart-title">${dict[currentLang].zw_center_title}</div><div class="smart-text">DOB: ${dateVal} ${timeVal}</div></div>`;
-
-  resultEl.innerHTML = html;
-  const facts = { BirthDate: dateVal, BirthTime: timeVal, ChartStatus: "Calculated" };
-  fillAiExplain(aiZiwei.id, 'ziwei', '', facts);
-  attachChatSection('ziwei-result', 'ziwei', 'Zi Wei Chart Analysis', facts);
 });
 </script>
 </body>
