@@ -98,6 +98,7 @@ export async function onRequestPost(context) {
     const body = await context.request.json().catch(() => null);
     const mod = String(body?.module || "").trim();
     const lang = String(body?.lang || "zh").toLowerCase();
+    if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
     const allowedModules = new Set(["yijing", "tarot", "runes", "ziwei", "daily"]);
     if (!allowedModules.has(mod)) return jsonResponse({ error: "Invalid module" }, 400);
 
@@ -105,7 +106,6 @@ export async function onRequestPost(context) {
     const facts = body?.facts;
     if (!facts || typeof facts !== "object") return jsonResponse({ error: "Missing facts" }, 400);
 
-    if (typeof facts !== "object") return jsonResponse({ error: "Invalid facts" }, 400);
     const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
     const userPromptText = buildUserPrompt(mod, question, factsText, lang);
 
