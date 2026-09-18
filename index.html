@@ -237,7 +237,7 @@
     <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
   </div>
 
-  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.3｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.5｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -263,7 +263,7 @@ const dict = {
     opt_r1: "單枚指引", opt_r3: "三枚｜現況・阻力・建議",
     opt_male: "男", opt_female: "女",
     lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
-    footer: "僅供參考娛樂｜v2.3｜重要決策仍以現實資訊為準",
+    footer: "僅供參考娛樂｜v2.5｜重要決策仍以現實資訊為準",
     ai_title: "AI 白話說明", ai_chat_title: "💡 對這個結果還有疑問？直接問 AI 陪伴助手",
     chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
     hints: ["正在為你解讀符號背後的訊息…", "正在梳理當前的能量與脈絡…", "正在為你準備溫和的行動建議…"],
@@ -289,7 +289,7 @@ const dict = {
     opt_r1: "1 Rune Guide", opt_r3: "3 Runes | Status · Obstacle · Advice",
     opt_male: "Male", opt_female: "Female",
     lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
-    footer: "For Entertainment Only | v2.3 | Always make real decisions wisely",
+    footer: "For Entertainment Only | v2.5 | Always make real decisions wisely",
     ai_title: "AI Interpretation", ai_chat_title: "💡 Have questions? Ask AI assistant",
     chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
     hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."],
@@ -614,6 +614,50 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{
 });
 
 // ==================== 紫微斗數 ====================
+// ==================== 紫微斗數 ====================
+function getChineseCalendarParts(dateVal, timeVal){
+  const [y,m,d] = dateVal.split('-').map(Number);
+  const [hh,mm] = timeVal.split(':').map(Number);
+  const dt = new Date(y, m-1, d, hh, mm || 0);
+  const parts = new Intl.DateTimeFormat('zh-Hant-u-ca-chinese', {
+    year:'numeric', month:'numeric', day:'numeric'
+  }).formatToParts(dt);
+  const monthPart = parts.find(p=>p.type==='month')?.value || '';
+  const dayPart = parts.find(p=>p.type==='day')?.value || '';
+  const yearPart = parts.find(p=>p.type==='relatedYear')?.value || '';
+  const monthMatch = monthPart.match(/\d+/);
+  const dayMatch = dayPart.match(/\d+/);
+  if(!monthMatch || !dayMatch) throw new Error('Chinese calendar unavailable');
+  return { lunarYear:Number(yearPart)||y, lunarMonth:Number(monthMatch[0]), lunarDay:Number(dayMatch[0]) };
+}
+function earthlyBranchIndexForHour(hour){
+  // 子時 23:00–00:59，之後每兩小時一支
+  return Math.floor(((hour + 1) % 24) / 2);
+}
+function palaceBranchIndex(lunarMonth, hourBranch, direction){
+  // 地支索引：子0、丑1、寅2...亥11；寅宮起正月。
+  const monthBase = (2 + (lunarMonth - 1)) % 12;
+  return (monthBase + direction * hourBranch + 12) % 12;
+}
+function buildZiweiFramework(dateVal,timeVal,gender){
+  const [hour] = timeVal.split(':').map(Number);
+  const lunar = getChineseCalendarParts(dateVal,timeVal);
+  const hourBranch = earthlyBranchIndexForHour(hour);
+  const lifeBranch = palaceBranchIndex(lunar.lunarMonth, hourBranch, -1);
+  const bodyBranch = palaceBranchIndex(lunar.lunarMonth, hourBranch, 1);
+  const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const palaceNames=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','奴僕','官祿','田宅','福德','父母'];
+  const cells = branches.map((branch,i)=>{
+    const offset=(i-lifeBranch+12)%12;
+    const palace=palaceNames[offset];
+    const flags=[];
+    if(i===lifeBranch) flags.push('life');
+    if(i===bodyBranch) flags.push('body');
+    return {branch,palace,flags};
+  });
+  return {lunar,hourBranch,lifeBranch,bodyBranch,cells,gender};
+}
+
 document.getElementById('ziwei-btn').addEventListener('click', () => {
   const dateVal = document.getElementById('zw-date').value;
   const timeVal = document.getElementById('zw-hour').value;
@@ -623,21 +667,32 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
     resultEl.innerHTML = `<div class="empty">${dict[currentLang].zw_err_date}</div>`;
     return;
   }
-  // v2.4：先建立「排盤資料卡」；不宣稱未實作的十二宮星曜計算。
-  const aiZiwei = aiCardPlaceholder(dict[currentLang].ai_title);
-  const genderLabel = gender === 'F' ? dict[currentLang].opt_female : dict[currentLang].opt_male;
-  let html = `<div class="zw-meta">`;
-  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_dob}</span><strong>${esc(dateVal)}</strong></div>`;
-  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_tob}</span><strong>${esc(timeVal)}</strong></div>`;
-  html += `<div class="smart-chip"><span>${dict[currentLang].lbl_gender}</span><strong>${esc(genderLabel)}</strong></div>`;
-  html += `<div class="smart-chip"><span>Status</span><strong>Birth data ready</strong></div>`;
-  html += `</div>`;
-  html += `<div class="smart-card"><div class="smart-title">${dict[currentLang].zw_center_title}</div><div class="smart-text">${esc(dateVal)} ${esc(timeVal)} · ${esc(genderLabel)}</div><div class="hint">目前版本先以出生資料提供 AI 輔助解讀；十二宮與星曜仍待正式曆法／排盤引擎接入。</div></div>`;
-  html += aiZiwei.html;
-  resultEl.innerHTML = html;
-  const facts = { BirthDate: dateVal, BirthTime: timeVal, Gender: genderLabel, ChartStatus: 'Birth data ready' };
-  fillAiExplain(aiZiwei.id, 'ziwei', '', facts);
-  attachChatSection('ziwei-result', 'ziwei', 'Zi Wei Chart Analysis', facts);
+  try {
+    const chart = buildZiweiFramework(dateVal,timeVal,gender);
+    const genderLabel = gender === 'F' ? dict[currentLang].opt_female : dict[currentLang].opt_male;
+    const aiZiwei = aiCardPlaceholder(dict[currentLang].ai_title);
+    let html = `<div class="zw-meta">`;
+    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_dob}</span><strong>${esc(dateVal)}</strong></div>`;
+    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_tob}</span><strong>${esc(timeVal)}</strong></div>`;
+    html += `<div class="smart-chip"><span>${dict[currentLang].lbl_gender}</span><strong>${esc(genderLabel)}</strong></div>`;
+    html += `<div class="smart-chip"><span>農曆</span><strong>${chart.lunar.lunarYear} 年 ${chart.lunar.lunarMonth} 月 ${chart.lunar.lunarDay} 日</strong></div>`;
+    html += `</div>`;
+    html += `<div class="zw-grid">`;
+    const branchOrder=[2,3,4,5,6,7,8,9,10,11,0,1];
+    branchOrder.forEach(i=>{
+      const c=chart.cells[i];
+      html += `<div class="zw-cell ${c.flags.join(' ')}"><span class="zw-branch">${c.branch}</span><div class="zw-palace">${c.palace}</div><div class="zw-stars"><span class="zw-star">${i===chart.lifeBranch?'命宮定位':''}</span>${i===chart.bodyBranch?'<span class="zw-aux lucky">身宮</span>':''}</div></div>`;
+    });
+    html += `<div class="zw-center"><div class="zw-c-title">${dict[currentLang].zw_center_title}</div><div class="zw-c-line">命宮：${branches[chart.lifeBranch]}　身宮：${branches[chart.bodyBranch]}<br/>時辰：${branches[chart.hourBranch]}　性別：${esc(genderLabel)}</div></div></div>`;
+    html += `<div class="hint">已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。</div>`;
+    html += aiZiwei.html;
+    resultEl.innerHTML = html;
+    const facts = { BirthDate: dateVal, BirthTime: timeVal, Gender: genderLabel, LunarDate: `${chart.lunar.lunarYear}-${chart.lunar.lunarMonth}-${chart.lunar.lunarDay}`, HourBranch: branches[chart.hourBranch], LifePalace: branches[chart.lifeBranch], BodyPalace: branches[chart.bodyBranch], ChartStatus: '12-palace framework calculated' };
+    fillAiExplain(aiZiwei.id, 'ziwei', '', facts);
+    attachChatSection('ziwei-result', 'ziwei', 'Zi Wei Chart Analysis', facts);
+  } catch(e) {
+    resultEl.innerHTML = `<div class="empty">${esc(e.message || 'Chart calculation failed')}</div>`;
+  }
 });
 </script>
 </body>
