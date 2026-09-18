@@ -97,8 +97,6 @@ export async function onRequestPost(context) {
   try {
     const contentLength = Number(context.request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
-    const contentLength = Number(context.request.headers.get("content-length") || 0);
-    if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
     const rawBody = await context.request.text();
     if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
     let body = null;
@@ -140,7 +138,7 @@ export async function onRequestPost(context) {
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, explanation });
   } catch (e) {
-    return jsonResponse({ error: e?.message || "AI Error", version: ASK_VERSION }, 500);
+    return jsonResponse({ error: "AI Error", version: ASK_VERSION }, 500);
   }
 }
 
