@@ -146,7 +146,6 @@ export async function onRequestPostChat(context) {
   try {
     const contentLength = Number(context.request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
-    const contentLength = Number(context.request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
     const rawBody = await context.request.text();
     if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
@@ -194,6 +193,6 @@ export async function onRequestPostChat(context) {
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, reply });
   } catch (e) {
-    return jsonResponse({ error: e?.message || "Chat Error", version: ASK_VERSION }, 500);
+    return jsonResponse({ error: "Chat Error", version: ASK_VERSION }, 500);
   }
 }
