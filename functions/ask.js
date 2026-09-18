@@ -10,7 +10,7 @@ const MAX_FACTS_LEN = 2500;
 const MAX_TOKENS = 600;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_MSG_LEN = 500;
-const MAX_BODY_BYTES = 20000;
+const MAX_BODY_BYTES = 64 * 1024;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 
 function jsonResponse(data, status = 200) {
@@ -19,6 +19,8 @@ function jsonResponse(data, status = 200) {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store, no-cache, must-revalidate",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "same-origin",
     },
   });
 }
@@ -95,7 +97,12 @@ export async function onRequestPost(context) {
   try {
     const contentLength = Number(context.request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
-    const body = await context.request.json().catch(() => null);
+    const contentLength = Number(context.request.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
+    const rawBody = await context.request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
+    let body = null;
+    try { body = rawBody.trim() ? JSON.parse(rawBody) : null; } catch { return jsonResponse({ error: "Invalid JSON" }, 400); }
     const mod = String(body?.module || "").trim();
     const lang = String(body?.lang || "zh").toLowerCase();
     if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
@@ -141,7 +148,12 @@ export async function onRequestPostChat(context) {
   try {
     const contentLength = Number(context.request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
-    const body = await context.request.json().catch(() => null);
+    const contentLength = Number(context.request.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
+    const rawBody = await context.request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return jsonResponse({ error: "Request too large" }, 413);
+    let body = null;
+    try { body = rawBody.trim() ? JSON.parse(rawBody) : null; } catch { return jsonResponse({ error: "Invalid JSON" }, 400); }
     const userMessage = String(body?.message || "").slice(0, MAX_QUESTION_LEN).trim();
     const lang = String(body?.lang || "zh").toLowerCase();
     if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
