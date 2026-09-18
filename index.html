@@ -237,7 +237,7 @@
     <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
   </div>
 
-  <div class="footer-note" i18n="footer">僅供參考娛樂｜v2.5｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -263,14 +263,14 @@ const dict = {
     opt_r1: "單枚指引", opt_r3: "三枚｜現況・阻力・建議",
     opt_male: "男", opt_female: "女",
     lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
-    footer: "僅供參考娛樂｜v2.5｜重要決策仍以現實資訊為準",
+    footer: "僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準",
     ai_title: "AI 白話說明", ai_chat_title: "💡 對這個結果還有疑問？直接問 AI 陪伴助手",
     chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
     hints: ["正在為你解讀符號背後的訊息…", "正在梳理當前的能量與脈絡…", "正在為你準備溫和的行動建議…"],
     // 動態介面補充標籤
     hex_orig: "本卦", hex_change: "之卦", label_now: "現在", label_moving: "有變化", label_after: "之後", label_none: "沒有",
     rune_labels: ['現況','阻力','建議'], rune_single: '指引',
-    daily_energy: "能量", lunar: "農曆", zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
+    daily_energy: "能量", lunar: "農曆", zw_hour_suffix: "時", zw_bureau: "五行局", zw_current: "虛歲／大限", zw_empty: "空宮", zw_life: "命宮", zw_body: "身宮", zw_year: "生年", zw_nayin: "納音", zw_element_suffix: "行", zw_direction: "大限方向", zw_forward: "順行", zw_backward: "逆行", zw_four: "生年四化", zw_current_daxian: "目前大限", zw_v3_hint: "v3.0 已加入十四主星、四化與大限框架。農曆日期採瀏覽器 Chinese Calendar，閏月與少數流派差異仍可能造成排盤差異。" zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
   },
   en: {
     btn_lang: "English",
@@ -289,13 +289,13 @@ const dict = {
     opt_r1: "1 Rune Guide", opt_r3: "3 Runes | Status · Obstacle · Advice",
     opt_male: "Male", opt_female: "Female",
     lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
-    footer: "For Entertainment Only | v2.5 | Always make real decisions wisely",
+    footer: "For Entertainment Only | v3.0 | Always make real decisions wisely",
     ai_title: "AI Interpretation", ai_chat_title: "💡 Have questions? Ask AI assistant",
     chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
     hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."],
     hex_orig: "Original", hex_change: "Transformed", label_now: "Present", label_moving: "Changing", label_after: "Future", label_none: "None",
     rune_labels: ['Current Status','Obstacle','Advice'], rune_single: 'Guidance',
-    daily_energy: "Energy", lunar: "Lunar", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
+    daily_energy: "Energy", lunar: "Lunar", zw_hour_suffix: " hour", zw_bureau: "Five-Element Bureau", zw_current: "Age / Decadal", zw_empty: "Empty", zw_life: "Life Palace", zw_body: "Body Palace", zw_year: "Year Pillar", zw_nayin: "Na Yin", zw_element_suffix: " element", zw_direction: "Decadal Direction", zw_forward: "Forward", zw_backward: "Reverse", zw_four: "Birth-Year Transformations", zw_current_daxian: "Current Decadal", zw_v3_hint: "v3.0 adds the 14 main stars, four transformations and decadal-cycle framework. Lunar dates use the browser Chinese Calendar; leap-month and school-specific conventions may differ." zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
   },
   id: {
     btn_lang: "Bahasa Indonesia",
@@ -314,13 +314,13 @@ const dict = {
     opt_r1: "1 Rune Panduan", opt_r3: "3 Rune | Status · Hambatan · Saran",
     opt_male: "Pria", opt_female: "Wanita",
     lbl_birth: "Tanggal Lahir (Opsional)", lbl_dob: "Tanggal Lahir", lbl_tob: "Waktu Lahir", lbl_gender: "Jenis Kelamin",
-    footer: "Hanya untuk hiburan | v2.5 | Tetap buat keputusan hidup secara bijak",
+    footer: "Hanya untuk hiburan | v3.0 | Tetap buat keputusan hidup secara bijak",
     ai_title: "Interpretasi AI", ai_chat_title: "💡 Ada pertanyaan? Tanyakan pada asisten AI",
     chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim",
     hints: ["Menerjemahkan pesan untuk Anda...", "Menyusun pola energi saat ini...", "Menyiapkan saran langkah yang ramah..."],
     hex_orig: "Asli", hex_change: "Berubah", label_now: "Saat Ini", label_moving: "Berubah", label_after: "Masa Depan", label_none: "Tidak Ada",
     rune_labels: ['Status Saat Ini','Hambatan','Saran'], rune_single: 'Panduan',
-    zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap", daily_energy: "Energi", lunar: "Lunar", zw_hint: "Tanggal lunar, cabang waktu, Istana Kehidupan dan Istana Tubuh telah dihitung. Bintang utama, transformasi dan siklus dekade belum dimasukkan, jadi ini bukan bagan bintang lengkap.",
+    zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap", daily_energy: "Energi", lunar: "Lunar", zw_hour_suffix: " jam", zw_bureau: "Biro Lima Unsur", zw_current: "Usia / Dekade", zw_empty: "Kosong", zw_life: "Istana Kehidupan", zw_body: "Istana Tubuh", zw_year: "Pilar Tahun", zw_nayin: "Na Yin", zw_element_suffix: "", zw_direction: "Arah Dekade", zw_forward: "Maju", zw_backward: "Mundur", zw_four: "Transformasi Tahun Lahir", zw_current_daxian: "Dekade Saat Ini", zw_v3_hint: "v3.0 menambahkan 14 bintang utama, empat transformasi, dan kerangka siklus dekade. Tanggal lunar memakai Chinese Calendar browser; aturan bulan kabisat dan aliran tradisi tertentu dapat berbeda." zw_hint: "Tanggal lunar, cabang waktu, Istana Kehidupan dan Istana Tubuh telah dihitung. Bintang utama, transformasi dan siklus dekade belum dimasukkan, jadi ini bukan bagan bintang lengkap.",
 
   }
 };
