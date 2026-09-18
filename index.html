@@ -270,7 +270,7 @@ const dict = {
     // 動態介面補充標籤
     hex_orig: "本卦", hex_change: "之卦", label_now: "現在", label_moving: "有變化", label_after: "之後", label_none: "沒有",
     rune_labels: ['現況','阻力','建議'], rune_single: '指引',
-    daily_energy: "能量", lunar: "農曆", zw_hint: "${dict[currentLang].zw_hint}", daily_energy: "能量", lunar: "農曆", zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
+    daily_energy: "能量", lunar: "農曆", zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
   },
   en: {
     btn_lang: "English",
@@ -295,7 +295,7 @@ const dict = {
     hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."],
     hex_orig: "Original", hex_change: "Transformed", label_now: "Present", label_moving: "Changing", label_after: "Future", label_none: "None",
     rune_labels: ['Current Status','Obstacle','Advice'], rune_single: 'Guidance',
-    daily_energy: "Energy", lunar: "Lunar", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", daily_energy: "Energy", lunar: "Lunar", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
+    daily_energy: "Energy", lunar: "Lunar", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
   },
   id: {
     btn_lang: "Bahasa Indonesia",
@@ -320,7 +320,8 @@ const dict = {
     hints: ["Menerjemahkan pesan untuk Anda...", "Menyusun pola energi saat ini...", "Menyiapkan saran langkah yang ramah..."],
     hex_orig: "Asli", hex_change: "Berubah", label_now: "Saat Ini", label_moving: "Berubah", label_after: "Masa Depan", label_none: "Tidak Ada",
     rune_labels: ['Status Saat Ini','Hambatan','Saran'], rune_single: 'Panduan',
-    zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap"
+    zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap"    daily_energy: "Energi", lunar: "Lunar", zw_hint: "Tanggal lunar, cabang waktu, Istana Kehidupan dan Istana Tubuh telah dihitung. Bintang utama, transformasi dan siklus dekade belum dimasukkan, jadi ini bukan bagan bintang lengkap.",
+
   }
 };
 
@@ -680,7 +681,7 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
     html += `<div class="smart-chip"><span>${dict[currentLang].lbl_dob}</span><strong>${esc(dateVal)}</strong></div>`;
     html += `<div class="smart-chip"><span>${dict[currentLang].lbl_tob}</span><strong>${esc(timeVal)}</strong></div>`;
     html += `<div class="smart-chip"><span>${dict[currentLang].lbl_gender}</span><strong>${esc(genderLabel)}</strong></div>`;
-    html += `<div class="smart-chip"><span>農曆</span><strong>${chart.lunar.lunarYear} 年 ${chart.lunar.lunarMonth} 月 ${chart.lunar.lunarDay} 日</strong></div>`;
+    html += `<div class="smart-chip"><span>${dict[currentLang].lunar}</span><strong>${chart.lunar.lunarYear} 年 ${chart.lunar.lunarMonth} 月 ${chart.lunar.lunarDay} 日</strong></div>`;
     html += `</div>`;
     html += `<div class="zw-grid">`;
     const branchOrder=[2,3,4,5,6,7,8,9,10,11,0,1];
@@ -689,7 +690,7 @@ document.getElementById('ziwei-btn').addEventListener('click', () => {
       html += `<div class="zw-cell ${c.flags.join(' ')}"><span class="zw-branch">${c.branch}</span><div class="zw-palace">${c.palace}</div><div class="zw-stars"><span class="zw-star">${i===chart.lifeBranch?'命宮定位':''}</span>${i===chart.bodyBranch?'<span class="zw-aux lucky">身宮</span>':''}</div></div>`;
     });
     html += `<div class="zw-center"><div class="zw-c-title">${dict[currentLang].zw_center_title}</div><div class="zw-c-line">命宮：${branches[chart.lifeBranch]}　身宮：${branches[chart.bodyBranch]}<br/>時辰：${branches[chart.hourBranch]}　性別：${esc(genderLabel)}</div></div></div>`;
-    html += `<div class="hint">已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。</div>`;
+    html += `<div class="hint">${dict[currentLang].zw_hint}</div>`;
     html += aiZiwei.html;
     resultEl.innerHTML = html;
     const facts = { BirthDate: dateVal, BirthTime: timeVal, Gender: genderLabel, LunarDate: `${chart.lunar.lunarYear}-${chart.lunar.lunarMonth}-${chart.lunar.lunarDay}`, HourBranch: branches[chart.hourBranch], LifePalace: branches[chart.lifeBranch], BodyPalace: branches[chart.bodyBranch], ChartStatus: '12-palace framework calculated' };
