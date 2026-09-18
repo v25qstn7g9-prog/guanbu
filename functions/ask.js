@@ -1,13 +1,16 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-2.3-i18n-trilingual";
+const ASK_VERSION = "guanbu-ask-2.4";
 const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 const MAX_QUESTION_LEN = 200;
 const MAX_FACTS_LEN = 2500;
 const MAX_TOKENS = 600;
+const MAX_HISTORY_ITEMS = 6;
+const MAX_HISTORY_MSG_LEN = 500;
+const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -98,6 +101,7 @@ export async function onRequestPost(context) {
     const facts = body?.facts;
     if (!facts || typeof facts !== "object") return jsonResponse({ error: "Missing facts" }, 400);
 
+    if (typeof facts !== "object") return jsonResponse({ error: "Invalid facts" }, 400);
     const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
     const userPromptText = buildUserPrompt(mod, question, factsText, lang);
 
@@ -134,9 +138,15 @@ export async function onRequestPostChat(context) {
     const body = await context.request.json().catch(() => null);
     const userMessage = String(body?.message || "").slice(0, MAX_QUESTION_LEN).trim();
     const lang = String(body?.lang || "zh").toLowerCase();
+    if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
     const facts = body?.facts;
-    const history = Array.isArray(body?.history) ? body.history.slice(-6) : [];
+    const history = Array.isArray(body?.history)
+      ? body.history.slice(-MAX_HISTORY_ITEMS)
+          .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+          .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_HISTORY_MSG_LEN) }))
+      : [];
 
+    if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
     if (!userMessage || !facts) return jsonResponse({ error: "Missing input" }, 400);
 
     const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
