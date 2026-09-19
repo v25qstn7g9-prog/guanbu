@@ -132,7 +132,8 @@ export async function onRequestPost(context) {
       explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!explanation) throw new Error("Primary AI Empty");
     } catch (primaryErr) {
-      explanation = await callGeminiFallback(context.env, SYSTEM_PROMPT, [{ role: "user", content: userPromptText }]);
+      explanation = String(await callGeminiFallback(context.env, SYSTEM_PROMPT, [{ role: "user", content: userPromptText }]) || "").trim();
+      if (!explanation) throw new Error("Fallback AI Empty");
       usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
     }
 
@@ -186,7 +187,8 @@ export async function onRequestPostChat(context) {
       reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!reply) throw new Error("Primary AI Empty");
     } catch (primaryErr) {
-      reply = await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory);
+      reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory) || "").trim();
+      if (!reply) throw new Error("Fallback AI Empty");
       usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
     }
 
