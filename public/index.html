@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>觀卜 Guanbu — Divination App</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
+
+  :root{
+    --bg:#0B0B14;
+    --panel:#15141F;
+    --panel-border:#2A2438;
+    --text:#EDE6D6;
+    --sub:#8A8398;
+    --gold:#C9A227;
+    --crimson:#8B2635;
+    --jade:#3F6659;
+    --runic:#5C7A99;
+    --violet:#6B4E8E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'EB Garamond', serif; min-height:100%;}
+  body{
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(201,162,39,0.06), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(92,122,153,0.06), transparent 45%);
+  }
+  .app{max-width:460px;margin:0 auto;min-height:100vh;padding:22px 18px 60px;}
+
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .lang-btn{background:#1B1A26;border:1px solid var(--gold);color:var(--gold);
+    padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
+
+  .hero{text-align:center;margin-bottom:22px;}
+  .hero .mark{font-size:13px;letter-spacing:.35em;color:var(--sub);margin-bottom:6px;}
+  .hero h1{font-family:'Noto Serif TC',serif;font-weight:700;font-size:30px;margin:0;
+    background:linear-gradient(120deg, var(--gold), #E8D48A 55%, var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{color:var(--sub);font-size:14px;margin-top:8px;font-style:italic;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{flex:1;min-width:60px;padding:10px 4px;text-align:center;border-radius:12px;
+    border:1px solid var(--panel-border);background:var(--panel);
+    color:var(--sub);font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;
+    cursor:pointer;transition:border-color .2s, color .2s;}
+  .tab.active{color:var(--text);}
+  .tab[data-t="yijing"].active{border-color:var(--jade);box-shadow:0 0 0 1px var(--jade) inset;}
+  .tab[data-t="tarot"].active{border-color:var(--crimson);box-shadow:0 0 0 1px var(--crimson) inset;}
+  .tab[data-t="runes"].active{border-color:var(--runic);box-shadow:0 0 0 1px var(--runic) inset;}
+  .tab[data-t="daily"].active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .tab[data-t="ziwei"].active{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
+
+  .panel{display:none;background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:16px;padding:22px 18px;min-height:280px;}
+  .panel.active{display:block;}
+
+  .section-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.18em;
+    color:var(--sub);margin-bottom:14px;text-align:center;}
+  .section-title.cn{font-family:'Noto Serif TC',serif;letter-spacing:.08em;}
+
+  .btn{display:block;width:100%;padding:13px;border-radius:10px;border:none;
+    font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px;cursor:pointer;
+    margin-top:16px;transition:transform .15s;}
+  .btn:active{transform:scale(0.98);}
+  .btn.jade{background:var(--jade);color:#EAF3EF;}
+  .btn.crimson{background:var(--crimson);color:#F6E9EA;}
+  .btn.runic{background:var(--runic);color:#EAF1F7;}
+  .btn.gold{background:var(--gold);color:#1B1508;}
+
+  /* --- I Ching --- */
+  .hexagram{display:flex;flex-direction:column-reverse;gap:7px;align-items:center;margin:18px 0;}
+  .line{width:150px;height:12px;display:flex;justify-content:space-between;}
+  .line .bar{height:100%;background:var(--jade);border-radius:2px;}
+  .line.solid .bar{width:100%;}
+  .line.broken .bar{width:44%;}
+  .line.changing{outline:1.5px dashed var(--gold);outline-offset:3px;}
+
+  .result-name{text-align:center;font-family:'Noto Serif TC',serif;font-size:24px;
+    font-weight:700;color:var(--gold);margin:14px 0 4px;}
+  .result-sub{text-align:center;color:var(--sub);font-size:13px;margin-bottom:12px;}
+  .result-text{font-size:16px;line-height:1.75;text-align:center;padding:0 4px;}
+
+  /* --- Tarot --- */
+  .cards-row{display:flex;justify-content:center;gap:10px;margin:16px 0;flex-wrap:wrap;}
+  .rune-glyph{text-align:center;font-size:56px;color:var(--runic);margin:10px 0 4px;
+    text-shadow:0 0 18px rgba(92,122,153,.5);}
+  .rune-name{text-align:center;font-family:'Cinzel',serif;font-size:16px;color:var(--runic);
+    letter-spacing:.08em;}
+
+  /* --- Daily --- */
+  .stars{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
+    border-bottom:1px solid var(--panel-border);}
+  .stars:last-child{border-bottom:none;}
+  .stars .label{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--sub);}
+  .stars .dots span{color:var(--panel-border);font-size:15px;}
+  .stars .dots span.on{color:var(--gold);}
+  .daily-msg{margin-top:16px;font-size:15px;line-height:1.7;text-align:center;
+    font-style:italic;color:var(--text);}
+  .daily-date{text-align:center;color:var(--sub);font-size:12px;margin-bottom:6px;
+    letter-spacing:.1em;}
+
+  .field{margin:10px 0 14px;}
+  .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:7px;}
+  .input,.select{width:100%;background:#0F0E17;color:var(--text);border:1px solid var(--panel-border);
+    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;}
+  .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.08);}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
+  .meta-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:var(--sub);font-size:13px;}
+  .meta-row strong{color:var(--text);font-weight:600;text-align:right;}
+  .moving{color:var(--gold);}
+  .hex-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+  .hex-box{padding:10px 6px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
+  .hex-box .hexagram{margin:10px 0;}
+  .hex-box .line{width:110px;height:9px;}
+  .hex-box .result-name{font-size:20px;margin-top:8px;}
+  .hex-box .result-sub{margin-bottom:4px;}
+  .tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#201C13;color:#E8D48A;font-size:11px;margin:2px;}
+  .question-echo{font-family:'Noto Serif TC',serif;text-align:center;color:#D9CFB7;font-size:14px;line-height:1.6;margin:8px 0 14px;}
+  .hint{font-size:12px;color:var(--sub);line-height:1.55;margin-top:8px;}
+  .toolbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
+  .btn.small{padding:9px 10px;margin-top:0;font-size:13px;}
+  @media (max-width:380px){.hex-pair{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr;}}
+
+  .smart-card{margin:14px 0;padding:15px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
+  .smart-title{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold);letter-spacing:.08em;margin-bottom:9px;}
+  .smart-text{font-size:15px;line-height:1.75;color:var(--text);}
+  .smart-chip{border:1px solid var(--panel-border);border-radius:10px;padding:9px;background:#0F0E17;}
+  .smart-chip span{display:block;color:var(--sub);font-size:11px;margin-bottom:3px;}
+  .smart-chip strong{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);}
+
+  .empty{color:var(--sub);text-align:center;font-size:14px;padding:40px 10px;line-height:1.8;}
+  .footer-note{text-align:center;color:var(--sub);font-size:11px;margin-top:26px;letter-spacing:.05em;}
+
+  /* --- Zi Wei chart grid --- */
+  .zw-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+  .zw-meta .smart-chip{border-color:rgba(107,78,142,.4);}
+  .zw-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
+    gap:4px;aspect-ratio:1/1;margin:14px 0;}
+  .zw-cell{border:1px solid var(--panel-border);border-radius:8px;background:#11101A;
+    padding:5px 4px;display:flex;flex-direction:column;font-size:10px;position:relative;overflow:hidden;}
+  .zw-cell.life{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
+  .zw-cell.body{outline:1.5px dashed var(--gold);outline-offset:-3px;}
+  .zw-cell .zw-branch{position:absolute;top:3px;right:5px;color:var(--sub);font-size:9px;}
+  .zw-cell .zw-stem{position:absolute;top:3px;left:5px;color:var(--sub);font-size:9px;}
+  .zw-cell .zw-palace{font-family:'Noto Serif TC',serif;font-size:11px;color:var(--gold);
+    margin-top:14px;text-align:center;}
+  .zw-cell .zw-stars{margin-top:4px;display:flex;flex-direction:column;gap:1px;align-items:center;}
+  .zw-cell .zw-star{color:var(--text);font-size:11px;font-family:'Noto Serif TC',serif;white-space:nowrap;}
+  .zw-cell .zw-star.main{color:#E8D4F5;font-weight:700;}
+  .zw-cell .zw-sihua{color:var(--gold);font-size:9px;margin-left:2px;}
+  .zw-cell .zw-aux{font-size:9px;white-space:nowrap;}
+  .zw-cell .zw-aux.lucky{color:var(--jade);}
+  .zw-cell .zw-aux.wealth{color:var(--gold);}
+  .zw-cell .zw-aux.unlucky{color:var(--crimson);}
+  .zw-cell .zw-daxian{position:absolute;bottom:3px;right:5px;color:var(--sub);font-size:8px;}
+  .zw-center{grid-column:2/4;grid-row:2/4;border:1px solid rgba(107,78,142,.4);border-radius:10px;
+    background:linear-gradient(160deg,#1B1620,#111019);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:8px;text-align:center;}
+  .zw-center .zw-c-title{font-family:'Noto Serif TC',serif;color:var(--violet);font-size:12px;margin-bottom:4px;}
+  .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
+  @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-bar">
+    <div></div>
+    <button class="lang-btn" id="lang-toggle">中文 / EN / ID</button>
+  </div>
+
+  <div class="hero">
+    <div class="mark">D I V I N A T I O N</div>
+    <h1>觀卜</h1>
+    <p i18n="subtitle">易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-t="yijing" i18n="tab_yijing">易經</div>
+    <div class="tab" data-t="tarot" i18n="tab_tarot">塔羅</div>
+    <div class="tab" data-t="runes" i18n="tab_runes">符文</div>
+    <div class="tab" data-t="daily" i18n="tab_daily">每日</div>
+    <div class="tab" data-t="ziwei" i18n="tab_ziwei">紫微</div>
+  </div>
+
+  <!-- Yijing Panel -->
+  <div class="panel active" id="panel-yijing">
+    <div class="section-title cn" i18n="title_yijing">起卦問事</div>
+    <div class="field">
+      <label i18n="lbl_question">你想問什麼？</label>
+      <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" i18n-ph="ph_yijing" />
+    </div>
+    <div id="yijing-result"><div class="empty" i18n="empty_yijing">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div></div>
+    <button class="btn jade" id="yijing-btn" i18n="btn_yijing">起卦</button>
+  </div>
+
+  <!-- Tarot Panel -->
+  <div class="panel" id="panel-tarot">
+    <div class="section-title">MAJOR ARCANA</div>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /></div>
+    <div class="field"><label i18n="lbl_spread">牌陣</label><select class="select" id="tarot-mode"><option value="1" i18n="opt_t1">單張指引</option><option value="3" i18n="opt_t3">三張牌｜過去・現在・未來</option></select></div>
+    <div id="tarot-result"><div class="empty" i18n="empty_tarot">靜心片刻<br/>抽牌看看此刻該留意什麼</div></div>
+    <button class="btn crimson" id="tarot-btn" i18n="btn_tarot">抽牌</button>
+  </div>
+
+  <!-- Runes Panel -->
+  <div class="panel" id="panel-runes">
+    <div class="section-title">ELDER FUTHARK</div>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /></div>
+    <div class="field"><label i18n="lbl_spread">符文陣</label><select class="select" id="runes-mode"><option value="1" i18n="opt_r1">單枚指引</option><option value="3" i18n="opt_r3">三枚｜現況・阻力・建議</option></select></div>
+    <div id="runes-result"><div class="empty" i18n="empty_runes">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div></div>
+    <button class="btn runic" id="runes-btn" i18n="btn_runes">抽符文</button>
+  </div>
+
+  <!-- Daily Panel -->
+  <div class="panel" id="panel-daily">
+    <div class="section-title cn" i18n="title_daily">今日運勢</div>
+    <div class="field"><label i18n="lbl_birth">生日（選填）</label><input class="input" type="date" id="daily-birth" /></div>
+    <div id="daily-result"><div class="empty" i18n="empty_daily">按下查看，抓出今天的運勢</div></div>
+    <button class="btn gold" id="daily-btn" i18n="btn_daily">查看今日運勢</button>
+  </div>
+
+  <!-- Ziwei Panel -->
+  <div class="panel" id="panel-ziwei">
+    <div class="section-title cn" i18n="title_ziwei">紫微斗數排盤</div>
+    <div class="field"><label i18n="lbl_dob">出生日期（國曆）</label><input class="input" type="date" id="zw-date" /></div>
+    <div class="mini-grid">
+      <div class="field"><label i18n="lbl_tob">出生時間</label><input class="input" type="time" id="zw-hour" /></div>
+      <div class="field"><label i18n="lbl_gender">性別</label>
+        <select class="select" id="zw-gender"><option value="M" i18n="opt_male">男</option><option value="F" i18n="opt_female">女</option></select>
+      </div>
+    </div>
+    <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
+    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
+  </div>
+
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準</div>
+</div>
+
+<script>
+// ---------------- i18n 三語完整對照表 ----------------
+const languages = ['zh', 'en', 'id'];
+let currentLang = localStorage.getItem('guanbu_lang') || 'zh';
+
+const dict = {
+  zh: {
+    btn_lang: "繁體中文",
+    subtitle: "易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數",
+    tab_yijing: "易經", tab_tarot: "塔羅", tab_runes: "符文", tab_daily: "每日", tab_ziwei: "紫微",
+    title_yijing: "起卦問事", title_daily: "今日運勢", title_ziwei: "紫微斗數排盤",
+    lbl_question: "你想問什麼？", lbl_question_opt: "問題（可留白）", lbl_spread: "陣型",
+    ph_yijing: "例：2027 年工作是否會有重大轉變？", ph_tarot: "例：這件事接下來三個月的發展？", ph_runes: "例：我現在最需要注意什麼？",
+    btn_yijing: "起卦", btn_tarot: "抽牌", btn_runes: "抽符文", btn_daily: "查看今日運勢", btn_ziwei: "排盤",
+    empty_yijing: "心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻",
+    empty_tarot: "靜心片刻<br/>抽牌看看此刻該留意什麼",
+    empty_runes: "伸手入符文袋中<br/>抽出符文，聆聽它的訊息",
+    empty_daily: "按下查看，抓出今天的運勢",
+    empty_ziwei: "輸入出生資料<br/>按下排盤，起出你的十二宮命盤",
+    opt_t1: "單張指引", opt_t3: "三張牌｜過去・現在・未來",
+    opt_r1: "單枚指引", opt_r3: "三枚｜現況・阻力・建議",
+    opt_male: "男", opt_female: "女",
+    lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
+    footer: "僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準",
+    ai_title: "AI 白話說明", ai_chat_title: "💡 對這個結果還有疑問？直接問 AI 陪伴助手",
+    chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
+    hints: ["正在為你解讀符號背後的訊息…", "正在梳理當前的能量與脈絡…", "正在為你準備溫和的行動建議…"],
+    // 動態介面補充標籤
+    hex_orig: "本卦", hex_change: "之卦", label_now: "現在", label_moving: "有變化", label_after: "之後", label_none: "沒有",
+    rune_labels: ['現況','阻力','建議'], rune_single: '指引',
+    daily_energy: "能量", lunar: "農曆", zw_hour_suffix: "時", zw_bureau: "五行局", zw_current: "虛歲／大限", zw_empty: "空宮", zw_life: "命宮", zw_body: "身宮", zw_year: "生年", zw_nayin: "納音", zw_element_suffix: "行", zw_direction: "大限方向", zw_forward: "順行", zw_backward: "逆行", zw_four: "生年四化", zw_current_daxian: "目前大限", zw_v3_hint: "v3.0 已加入十四主星、四化與大限框架。農曆日期採瀏覽器 Chinese Calendar，閏月與少數流派差異仍可能造成排盤差異。", zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
+  },
+  en: {
+    btn_lang: "English",
+    subtitle: "I Ching · Tarot · Runes · Daily · Zi Wei Dou Shu",
+    tab_yijing: "I Ching", tab_tarot: "Tarot", tab_runes: "Runes", tab_daily: "Daily", tab_ziwei: "Zi Wei",
+    title_yijing: "I Ching Reading", title_daily: "Daily Fortune", title_ziwei: "Zi Wei Dou Shu Chart",
+    lbl_question: "What is your question?", lbl_question_opt: "Your Question (Optional)", lbl_spread: "Spread",
+    ph_yijing: "e.g., Will there be major career changes next year?", ph_tarot: "e.g., How will this progress over 3 months?", ph_runes: "e.g., What should I focus on right now?",
+    btn_yijing: "Cast Hexagram", btn_tarot: "Draw Cards", btn_runes: "Cast Runes", btn_daily: "Get Fortune", btn_ziwei: "Generate Chart",
+    empty_yijing: "Focus on your question<br/>Click to toss coins and cast hexagram",
+    empty_tarot: "Take a deep breath<br/>Draw cards to reveal insights",
+    empty_runes: "Reach into the pouch<br/>Draw runes for guidance",
+    empty_daily: "Click to check today's fortune",
+    empty_ziwei: "Enter birth details<br/>Generate your 12-palace chart",
+    opt_t1: "1 Card Guide", opt_t3: "3 Cards | Past · Present · Future",
+    opt_r1: "1 Rune Guide", opt_r3: "3 Runes | Status · Obstacle · Advice",
+    opt_male: "Male", opt_female: "Female",
+    lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
+    footer: "For Entertainment Only | v3.0 | Always make real decisions wisely",
+    ai_title: "AI Interpretation", ai_chat_title: "💡 Have questions? Ask AI assistant",
+    chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
+    hints: ["Interpreting the messages for you...", "Sorting out current energy patterns...", "Preparing gentle action advice..."],
+    hex_orig: "Original", hex_change: "Transformed", label_now: "Present", label_moving: "Changing", label_after: "Future", label_none: "None",
+    rune_labels: ['Current Status','Obstacle','Advice'], rune_single: 'Guidance',
+    daily_energy: "Energy", lunar: "Lunar", zw_hour_suffix: " hour", zw_bureau: "Five-Element Bureau", zw_current: "Age / Decadal", zw_empty: "Empty", zw_life: "Life Palace", zw_body: "Body Palace", zw_year: "Year Pillar", zw_nayin: "Na Yin", zw_element_suffix: " element", zw_direction: "Decadal Direction", zw_forward: "Forward", zw_backward: "Reverse", zw_four: "Birth-Year Transformations", zw_current_daxian: "Current Decadal", zw_v3_hint: "v3.0 adds the 14 main stars, four transformations and decadal-cycle framework. Lunar dates use the browser Chinese Calendar; leap-month and school-specific conventions may differ.", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
+  },
+  id: {
+    btn_lang: "Bahasa Indonesia",
+    subtitle: "I Ching · Tarot · Rune · Ramalan Harian · Zi Wei Dou Shu",
+    tab_yijing: "I Ching", tab_tarot: "Tarot", tab_runes: "Rune", tab_daily: "Harian", tab_ziwei: "Zi Wei",
+    title_yijing: "Ramalan I Ching", title_daily: "Ramalan Harian", title_ziwei: "Bagan Zi Wei Dou Shu",
+    lbl_question: "Apa pertanyaan Anda?", lbl_question_opt: "Pertanyaan Anda (Opsional)", lbl_spread: "Pola Kartu",
+    ph_yijing: "Contoh: Apakah ada perubahan karir besar tahun depan?", ph_tarot: "Contoh: Bagaimana perkembangan ini dalam 3 bulan?", ph_runes: "Contoh: Apa yang harus saya fokuskan sekarang?",
+    btn_yijing: "Lempar Koin", btn_tarot: "Tarik Kartu", btn_runes: "Tarik Rune", btn_daily: "Cek Ramalan", btn_ziwei: "Buat Bagan",
+    empty_yijing: "Fokus pada pertanyaan Anda<br/>Klik untuk melempar koin I Ching",
+    empty_tarot: "Tarik napas dalam-dalam<br/>Tarik kartu untuk melihat petunjuk",
+    empty_runes: "Ambil rune dari kantong<br/>Dengarkan pesan kebijaksanaannya",
+    empty_daily: "Klik untuk melihat keberuntungan hari ini",
+    empty_ziwei: "Masukkan data kelahiran<br/>Buat bagan 12 istana Anda",
+    opt_t1: "1 Kartu Panduan", opt_t3: "3 Kartu | Masa Lalu · Sekarang · Masa Depan",
+    opt_r1: "1 Rune Panduan", opt_r3: "3 Rune | Status · Hambatan · Saran",
+    opt_male: "Pria", opt_female: "Wanita",
+    lbl_birth: "Tanggal Lahir (Opsional)", lbl_dob: "Tanggal Lahir", lbl_tob: "Waktu Lahir", lbl_gender: "Jenis Kelamin",
+    footer: "Hanya untuk hiburan | v3.0 | Tetap buat keputusan hidup secara bijak",
+    ai_title: "Interpretasi AI", ai_chat_title: "💡 Ada pertanyaan? Tanyakan pada asisten AI",
+    chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim",
+    hints: ["Menerjemahkan pesan untuk Anda...", "Menyusun pola energi saat ini...", "Menyiapkan saran langkah yang ramah..."],
+    hex_orig: "Asli", hex_change: "Berubah", label_now: "Saat Ini", label_moving: "Berubah", label_after: "Masa Depan", label_none: "Tidak Ada",
+    rune_labels: ['Status Saat Ini','Hambatan','Saran'], rune_single: 'Panduan',
+    zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap", daily_energy: "Energi", lunar: "Lunar", zw_hour_suffix: " jam", zw_bureau: "Biro Lima Unsur", zw_current: "Usia / Dekade", zw_empty: "Kosong", zw_life: "Istana Kehidupan", zw_body: "Istana Tubuh", zw_year: "Pilar Tahun", zw_nayin: "Na Yin", zw_element_suffix: "", zw_direction: "Arah Dekade", zw_forward: "Maju", zw_backward: "Mundur", zw_four: "Transformasi Tahun Lahir", zw_current_daxian: "Dekade Saat Ini", zw_v3_hint: "v3.0 menambahkan 14 bintang utama, empat transformasi, dan kerangka siklus dekade. Tanggal lunar memakai Chinese Calendar browser; aturan bulan kabisat dan aliran tradisi tertentu dapat berbeda.", zw_hint: "Tanggal lunar, cabang waktu, Istana Kehidupan dan Istana Tubuh telah dihitung. Bintang utama, transformasi dan siklus dekade belum dimasukkan, jadi ini bukan bagan bintang lengkap.",
+
+  }
+};
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('guanbu_lang', lang);
+  document.getElementById('lang-toggle').innerText = dict[lang].btn_lang;
+  
+  document.querySelectorAll('[i18n]').forEach(el => {
+    const key = el.getAttribute('i18n');
+    if (dict[lang][key]) el.innerHTML = dict[lang][key];
+  });
+  document.querySelectorAll('[i18n-ph]').forEach(el => {
+    const key = el.getAttribute('i18n-ph');
+    if (dict[lang][key]) el.placeholder = dict[lang][key];
+  });
+}
+
+document.getElementById('lang-toggle').onclick = () => {
+  const nextIdx = (languages.indexOf(currentLang) + 1) % languages.length;
+  applyLang(languages[nextIdx]);
+};
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.t).classList.add('active');
+  });
+});
+
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+// ---------------- AI Functions ----------------
+let aiCardSeq = 0;
+function aiCardPlaceholder(title) {
+  const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
+  const hints = dict[currentLang].hints;
+  const hint = hints[Math.floor(Math.random() * hints.length)];
+  return {
+    id,
+    html: `<div class="smart-card" id="${id}"><div class="smart-title">${esc(title)}</div><div class="smart-text" style="color:var(--sub);font-style:italic;">${hint}</div></div>`,
+  };
+}
+
+async function fillAiExplain(id, module, question, facts) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  try {
+    const res = await fetch('/ask', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ module, question: question || '', facts, lang: currentLang }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text" style="color:var(--sub);">Failed: ${esc(e.message)}</div>`;
+  }
+}
+
+function attachChatSection(containerId, moduleName, question, facts) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const chatBoxId = `chat-box-${Date.now()}`;
+  const inputId = `chat-input-${Date.now()}`;
+  const history = [];
+
+  const chatHTML = `
+    <div class="smart-card" style="border-color:rgba(92,122,153,0.4);">
+      <div class="smart-title" style="color:var(--runic);">${dict[currentLang].ai_chat_title}</div>
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn secondary small" id="${chatBoxId}-q1">${dict[currentLang].chat_q1}</button>
+        <button class="btn secondary small" id="${chatBoxId}-q2">${dict[currentLang].chat_q2}</button>
+      </div>
+      <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="display:flex; gap:6px;">
+        <input class="input" id="${inputId}" placeholder="${dict[currentLang].chat_ph}" style="font-size:13px;" />
+        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_send}</button>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', chatHTML);
+
+  const sendMsg = async (msgText) => {
+    if (!msgText) return;
+    const historyEl = document.getElementById(`${chatBoxId}-history`);
+    historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>You:</strong> ${esc(msgText)}</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI thinking...</div>`);
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText, lang: currentLang })
+      });
+      const data = await res.json().catch(() => null);
+      document.getElementById(`${chatBoxId}-temp`)?.remove();
+      if (res.ok && data?.ok) {
+        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--text); font-size:14px; background:#0F0E17; padding:8px 10px; border-radius:8px; border:1px solid var(--panel-border);">${esc(data.reply).replace(/\n+/g,'<br/>')}</div>`);
+        history.push({ role: 'user', content: msgText });
+        history.push({ role: 'assistant', content: data.reply });
+      } else {
+        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Error: ${esc(data?.error || 'Failed')}</div>`);
+      }
+    } catch (e) {
+      document.getElementById(`${chatBoxId}-temp`)?.remove();
+      historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Network Error</div>`);
+    }
+  };
+
+  document.getElementById(`${chatBoxId}-send`).onclick = () => {
+    const el = document.getElementById(inputId);
+    const txt = el.value.trim();
+    if (txt) { sendMsg(txt); el.value = ''; }
+  };
+
+  document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg(dict[currentLang].chat_q1);
+  document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg(dict[currentLang].chat_q2);
+}
+
+// 預設套用語言
+applyLang(currentLang);
+
+// ---------------- 完全不改動核心算術與演算法 ----------------
+const TAROT = [["The Fool愚者","可以踏出第一步"],["The Magician魔術師","手上的牌其實夠用"],["The High Priestess女祭司","答案在你心裡"],["The Empress皇后","適合養與創造"],["The Emperor皇帝","把規則界線講清楚"],["The Hierophant教皇","可以聽前輩建議"],["The Lovers戀人","到了要選的時候"],["The Chariot戰車","方向對了就全力推"],["Strength力量","溫柔堅定比硬槓贏"],["The Hermit隱者","想清楚再出場"],["Wheel of Fortune命運之輪","風向在轉順勢走"],["Justice正義","誠實面對算清楚"],["The Hanged Man倒吊人","換個角度看問題"],["Death死神","舊的結束新的才會來"],["Temperance節制","慢一點融合會更穩"],["The Devil惡魔","看清是什麼綁住你"],["The Tower高塔","舊架構該震一下崩掉"],["The Star星星","希望與微光漸回"],["The Moon月亮","霧沒散先別大決定"],["The Sun太陽","天氣好適合往前"],["Judgement審判","該醒了認帳往前"],["The World世界","完成收尾開新章"]];
+
+document.getElementById('tarot-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('tarot-mode').value);
+  const question = document.getElementById('tarot-question').value.trim();
+  const picked = [];
+  const used = new Set();
+  while(picked.length<mode){
+    const idx = Math.floor(Math.random()*TAROT.length);
+    if(used.has(idx)) continue;
+    used.add(idx);
+    picked.push({idx,reversed:Math.random()<0.35});
+  }
+
+  let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  picked.forEach((p,i)=>{
+    const [name,text]=TAROT[p.idx];
+    html += `<div class="meta-card"><div class="meta-row"><span>Card ${i+1}</span><strong>${name} ${p.reversed?'(Rev)':'(Upright)'}</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
+  });
+
+  const aiTarot = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += aiTarot.html;
+  const resContainer = document.getElementById('tarot-result');
+  resContainer.innerHTML = html;
+
+  const facts = { DrawnCards: picked.map((p,i) => `Card ${i+1}: ${TAROT[p.idx][0]} (${p.reversed?'Reversed':'Upright'})`) };
+  fillAiExplain(aiTarot.id, 'tarot', question, facts);
+  attachChatSection('tarot-result', 'tarot', question, facts);
+});
+
+const HEX_NAMES = {1:"乾",2:"坤",3:"屯",4:"蒙",5:"需",6:"訟",7:"師",8:"比",9:"小畜",10:"履",11:"泰",12:"否",13:"同人",14:"大有",15:"謙",16:"豫",17:"隨",18:"蠱",19:"臨",20:"觀",21:"噬嗑",22:"賁",23:"剝",24:"復",25:"無妄",26:"大畜",27:"頤",28:"大過",29:"坎",30:"離",31:"咸",32:"恆",33:"遯",34:"大壯",35:"晉",36:"明夷",37:"家人",38:"睽",39:"蹇",40:"解",41:"損",42:"益",43:"夬",44:"姤",45:"萃",46:"升",47:"困",48:"井",49:"革",50:"鼎",51:"震",52:"艮",53:"漸",54:"歸妹",55:"豐",56:"旅",57:"巽",58:"兌",59:"渙",60:"節",61:"中孚",62:"小過",63:"既濟",64:"未濟"};
+const HEX_TEXT = {1:"能量很足，可以主動出手，別再只是觀望。",2:"先承接、先配合，用柔的方式走，反而比較順。",3:"事情剛開始本來就卡，慢慢來，別急著一次做完。",4:"你還在摸，硬闖不如先問清楚、找人帶一下。",5:"條件還沒齊，再等一下會比硬推劃算。",6:"有人在抬槓。先退一步談，硬碰多半兩敗俱傷。",7:"這題要靠組織跟紀律，一個人衝不太夠。",8:"找對人一起做，比自己硬撐有效。",9:"力氣還在存，先養、先備，現在衝太早。",10:"每一步看清楚再踩，小心能少踩坑。",11:"天時地利都還行，可以做，別錯過這波。",12:"路卡住了。先縮、先養，等路口鬆一點再動。",13:"跟同路人一起走，事會好辦很多。",14:"收成不錯，但別太張揚，謙一點比較久。",15:"把姿態放低一點，空間反而比較大。",16:"心情跟勢頭都不錯，適合開新局，但別飄。",17:"跟著變化走，比死守自己的想法聰明。",18:"舊問題該清了，躲越久越麻煩。",19:"影響力在變大，好好經營這段關係或機會。",20:"先看、先想，看懂了再動，會少走彎路。",21:"卡點要處理，拖著只會更黏。",22:"表面可以顧，但底子也要補，不然撐不久。",23:"在退潮，先守本、少擴張，等谷底過了再說。",24:"壞的那段快過了，新的一輪在抬頭，可以抱點希望。",25:"別硬拗、別硬求，順一點、實在一點比較平安。",26:"這段適合存實力，厚了再發，急也急不來。",27:"吃什麼、說什麼都有關係；養身體也養分寸。",28:"負擔有點過重，要想非常手段，不然會壓垮。",29:"人在坑裡。冷靜、一步一步走，才出得去。",30:"方向是亮的，認準正路堅持，會有回報。",31:"有感覺、有共鳴，感情或合作都適合表態。",32:"長久靠穩定，別一下東一下西。",33:"該退就退，抽身有時比硬撐聰明。",34:"氣勢很強，但太剛容易得罪人，留一點餘地。",35:"往上走的階段，適合露臉、爭取被看見。",36:"光被蓋住了。先低調、先保自己，別硬出頭。",37:"先顧好家裡或內部，外面的事先排後面。",38:"想法不合很正常，求同存異，別為了贏而吵。",39:"路難走。先緩、先找人幫忙，硬闖多半撞牆。",40:"壓力在鬆，喘口氣，事情會比較好推。",41:"要捨一點才能換長遠的，死抓反而虧。",42:"有人有資源在靠近，把握住可以往外擴。",43:"該斷的斷乾淨，留尾巴以後會咬人。",44:"突然冒出的人事物，保持清醒，別被牽著走。",45:"人聚在一起，適合整合、招募、把資源排好。",46:"往上爬可以，但一步一步來，比一步登天穩。",47:"人困、事困，但心別先垮，熬得過會過來。",48:"基本盤還在，但要維護，別讓源頭乾掉。",49:"舊的玩不下去了，改一改才有新局面。",50:"在立新的秩序，穩穩扛責任，會有成績。",51:"突然被震一下。先穩住自己，別跟著慌。",52:"該停就停，安靜想清楚，比一直動有用。",53:"慢慢來才走得遠，急進容易摔。",54:"名分、條件還沒定，別急著拍板。",55:"高峰期可以把握，但也要想之後怎麼收。",56:"人在過渡、或不在自己地盤，謙和一點少麻煩。",57:"用柔的方式滲透，比硬碰有效。",58:"適合聊天、談判、分享，氣氛打開事比較好談。",59:"人心散了。該重新收攏，不然各走各的。",60:"有節制才走得久，過或不及都容易出問題。",61:"用真心，別人比較願意信你、挺你。",62:"收著做、別好高騖遠，穩過這段最重要。",63:"差不多成了，但別鬆，後面還要顧。",64:"還沒圓，繼續做，別在最後關頭停。"};
+
+const TRI_MATRIX = [[1,43,14,34,9,5,26,11],[10,58,38,54,61,60,41,19],[13,49,30,55,37,63,22,36],[25,17,21,51,42,3,27,24],[44,28,50,32,57,48,18,46],[6,47,64,40,59,29,4,7],[33,31,56,62,53,39,52,15],[12,45,35,16,20,8,23,2]];
+function tossLine(){ let sum=0; for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3; return sum; }
+function trigramIndex(bits){ const key = bits.join(''); const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7}; return map[key]; }
+function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[upperIdx][lowerIdx]; }
+function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
+
+document.getElementById('yijing-btn').addEventListener('click', ()=>{
+  const question = document.getElementById('yijing-question').value.trim();
+  const lines = [];
+  for(let i=0;i<6;i++) lines.push(tossLine());
+
+  const bits = lines.map(v => (v===7||v===9)?1:0);
+  const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
+  const hexNum = hexFromBits(bits);
+  const changedNum = hexFromBits(changedBits);
+  const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
+
+  function renderHex(vals, title, num, changedView=false){
+    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
+    vals.forEach((v,i)=>{
+      const solid = changedView ? !!changedBits[i] : (v===7||v===9);
+      const changing = !changedView && (v===6||v===9);
+      h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
+    });
+    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div></div>`;
+    return h;
+  }
+
+  let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
+  html += `<div class="hex-pair">${renderHex(lines, dict[currentLang].hex_orig, hexNum)}${renderHex(lines, dict[currentLang].hex_change, changedNum, true)}</div>`;
+  html += `<div class="meta-card">`;
+  html += `<div class="meta-row"><span>${dict[currentLang].label_now}</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>${dict[currentLang].label_moving}</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):dict[currentLang].label_none}</strong></div>`;
+  html += `<div class="meta-row"><span>${dict[currentLang].label_after}</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
+  html += `</div>`;
+
+  const aiHex = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += aiHex.html;
+
+  const resContainer = document.getElementById('yijing-result');
+  resContainer.innerHTML = html;
+
+  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], MovingLines: moving.length ? moving.map(lineLabel) : 'None' };
+  fillAiExplain(aiHex.id, 'yijing', question, facts);
+  attachChatSection('yijing-result', 'yijing', question, facts);
+});
+
+// ================= RUNES =================
+const RUNES = [
+  ["ᚠ","Fehu 財富符文","資源在靠近。你付出的，這段比較容易有回報。"],
+  ["ᚢ","Uruz 原牛符文","力氣有了。敢做、身體也跟得上的時候。"],
+  ["ᚦ","Thurisaz 巨人符文","有阻力、有衝突。先看清楚再迎，別衝動硬槓。"],
+  ["ᚨ","Ansuz 神諭符文","有話要聽。這次聽比說重要，訊息可能在別人嘴裡。"],
+  ["ᚱ","Raidho 旅程符文","在路上。順著節奏走，別急著終點。"],
+  ["ᚲ","Kenaz 火炬符文","靈感點了。適合動手做、把點子做出來。"],
+  ["ᚷ","Gebo 贈禮符文","有來有往才平衡。只拿或只給，關係都會歪。"],
+  ["ᚹ","Wunjo 喜悅符文","氣氛偏好，心情跟消息都有機會往上。"],
+  ["ᚺ","Hagalaz 冰雹符文","突然的變化。先護住自己，再處理善後。"],
+  ["ᚾ","Nauthiz 需求符文","有點難。難裡學到的，之後用得上。"],
+  ["ᛁ","Isa 冰符文","凍住了。硬推沒用，等化開再動。"],
+  ["ᛃ","Jera 豐收符文","耕過的會收。時候到了，別否定自己之前的努力。"],
+  ["ᛇ","Eihwaz 紫杉符文","要硬、要轉。起落都是過程，撐得住就過得去。"],
+  ["ᛈ","Perthro 命運符文","骰子還在轉。未知很大，先保留彈性。"],
+  ["ᛉ","Algiz 保護符文","有保護、也要警覺。直覺在擋危險，聽它。"],
+  ["ᛋ","Sowilo 太陽符文","目標清楚、力氣也在，適合往前拿結果。"],
+  ["ᛏ","Tiwaz 戰神符文","講原則的時候。堅持對的，比討好所有人重要。"],
+  ["ᛒ","Berkano 樺樹符文","新的在發芽。照顧它，會慢慢長起來。"],
+  ["ᛖ","Ehwaz 馬符文","靠夥伴。信任跟配合，比單打獨鬥快。"],
+  ["ᛗ","Mannaz 人類符文","人的問題。看自己、也看你跟別人的連結。"],
+  ["ᛚ","Laguz 水符文","情緒在流動。跟著感覺走一點，別全部用理智擋。"],
+  ["ᛜ","Ingwaz 種子符文","還在憋。能量在裡頭，時候到了會出來。"],
+  ["ᛟ","Othala 家園符文","根很重要。家、價值、你真正在意的，是這階段的力。"],
+  ["ᛞ","Dagaz 黎明符文","天亮了。舊夜結束，可以往新的一段走。"]
+];
+
+document.getElementById('runes-btn').addEventListener('click', ()=>{
+  const mode = Number(document.getElementById('runes-mode').value);
+  const question = document.getElementById('runes-question').value.trim();
+  const used=new Set(), picked=[];
+  while(picked.length<mode){ const idx=Math.floor(Math.random()*RUNES.length); if(!used.has(idx)){used.add(idx);picked.push(idx);} }
+  const labels=mode===3?dict[currentLang].rune_labels:[dict[currentLang].rune_single];
+  let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  picked.forEach((idx,i)=>{
+    const [glyph,name,text]=RUNES[idx];
+    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
+  });
+
+  const aiRune = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += aiRune.html;
+
+  const resContainer = document.getElementById('runes-result');
+  resContainer.innerHTML = html;
+
+  const facts = { CastRunes: picked.map((idx,i) => `${labels[i]}: ${RUNES[idx][1]} (${RUNES[idx][2]})`) };
+  fillAiExplain(aiRune.id, 'runes', question, facts);
+  attachChatSection('runes-result', 'runes', question, facts);
+});
+
+// ================= DAILY FORTUNE =================
+const DAILY_MSGS = [
+  "今天適合把拖著的小事收尾。做完一件，心會比較寬。",
+  "訊息或對話可能帶來轉折，留意你平常不太注意的人。",
+  "錢的方面以穩為主，大額決定可以再睡一晚。",
+  "人際偏順，主動聯繫久未聯絡的人，往往比等對方來找你有效。",
+  "身體比行程誠實。累就早點停，效率反而比較好。",
+  "靈感偏多，適合動筆、構思，或把想法排進可執行的清單。",
+  "適合獨處整理。你不是要逃避，是需要把思緒排好隊。",
+  "遇到卡關，開口問一句，往往比自己硬撐更靠近解法。",
+  "情緒可能比較起伏。重要決定，等氣過了再下。",
+  "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
+];
+
+document.getElementById('daily-btn').addEventListener('click', ()=>{
+  const birth = document.getElementById('daily-birth').value || '';
+  const d = new Date();
+  const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
+  const dateStr = `${y}/${String(m).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
+  const birthSeed = birth ? Number(birth.replaceAll('-', '')) : 0;
+  const seed = Math.abs((y * 10000 + m * 100 + day) * 31 + birthSeed * 17);
+  const adviceIndex = seed % DAILY_MSGS.length;
+  const advice = DAILY_MSGS[adviceIndex];
+  const energy = 3 + (seed % 3);
+  let html = `<div class="daily-date">${dateStr}</div>`;
+  html += `<div class="stars"><span class="label">${dict[currentLang].daily_energy}</span><span class="dots">${'●'.repeat(energy)}${'○'.repeat(5-energy)}</span></div>`;
+  html += `<div class="daily-msg">${esc(advice)}</div>`;
+  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += aiDaily.html;
+  const resContainer = document.getElementById('daily-result');
+  resContainer.innerHTML = html;
+  const facts = { DailyEnergy: `${energy}/5 Stars`, Advice: advice, BirthDate: birth || 'Not provided', Date: dateStr };
+  fillAiExplain(aiDaily.id, 'daily', '', facts);
+  attachChatSection('daily-result', 'daily', '', facts);
+});
+
+// ==================== 紫微斗數 ====================
+// ==================== 紫微斗數 ====================
+function getChineseCalendarParts(dateVal, timeVal){
+  const [y,m,d] = dateVal.split('-').map(Number);
+  const [hh,mm] = timeVal.split(':').map(Number);
+  const dt = new Date(y,m-1,d,hh,mm||0);
+  const parts = new Intl.DateTimeFormat('zh-Hant-u-ca-chinese',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(dt);
+  const monthPart=parts.find(p=>p.type==='month')?.value||'';
+  const dayPart=parts.find(p=>p.type==='day')?.value||'';
+  const yearPart=parts.find(p=>p.type==='relatedYear')?.value||'';
+  const mn=Number((monthPart.match(/\d+/)||['0'])[0]), dn=Number((dayPart.match(/\d+/)||['0'])[0]);
+  if(!mn||!dn) throw new Error('Chinese calendar conversion unavailable');
+  return {lunarYear:Number(yearPart)||y,lunarMonth:mn,lunarDay:dn};
+}
+function earthlyBranchIndexForHour(hour){ return Math.floor(((hour+1)%24)/2); }
+function mod12(n){ return (n%12+12)%12; }
+const ZW_BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const ZW_STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const ZW_PALACES=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
+const ZW_FOUR_TRANSFORMS={
+  '甲':[['廉貞','祿'],['破軍','權'],['武曲','科'],['太陽','忌']],
+  '乙':[['天機','祿'],['天梁','權'],['紫微','科'],['太陰','忌']],
+  '丙':[['天同','祿'],['天機','權'],['文昌','科'],['廉貞','忌']],
+  '丁':[['太陰','祿'],['天同','權'],['天機','科'],['巨門','忌']],
+  '戊':[['貪狼','祿'],['太陰','權'],['右弼','科'],['天機','忌']],
+  '己':[['武曲','祿'],['貪狼','權'],['天梁','科'],['文曲','忌']],
+  '庚':[['太陽','祿'],['武曲','權'],['太陰','科'],['天同','忌']],
+  '辛':[['巨門','祿'],['太陽','權'],['文曲','科'],['文昌','忌']],
+  '壬':[['天梁','祿'],['紫微','權'],['左輔','科'],['武曲','忌']],
+  '癸':[['破軍','祿'],['巨門','權'],['太陰','科'],['貪狼','忌']]
+};
+const ZW_NA_YIN={
+  '甲子':'金','乙丑':'金','丙寅':'火','丁卯':'火','戊辰':'木','己巳':'木','庚午':'土','辛未':'土','壬申':'金','癸酉':'金','甲戌':'火','乙亥':'火',
+  '丙子':'水','丁丑':'水','戊寅':'土','己卯':'土','庚辰':'金','辛巳':'金','壬午':'木','癸未':'木','甲申':'水','乙酉':'水','丙戌':'土','丁亥':'土',
+  '戊子':'火','己丑':'火','庚寅':'木','辛卯':'木','壬辰':'水','癸巳':'水','甲午':'金','乙未':'金','丙申':'火','丁酉':'火','戊戌':'木','己亥':'木',
+  '庚子':'土','辛丑':'土','壬寅':'金','癸卯':'金','甲辰':'火','乙巳':'火','丙午':'水','丁未':'水','戊申':'土','己酉':'土','庚戌':'金','辛亥':'金',
+  '壬子':'木','癸丑':'木','甲寅':'水','乙卯':'水','丙辰':'土','丁巳':'土','戊午':'火','己未':'火','庚申':'木','辛酉':'木','壬戌':'水','癸亥':'水'
+};
+const ZW_BUREAU_BY_STEM_BRANCH={
+  '甲':{'子':'水二局','丑':'水二局','寅':'火六局','卯':'火六局','辰':'木三局','巳':'木三局','午':'水二局','未':'水二局','申':'金四局','酉':'金四局','戌':'火六局','亥':'火六局'},
+  '乙':{'子':'火六局','丑':'火六局','寅':'土五局','卯':'土五局','辰':'金四局','巳':'金四局','午':'木三局','未':'木三局','申':'水二局','酉':'水二局','戌':'土五局','亥':'土五局'},
+  '丙':{'子':'土五局','丑':'土五局','寅':'木三局','卯':'木三局','辰':'水二局','巳':'水二局','午':'金四局','未':'金四局','申':'火六局','酉':'火六局','戌':'木三局','亥':'木三局'},
+  '丁':{'子':'木三局','丑':'木三局','寅':'金四局','卯':'金四局','辰':'火六局','巳':'火六局','午':'水二局','未':'水二局','申':'土五局','酉':'土五局','戌':'金四局','亥':'金四局'},
+  '戊':{'子':'金四局','丑':'金四局','寅':'水二局','卯':'水二局','辰':'土五局','巳':'土五局','午':'火六局','未':'火六局','申':'木三局','酉':'木三局','戌':'水二局','亥':'水二局'}
+};
+function yearStemIndex(lunarYear){ return (lunarYear-4+10)%10; }
+function stemAtLunarMonth(yearStemIdx,lunarMonth){ return ([2,2,4,4,6,6,8,8,0,0][yearStemIdx]+lunarMonth-1)%10; }
+function buildZiweiFramework(dateVal,timeVal,gender){
+  const [hour]=timeVal.split(':').map(Number), lunar=getChineseCalendarParts(dateVal,timeVal);
+  const yearStemIdx=yearStemIndex(lunar.lunarYear), yearStem=ZW_STEMS[yearStemIdx], yearBranch=ZW_BRANCHES[mod12(lunar.lunarYear-4)];
+  const hourBranch=earthlyBranchIndexForHour(hour), monthBranch=mod12(2+lunar.lunarMonth-1), monthStemIdx=stemAtLunarMonth(yearStemIdx,lunar.lunarMonth);
+  const lifeBranch=mod12(monthBranch-hourBranch), bodyBranch=mod12(monthBranch+hourBranch);
+  const lifeStemIdx=(monthStemIdx+mod12(lifeBranch-2))%10, lifeStem=ZW_STEMS[lifeStemIdx];
+  const bureau=ZW_BUREAU_BY_STEM_BRANCH[yearStem]?.[ZW_BRANCHES[lifeBranch]];
+  if(!bureau) throw new Error('Five-element bureau unavailable for this chart');
+  const bureauNum=Number((bureau.match(/\d+/)||['0'])[0]);
+  const naYin=ZW_NA_YIN[lifeStem+ZW_BRANCHES[lifeBranch]]||'';
+  const palaceCells=ZW_BRANCHES.map((branch,i)=>({branch,palace:ZW_PALACES[mod12(i-lifeBranch)],stars:[],transforms:[],stem:ZW_STEMS[(lifeStemIdx+mod12(i-lifeBranch))%10]}));
+  const put=(star,idx)=>palaceCells[mod12(idx)].stars.push(star);
+  const purpleByBureau={
+    2:['丑','寅','寅','卯','卯','辰','辰','巳','巳','午','午','未','未','申','申','酉','酉','戌','戌','亥','亥','子','子','丑','丑','寅','寅','卯','卯','辰'],
+    3:['辰','丑','寅','巳','寅','卯','午','卯','辰','未','辰','巳','申','巳','午','戌','午','未','戌','未','申','亥','申','酉','子','酉','戌','丑','戌','亥'],
+    4:['亥','辰','丑','寅','子','巳','寅','卯','丑','午','卯','辰','寅','未','辰','巳','卯','申','巳','午','辰','酉','午','未','巳','戌','未','申','午','亥'],
+    5:['午','亥','辰','丑','寅','未','子','巳','寅','卯','申','丑','午','卯','辰','酉','寅','未','辰','巳','戌','卯','申','巳','午','亥','辰','酉','午','未'],
+    6:['酉','午','亥','辰','丑','寅','戌','未','子','巳','寅','卯','亥','申','丑','午','卯','辰','子','酉','寅','未','辰','巳','丑','戌','卯','申','巳','午']
+  };
+  const purpleBranch=purpleByBureau[bureauNum]?.[lunar.lunarDay-1];
+  if(!purpleBranch) throw new Error('Lunar day outside supported 1–30 range');
+  const purpleIdx=ZW_BRANCHES.indexOf(purpleBranch);
+  put('紫微',purpleIdx);
+  [['天機',-1],['太陽',-3],['武曲',-4],['天同',-5],['廉貞',-8]].forEach(([star,off])=>put(star,purpleIdx+off));
+  const tianfuMirror={0:4,1:3,2:2,3:1,4:0,5:11,6:10,7:9,8:8,9:7,10:6,11:5};
+  const tianfuIdx=tianfuMirror[purpleIdx];
+  [['天府',0],['太陰',1],['貪狼',2],['巨門',3],['天相',4],['天梁',5],['七殺',6],['破軍',10]].forEach(([star,off])=>put(star,tianfuIdx+off));
+  const four=ZW_FOUR_TRANSFORMS[yearStem]||[];
+  four.forEach(([star,mark])=>{const cell=palaceCells.find(c=>c.stars.includes(star)); if(cell) cell.transforms.push(mark);});
+  const isYangYear=yearStemIdx%2===0, forward=(gender==='M')===isYangYear;
+  const ageNow=lunar.lunarYear-Number(dateVal.slice(0,4))+1;
+  const currentIndex=Math.max(0,Math.min(11,Math.floor(Math.max(0,ageNow-bureauNum)/10)));
+  const daxian=Array.from({length:12},(_,i)=>{const idx=mod12(lifeBranch+(forward?i:-i));return {ageStart:bureauNum+i*10,ageEnd:bureauNum+i*10+9,palace:ZW_PALACES[mod12(i)],branch:ZW_BRANCHES[idx],index:idx};});
+  return {lunar,yearStem,yearBranch,yearStemIdx,hourBranch,lifeBranch,bodyBranch,lifeStem,bureau,bureauNum,naYin,palaceCells,four,forward,daxian,currentIndex,ageNow};
+}
+
+document.getElementById('ziwei-btn').addEventListener('click', () => {
+  const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
+  if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty">'+dict[currentLang].zw_err_date+'</div>';return;}
+  try{
+    const c=buildZiweiFramework(dateVal,timeVal,gender), genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male, ai=aiCardPlaceholder(dict[currentLang].ai_title), cur=c.daxian[c.currentIndex];
+    let html='<div class="zw-meta">';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_dob+'</span><strong>'+esc(dateVal)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_tob+'</span><strong>'+esc(timeVal)+' · '+ZW_BRANCHES[c.hourBranch]+dict[currentLang].zw_hour_suffix+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_gender+'</span><strong>'+esc(genderLabel)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].lunar+'</span><strong>'+c.lunar.lunarYear+' / '+c.lunar.lunarMonth+' / '+c.lunar.lunarDay+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_bureau+'</span><strong>'+c.bureau+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_current+'</span><strong>'+c.ageNow+'歲 · '+cur.ageStart+'–'+cur.ageEnd+'歲</strong></div></div>';
+    html+='<div class="zw-grid">';
+    [2,3,4,5,6,7,8,9,10,11,0,1].forEach(i=>{const x=c.palaceCells[i], tf=x.transforms.length?'<span class="zw-transform">'+x.transforms.join('、')+'</span>':''; html+='<div class="zw-cell '+(i===c.lifeBranch?'life ':'')+(i===c.bodyBranch?'body':'')+'"><span class="zw-branch">'+x.branch+'</span><div class="zw-palace">'+x.palace+(i===c.lifeBranch?' ★':'')+'</div><div class="zw-stars">'+(x.stars.map(z=>'<span class="zw-star">'+z+'</span>').join('')||'<span class="zw-star">—</span>')+tf+'</div><div class="zw-stem">'+x.stem+(i===c.bodyBranch?' · '+dict[currentLang].zw_body:'')+'</div></div>';});
+    html+='<div class="zw-center"><div class="zw-c-title">'+dict[currentLang].zw_center_title+'</div><div class="zw-c-line">'+dict[currentLang].zw_life+'：'+ZW_BRANCHES[c.lifeBranch]+'　'+dict[currentLang].zw_body+'：'+ZW_BRANCHES[c.bodyBranch]+'<br/>'+dict[currentLang].zw_year+'：'+c.yearStem+c.yearBranch+'　'+dict[currentLang].zw_nayin+'：'+c.naYin+dict[currentLang].zw_element_suffix+'<br/>'+dict[currentLang].zw_direction+'：'+(c.forward?dict[currentLang].zw_forward:dict[currentLang].zw_backward)+'</div></div></div>';
+    html+='<div class="meta-card"><div class="meta-row"><span>'+dict[currentLang].zw_four+'</span><strong>'+c.four.map(x=>x[0]+'化'+x[1]).join('　')+'</strong></div><div class="meta-row"><span>'+dict[currentLang].zw_current_daxian+'</span><strong>'+cur.ageStart+'–'+cur.ageEnd+'歲｜'+cur.palace+'｜'+cur.branch+'</strong></div></div>';
+    html+='<div class="hint">'+dict[currentLang].zw_v3_hint+'</div>'+ai.html;
+    resultEl.innerHTML=html;
+    const facts={BirthDate:dateVal,BirthTime:timeVal,Gender:genderLabel,LunarDate:c.lunar.lunarYear+'-'+c.lunar.lunarMonth+'-'+c.lunar.lunarDay,YearPillar:c.yearStem+c.yearBranch,HourBranch:ZW_BRANCHES[c.hourBranch],LifePalace:ZW_BRANCHES[c.lifeBranch],BodyPalace:ZW_BRANCHES[c.bodyBranch],LifeStem:c.lifeStem,Bureau:c.bureau,MainStars:c.palaceCells.map(x=>x.palace+':'+(x.stars.join('、')||'空宮')),FourTransformations:c.four.map(x=>x[0]+'化'+x[1]),CurrentDecadal:cur.ageStart+'-'+cur.ageEnd+'歲 '+cur.palace,ChartStatus:'v3.0 14-main-star framework + four transformations + decadal cycle'};
+    fillAiExplain(ai.id,'ziwei','',facts); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
+  }catch(e){resultEl.innerHTML='<div class="empty">'+esc(e.message||'Chart calculation failed')+'</div>';}
+});
+</script>
+</body>
+</html>
