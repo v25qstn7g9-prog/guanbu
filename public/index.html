@@ -194,7 +194,10 @@
       <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" i18n-ph="ph_yijing" />
     </div>
     <div id="yijing-result"><div class="empty" i18n="empty_yijing">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div></div>
-    <button class="btn jade" id="yijing-btn" i18n="btn_yijing">起卦</button>
+    <div class="toolbar" style="margin-top:16px;">
+      <button class="btn secondary small" id="yijing-clear-btn" style="width:auto; flex:1;" i18n="btn_clear">清除</button>
+      <button class="btn jade small" id="yijing-btn" style="width:auto; flex:2;" i18n="btn_yijing">起卦</button>
+    </div>
   </div>
 
   <!-- Tarot Panel -->
@@ -203,7 +206,10 @@
     <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /></div>
     <div class="field"><label i18n="lbl_spread">牌陣</label><select class="select" id="tarot-mode"><option value="1" i18n="opt_t1">單張指引</option><option value="3" i18n="opt_t3">三張牌｜過去・現在・未來</option></select></div>
     <div id="tarot-result"><div class="empty" i18n="empty_tarot">靜心片刻<br/>抽牌看看此刻該留意什麼</div></div>
-    <button class="btn crimson" id="tarot-btn" i18n="btn_tarot">抽牌</button>
+    <div class="toolbar" style="margin-top:16px;">
+      <button class="btn secondary small" id="tarot-clear-btn" style="width:auto; flex:1;" i18n="btn_clear">清除</button>
+      <button class="btn crimson small" id="tarot-btn" style="width:auto; flex:2;" i18n="btn_tarot">抽牌</button>
+    </div>
   </div>
 
   <!-- Runes Panel -->
@@ -212,7 +218,10 @@
     <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /></div>
     <div class="field"><label i18n="lbl_spread">符文陣</label><select class="select" id="runes-mode"><option value="1" i18n="opt_r1">單枚指引</option><option value="3" i18n="opt_r3">三枚｜現況・阻力・建議</option></select></div>
     <div id="runes-result"><div class="empty" i18n="empty_runes">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div></div>
-    <button class="btn runic" id="runes-btn" i18n="btn_runes">抽符文</button>
+    <div class="toolbar" style="margin-top:16px;">
+      <button class="btn secondary small" id="runes-clear-btn" style="width:auto; flex:1;" i18n="btn_clear">清除</button>
+      <button class="btn runic small" id="runes-btn" style="width:auto; flex:2;" i18n="btn_runes">抽符文</button>
+    </div>
   </div>
 
   <!-- Daily Panel -->
@@ -234,7 +243,10 @@
       </div>
     </div>
     <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
-    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
+    <div class="toolbar" style="margin-top:16px;">
+      <button class="btn secondary small" id="ziwei-clear-btn" style="width:auto; flex:1;" i18n="btn_clear">清除</button>
+      <button class="btn small" id="ziwei-btn" style="width:auto; flex:2; background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
+    </div>
   </div>
 
   <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準</div>
@@ -253,7 +265,7 @@ const dict = {
     title_yijing: "起卦問事", title_daily: "今日運勢", title_ziwei: "紫微斗數排盤",
     lbl_question: "你想問什麼？", lbl_question_opt: "問題（可留白）", lbl_spread: "陣型",
     ph_yijing: "例：2027 年工作是否會有重大轉變？", ph_tarot: "例：這件事接下來三個月的發展？", ph_runes: "例：我現在最需要注意什麼？",
-    btn_yijing: "起卦", btn_tarot: "抽牌", btn_runes: "抽符文", btn_daily: "查看今日運勢", btn_ziwei: "排盤",
+    btn_yijing: "起卦", btn_tarot: "抽牌", btn_runes: "抽符文", btn_daily: "查看今日運勢", btn_ziwei: "排盤", btn_clear: "清除",
     empty_yijing: "心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻",
     empty_tarot: "靜心片刻<br/>抽牌看看此刻該留意什麼",
     empty_runes: "伸手入符文袋中<br/>抽出符文，聆聽它的訊息",
@@ -279,7 +291,7 @@ const dict = {
     title_yijing: "I Ching Reading", title_daily: "Daily Fortune", title_ziwei: "Zi Wei Dou Shu Chart",
     lbl_question: "What is your question?", lbl_question_opt: "Your Question (Optional)", lbl_spread: "Spread",
     ph_yijing: "e.g., Will there be major career changes next year?", ph_tarot: "e.g., How will this progress over 3 months?", ph_runes: "e.g., What should I focus on right now?",
-    btn_yijing: "Cast Hexagram", btn_tarot: "Draw Cards", btn_runes: "Cast Runes", btn_daily: "Get Fortune", btn_ziwei: "Generate Chart",
+    btn_yijing: "Cast Hexagram", btn_tarot: "Draw Cards", btn_runes: "Cast Runes", btn_daily: "Get Fortune", btn_ziwei: "Generate Chart", btn_clear: "Clear",
     empty_yijing: "Focus on your question<br/>Click to toss coins and cast hexagram",
     empty_tarot: "Take a deep breath<br/>Draw cards to reveal insights",
     empty_runes: "Reach into the pouch<br/>Draw runes for guidance",
@@ -304,7 +316,7 @@ const dict = {
     title_yijing: "Ramalan I Ching", title_daily: "Ramalan Harian", title_ziwei: "Bagan Zi Wei Dou Shu",
     lbl_question: "Apa pertanyaan Anda?", lbl_question_opt: "Pertanyaan Anda (Opsional)", lbl_spread: "Pola Kartu",
     ph_yijing: "Contoh: Apakah ada perubahan karir besar tahun depan?", ph_tarot: "Contoh: Bagaimana perkembangan ini dalam 3 bulan?", ph_runes: "Contoh: Apa yang harus saya fokuskan sekarang?",
-    btn_yijing: "Lempar Koin", btn_tarot: "Tarik Kartu", btn_runes: "Tarik Rune", btn_daily: "Cek Ramalan", btn_ziwei: "Buat Bagan",
+    btn_yijing: "Lempar Koin", btn_tarot: "Tarik Kartu", btn_runes: "Tarik Rune", btn_daily: "Cek Ramalan", btn_ziwei: "Buat Bagan", btn_clear: "Hapus",
     empty_yijing: "Fokus pada pertanyaan Anda<br/>Klik untuk melempar koin I Ching",
     empty_tarot: "Tarik napas dalam-dalam<br/>Tarik kartu untuk melihat petunjuk",
     empty_runes: "Ambil rune dari kantong<br/>Dengarkan pesan kebijaksanaannya",
@@ -457,6 +469,35 @@ function attachChatSection(containerId, moduleName, question, facts) {
 
 // 預設套用語言
 applyLang(currentLang);
+
+// ---------------- 各面板「清除」鍵：重置輸入欄位與結果，供換題/換人重新占卜 ----------------
+function resetResult(resultId, emptyKey) {
+  document.getElementById(resultId).innerHTML = `<div class="empty" i18n="${emptyKey}">${dict[currentLang][emptyKey]}</div>`;
+}
+
+document.getElementById('yijing-clear-btn').addEventListener('click', () => {
+  document.getElementById('yijing-question').value = '';
+  resetResult('yijing-result', 'empty_yijing');
+});
+
+document.getElementById('tarot-clear-btn').addEventListener('click', () => {
+  document.getElementById('tarot-question').value = '';
+  document.getElementById('tarot-mode').value = '1';
+  resetResult('tarot-result', 'empty_tarot');
+});
+
+document.getElementById('runes-clear-btn').addEventListener('click', () => {
+  document.getElementById('runes-question').value = '';
+  document.getElementById('runes-mode').value = '1';
+  resetResult('runes-result', 'empty_runes');
+});
+
+document.getElementById('ziwei-clear-btn').addEventListener('click', () => {
+  document.getElementById('zw-date').value = '';
+  document.getElementById('zw-hour').value = '';
+  document.getElementById('zw-gender').value = 'M';
+  resetResult('ziwei-result', 'empty_ziwei');
+});
 
 // ---------------- 完全不改動核心算術與演算法 ----------------
 const TAROT = [["The Fool愚者","可以踏出第一步"],["The Magician魔術師","手上的牌其實夠用"],["The High Priestess女祭司","答案在你心裡"],["The Empress皇后","適合養與創造"],["The Emperor皇帝","把規則界線講清楚"],["The Hierophant教皇","可以聽前輩建議"],["The Lovers戀人","到了要選的時候"],["The Chariot戰車","方向對了就全力推"],["Strength力量","溫柔堅定比硬槓贏"],["The Hermit隱者","想清楚再出場"],["Wheel of Fortune命運之輪","風向在轉順勢走"],["Justice正義","誠實面對算清楚"],["The Hanged Man倒吊人","換個角度看問題"],["Death死神","舊的結束新的才會來"],["Temperance節制","慢一點融合會更穩"],["The Devil惡魔","看清是什麼綁住你"],["The Tower高塔","舊架構該震一下崩掉"],["The Star星星","希望與微光漸回"],["The Moon月亮","霧沒散先別大決定"],["The Sun太陽","天氣好適合往前"],["Judgement審判","該醒了認帳往前"],["The World世界","完成收尾開新章"]];
