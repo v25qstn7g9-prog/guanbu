@@ -265,7 +265,7 @@ const dict = {
     lbl_birth: "生日（選填）", lbl_dob: "出生日期（國曆）", lbl_tob: "出生時間", lbl_gender: "性別",
     footer: "僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準",
     ai_title: "仙師開示", ai_chat_title: "💡 對這個結果還有疑問？請教千年仙師",
-    chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送",
+    chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送", chat_clear: "清除",
     hints: ["仙師正閉目沉思，為你解讀符號背後的訊息…", "仙師正梳理當前的氣運與脈絡…", "仙師正為你斟酌一句溫和的行動建議…"],
     // 動態介面補充標籤
     hex_orig: "本卦", hex_change: "之卦", label_now: "現在", label_moving: "有變化", label_after: "之後", label_none: "沒有",
@@ -291,7 +291,7 @@ const dict = {
     lbl_birth: "Birthdate (Optional)", lbl_dob: "Birth Date", lbl_tob: "Birth Time", lbl_gender: "Gender",
     footer: "For Entertainment Only | v3.0 | Always make real decisions wisely",
     ai_title: "The Sage's Insight", ai_chat_title: "💡 Have questions about this reading? Ask the Ancient Sage",
-    chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send",
+    chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send", chat_clear: "Clear",
     hints: ["The sage is reading the signs for you...", "The sage is tracing the current currents of fortune...", "The sage is weighing a gentle piece of advice..."],
     hex_orig: "Original", hex_change: "Transformed", label_now: "Present", label_moving: "Changing", label_after: "Future", label_none: "None",
     rune_labels: ['Current Status','Obstacle','Advice'], rune_single: 'Guidance',
@@ -316,7 +316,7 @@ const dict = {
     lbl_birth: "Tanggal Lahir (Opsional)", lbl_dob: "Tanggal Lahir", lbl_tob: "Waktu Lahir", lbl_gender: "Jenis Kelamin",
     footer: "Hanya untuk hiburan | v3.0 | Tetap buat keputusan hidup secara bijak",
     ai_title: "Wejangan Sang Resi", ai_chat_title: "💡 Ada pertanyaan tentang hasil ini? Tanyakan pada Sang Resi Bijak",
-    chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim",
+    chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim", chat_clear: "Hapus",
     hints: ["Sang Resi sedang membaca makna di balik simbol ini...", "Sang Resi sedang menelusuri arus keberuntungan saat ini...", "Sang Resi sedang menyusun sepatah saran yang lembut..."],
     hex_orig: "Asli", hex_change: "Berubah", label_now: "Saat Ini", label_moving: "Berubah", label_after: "Masa Depan", label_none: "Tidak Ada",
     rune_labels: ['Status Saat Ini','Hambatan','Saran'], rune_single: 'Panduan',
@@ -405,6 +405,7 @@ function attachChatSection(containerId, moduleName, question, facts) {
       <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
       <div style="display:flex; gap:6px;">
         <input class="input" id="${inputId}" placeholder="${dict[currentLang].chat_ph}" style="font-size:13px;" />
+        <button class="btn secondary small" id="${chatBoxId}-clear" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_clear}</button>
         <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_send}</button>
       </div>
     </div>
@@ -442,6 +443,12 @@ function attachChatSection(containerId, moduleName, question, facts) {
     const el = document.getElementById(inputId);
     const txt = el.value.trim();
     if (txt) { sendMsg(txt); el.value = ''; }
+  };
+
+  document.getElementById(`${chatBoxId}-clear`).onclick = () => {
+    history.length = 0;
+    document.getElementById(`${chatBoxId}-history`).innerHTML = '';
+    document.getElementById(inputId).value = '';
   };
 
   document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg(dict[currentLang].chat_q1);
