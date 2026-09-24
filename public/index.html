@@ -163,6 +163,83 @@
   .zw-center .zw-c-title{font-family:'Noto Serif TC',serif;color:var(--violet);font-size:12px;margin-bottom:4px;}
   .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
   @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
+
+  /* ===== v3.1 讓人想用的介面強化 ===== */
+  .hero .tagline{font-family:'Noto Serif TC',serif;color:#D9CFB7;font-size:15px;margin-top:10px;font-style:normal;letter-spacing:.06em;}
+  .daily-quote{margin:14px auto 0;max-width:360px;padding:11px 14px;border:1px solid rgba(201,162,39,.25);border-radius:12px;
+    background:rgba(201,162,39,.05);font-size:13.5px;color:#D9CFB7;line-height:1.65;font-family:'Noto Serif TC',serif;text-align:left;}
+  .daily-quote b{color:var(--gold);font-weight:700;margin-right:6px;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+  .chip{padding:6px 11px;border-radius:999px;border:1px solid var(--panel-border);background:#0F0E17;color:var(--sub);
+    font-size:12.5px;cursor:pointer;font-family:'Noto Serif TC',serif;transition:border-color .2s,color .2s;}
+  .chip:hover,.chip:active{border-color:var(--gold);color:var(--gold);}
+  .btn:disabled{opacity:.6;cursor:wait;}
+  .meta-row span{flex-shrink:0;}
+  .panel .btn.main-action{margin:4px 0 16px;box-shadow:0 6px 18px rgba(0,0,0,.35);}
+
+  .ritual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:36px 10px;min-height:210px;}
+  .ritual-text{color:#D9CFB7;font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.08em;text-align:center;animation:breathe 1.6s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+  .coins{display:flex;gap:16px;perspective:400px;}
+  .coin{width:42px;height:42px;border-radius:50%;position:relative;
+    background:radial-gradient(circle at 35% 35%,#F4E3A0,#C9A227 55%,#7A5E12);box-shadow:0 0 16px rgba(201,162,39,.45);
+    animation:coinflip .55s linear infinite;}
+  .coin::after{content:'';position:absolute;inset:14px;border:2px solid #5C470D;border-radius:2px;}
+  .coin:nth-child(2){animation-delay:.14s}.coin:nth-child(3){animation-delay:.28s}
+  @keyframes coinflip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(180deg) translateY(-16px)}100%{transform:rotateY(360deg) translateY(0)}}
+  .deck{position:relative;width:74px;height:114px;}
+  .deck .back{position:absolute;inset:0;border-radius:9px;border:1px solid var(--gold);
+    background:repeating-linear-gradient(45deg,#2A1620,#2A1620 6px,#3A1D2A 6px,#3A1D2A 12px);
+    box-shadow:0 6px 16px rgba(0,0,0,.55);animation:shuffle 1s ease-in-out infinite;}
+  .deck .back:nth-child(2){animation-delay:.16s}.deck .back:nth-child(3){animation-delay:.32s}
+  @keyframes shuffle{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(30px) rotate(9deg)}}
+  .orb{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;
+    color:var(--orb,#C9A227);border:1px solid var(--orb,#C9A227);
+    background:radial-gradient(circle,rgba(255,255,255,.07),transparent 70%);animation:orbpulse 1.4s ease-in-out infinite;}
+  @keyframes orbpulse{0%,100%{box-shadow:0 0 10px var(--orb,#C9A227);transform:scale(1)}50%{box-shadow:0 0 34px var(--orb,#C9A227);transform:scale(1.06)}}
+
+  .reveal > *{animation:rise .6s ease both;}
+  .reveal > *:nth-child(2){animation-delay:.12s}.reveal > *:nth-child(3){animation-delay:.24s}
+  .reveal > *:nth-child(4){animation-delay:.36s}.reveal > *:nth-child(5){animation-delay:.48s}
+  .reveal > *:nth-child(n+6){animation-delay:.6s}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .tcard{width:92px;height:142px;border-radius:10px;border:1px solid var(--gold);position:relative;
+    background:linear-gradient(160deg,#2B1621,#15101A 70%);box-shadow:0 8px 20px rgba(0,0,0,.5);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;text-align:center;
+    animation:cardin .7s ease both;}
+  .tcard:nth-child(2){animation-delay:.15s}.tcard:nth-child(3){animation-delay:.3s}
+  @keyframes cardin{from{opacity:0;transform:rotateY(90deg)}to{opacity:1;transform:none}}
+  .tcard .t-num{font-family:'Cinzel',serif;color:var(--gold);font-size:13px;position:absolute;top:7px;}
+  .tcard .t-star{font-size:26px;color:#E8D48A;margin-bottom:6px;}
+  .tcard .t-name{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--text);}
+  .tcard .t-pos{position:absolute;bottom:7px;font-size:10px;color:var(--sub);letter-spacing:.08em;}
+  .tcard.rev .t-star{transform:rotate(180deg);}
+  .tcard.rev{border-color:#8B5A2B;}
+
+  .smart-card.oracle{position:relative;border-color:rgba(201,162,39,.55);padding:18px 16px 14px;
+    background:linear-gradient(170deg,#1C1813,#12101A 60%);box-shadow:0 0 0 1px rgba(201,162,39,.12) inset,0 10px 24px rgba(0,0,0,.35);}
+  .smart-card.oracle .smart-title{text-align:center;font-size:14px;letter-spacing:.3em;}
+  .smart-card.oracle .smart-text p{margin:0 0 10px;}
+  .smart-card.oracle .smart-text p:last-child{margin-bottom:0;}
+  .thinking::after{content:'';animation:dots 1.4s steps(4,end) infinite;}
+  @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+  .oracle-actions{display:flex;gap:8px;margin-top:12px;}
+  .oracle-actions .btn{margin-top:0;}
+  .chat-card{border-color:rgba(92,122,153,.45);}
+  .chat-card .smart-title{color:#9DB7D1;font-size:14px;}
+  .bubble-me{align-self:flex-end;max-width:85%;background:#2A2413;color:#F1E3B3;font-size:14px;padding:8px 11px;border-radius:12px 12px 2px 12px;}
+  .bubble-sage{align-self:flex-start;max-width:92%;background:#0F0E17;color:var(--text);font-size:14px;line-height:1.7;
+    padding:9px 11px;border-radius:12px 12px 12px 2px;border:1px solid var(--panel-border);}
+  .bubble-note{font-size:12.5px;color:var(--sub);font-style:italic;}
+  .bubble-err{font-size:12.5px;color:#D98C97;}
+  .toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+    background:#211F2B;color:var(--text);border:1px solid var(--gold);padding:9px 16px;border-radius:999px;font-size:13px;
+    z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  @media (prefers-reduced-motion:reduce){
+    .coin,.deck .back,.orb,.ritual-text,.tcard,.reveal > *{animation:none !important;}
+  }
 </style>
 </head>
 <body>
@@ -175,7 +252,9 @@
   <div class="hero">
     <div class="mark">D I V I N A T I O N</div>
     <h1>觀卜</h1>
+    <p class="tagline" i18n="tagline">心裡有事，就來問一卦</p>
     <p i18n="subtitle">易經 · 塔羅 · 盧恩 · 每日運勢 · 紫微斗數</p>
+    <div class="daily-quote" id="daily-quote"></div>
   </div>
 
   <div class="tabs">
@@ -192,35 +271,36 @@
     <div class="field">
       <label i18n="lbl_question">你想問什麼？</label>
       <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" i18n-ph="ph_yijing" />
+      <div class="chips" data-chips="yijing" data-target="yijing-question"></div>
     </div>
+    <button class="btn jade main-action" id="yijing-btn" i18n="btn_yijing">起卦</button>
     <div id="yijing-result"><div class="empty" i18n="empty_yijing">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div></div>
-    <button class="btn jade" id="yijing-btn" i18n="btn_yijing">起卦</button>
   </div>
 
   <!-- Tarot Panel -->
   <div class="panel" id="panel-tarot">
     <div class="section-title">MAJOR ARCANA</div>
-    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /></div>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /><div class="chips" data-chips="tarot" data-target="tarot-question"></div></div>
     <div class="field"><label i18n="lbl_spread">牌陣</label><select class="select" id="tarot-mode"><option value="1" i18n="opt_t1">單張指引</option><option value="3" i18n="opt_t3">三張牌｜過去・現在・未來</option></select></div>
+    <button class="btn crimson main-action" id="tarot-btn" i18n="btn_tarot">抽牌</button>
     <div id="tarot-result"><div class="empty" i18n="empty_tarot">靜心片刻<br/>抽牌看看此刻該留意什麼</div></div>
-    <button class="btn crimson" id="tarot-btn" i18n="btn_tarot">抽牌</button>
   </div>
 
   <!-- Runes Panel -->
   <div class="panel" id="panel-runes">
     <div class="section-title">ELDER FUTHARK</div>
-    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /></div>
+    <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /><div class="chips" data-chips="runes" data-target="runes-question"></div></div>
     <div class="field"><label i18n="lbl_spread">符文陣</label><select class="select" id="runes-mode"><option value="1" i18n="opt_r1">單枚指引</option><option value="3" i18n="opt_r3">三枚｜現況・阻力・建議</option></select></div>
+    <button class="btn runic main-action" id="runes-btn" i18n="btn_runes">抽符文</button>
     <div id="runes-result"><div class="empty" i18n="empty_runes">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div></div>
-    <button class="btn runic" id="runes-btn" i18n="btn_runes">抽符文</button>
   </div>
 
   <!-- Daily Panel -->
   <div class="panel" id="panel-daily">
     <div class="section-title cn" i18n="title_daily">今日運勢</div>
     <div class="field"><label i18n="lbl_birth">生日（選填）</label><input class="input" type="date" id="daily-birth" /></div>
+    <button class="btn gold main-action" id="daily-btn" i18n="btn_daily">查看今日運勢</button>
     <div id="daily-result"><div class="empty" i18n="empty_daily">按下查看，抓出今天的運勢</div></div>
-    <button class="btn gold" id="daily-btn" i18n="btn_daily">查看今日運勢</button>
   </div>
 
   <!-- Ziwei Panel -->
@@ -233,11 +313,11 @@
         <select class="select" id="zw-gender"><option value="M" i18n="opt_male">男</option><option value="F" i18n="opt_female">女</option></select>
       </div>
     </div>
+    <button class="btn main-action" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
     <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
-    <button class="btn" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
   </div>
 
-  <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.0｜重要決策仍以現實資訊為準</div>
+  <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.1｜重要決策仍以現實資訊為準</div>
 </div>
 
 <script>
@@ -325,6 +405,159 @@ const dict = {
   }
 };
 
+// ---------------- v3.1 新增三語文字 ----------------
+Object.assign(dict.zh, {
+  tagline: "心裡有事，就來問一卦",
+  footer: "僅供參考娛樂｜v3.1｜重要決策仍以現實資訊為準",
+  quote_label: "今日一句",
+  quotes: ["急事慢慢說，慢事認真做。","今天不必完美，只要比昨天更靠近一點。","心定了，路自然會清楚。","不確定的時候，先做一件小小的好事。","能放下的，就別一直扛在肩上。","你擔心的事，多半沒有想像中那麼糟。","答案常常藏在你一直不敢問的那個問題裡。"],
+  chips_yijing: ["工作會有轉機嗎？","這段感情該怎麼走？","近期財運如何？","這個決定該不該做？"],
+  chips_tarot: ["他／她怎麼看我？","換工作好嗎？","最近要注意什麼？","這件事會順利嗎？"],
+  chips_runes: ["我現在最需要什麼？","卡住的事怎麼解？","該堅持還是放手？"],
+  rit_yijing: "銅錢翻轉中，心中默念你的問題…",
+  rit_tarot: "洗牌中，想著你想知道的事…",
+  rit_runes: "符文在袋中低語…",
+  rit_daily: "觀看今日天時…",
+  rit_ziwei: "推演十二宮星曜…",
+  tarot_pos3: ["過去","現在","未來"], tarot_pos1: "指引", t_up: "正位", t_rev: "逆位",
+  ai_chat_title: "還想問得更清楚？問問仙師",
+  chat_q3: "什麼時候會有轉機？",
+  you: "你", thinking: "仙師思索中",
+  ai_fail: "仙師暫時沒有回應，可能是網路不穩。", retry: "再請教一次",
+  chat_fail: "仙師這次沒聽清楚，請再問一次。", net_fail: "網路好像斷了，請稍後再試。",
+  share: "📜 分享這張籤", copied: "已複製，可以貼給親友", copy_fail: "無法分享，請手動複製",
+  share_head: "觀卜・仙師開示"
+});
+Object.assign(dict.en, {
+  tagline: "Something on your mind? Ask the oracle.",
+  footer: "For Entertainment Only | v3.1 | Always make real decisions wisely",
+  quote_label: "Today's Word",
+  quotes: ["Speak slowly about urgent things; work steadily on slow ones.","Today need not be perfect — just a little closer.","When the heart settles, the path clears.","When unsure, do one small kind thing first.","What you can put down, stop carrying.","Most worries are lighter than they look.","The answer often hides in the question you are afraid to ask."],
+  chips_yijing: ["Will my work turn around?","Where is this relationship going?","How are my finances looking?","Should I make this decision?"],
+  chips_tarot: ["How do they see me?","Should I change jobs?","What should I watch out for?","Will this go well?"],
+  chips_runes: ["What do I need most now?","How do I get unstuck?","Hold on or let go?"],
+  rit_yijing: "The coins are turning — hold your question in mind…",
+  rit_tarot: "Shuffling — think of what you want to know…",
+  rit_runes: "The runes whisper in the pouch…",
+  rit_daily: "Reading today's signs…",
+  rit_ziwei: "Placing the stars in twelve palaces…",
+  tarot_pos3: ["Past","Present","Future"], tarot_pos1: "Guidance", t_up: "Upright", t_rev: "Reversed",
+  ai_chat_title: "Want more clarity? Ask the Sage",
+  chat_q3: "When will things turn around?",
+  you: "You", thinking: "The sage is thinking",
+  ai_fail: "The sage is quiet for now — the connection may be unstable.", retry: "Ask again",
+  chat_fail: "The sage didn't catch that — please ask again.", net_fail: "Connection lost. Please try again later.",
+  share: "📜 Share this reading", copied: "Copied — ready to send", copy_fail: "Sharing unavailable, please copy manually",
+  share_head: "Guanbu · The Sage's Insight"
+});
+Object.assign(dict.id, {
+  tagline: "Ada yang mengganjal di hati? Tanyakan pada sang peramal.",
+  footer: "Hanya untuk hiburan | v3.1 | Tetap buat keputusan hidup secara bijak",
+  quote_label: "Pesan Hari Ini",
+  quotes: ["Hal mendesak dibicarakan pelan-pelan, hal kecil dikerjakan sungguh-sungguh.","Hari ini tidak harus sempurna, cukup sedikit lebih dekat.","Saat hati tenang, jalan pun terlihat jelas.","Saat ragu, lakukan satu kebaikan kecil dulu.","Yang bisa dilepas, jangan terus dipikul.","Kebanyakan kekhawatiran tidak seburuk yang dibayangkan.","Jawaban sering tersembunyi di pertanyaan yang paling kamu takutkan."],
+  chips_yijing: ["Apakah pekerjaan akan membaik?","Ke mana arah hubungan ini?","Bagaimana keuangan saya?","Haruskah saya ambil keputusan ini?"],
+  chips_tarot: ["Bagaimana dia memandang saya?","Sebaiknya ganti kerja?","Apa yang perlu diwaspadai?","Apakah ini akan lancar?"],
+  chips_runes: ["Apa yang paling saya butuhkan?","Bagaimana keluar dari kebuntuan?","Bertahan atau melepaskan?"],
+  rit_yijing: "Koin sedang berputar — pikirkan pertanyaan Anda…",
+  rit_tarot: "Mengocok kartu — pikirkan yang ingin Anda ketahui…",
+  rit_runes: "Rune berbisik di dalam kantong…",
+  rit_daily: "Membaca tanda-tanda hari ini…",
+  rit_ziwei: "Menempatkan bintang di dua belas istana…",
+  tarot_pos3: ["Masa Lalu","Sekarang","Masa Depan"], tarot_pos1: "Panduan", t_up: "Tegak", t_rev: "Terbalik",
+  ai_chat_title: "Ingin lebih jelas? Tanyakan Sang Resi",
+  chat_q3: "Kapan keadaan akan membaik?",
+  you: "Anda", thinking: "Sang Resi sedang merenung",
+  ai_fail: "Sang Resi belum menjawab — mungkin koneksi tidak stabil.", retry: "Tanya lagi",
+  chat_fail: "Sang Resi kurang menangkap — silakan tanya lagi.", net_fail: "Koneksi terputus. Coba lagi nanti.",
+  share: "📜 Bagikan ramalan ini", copied: "Disalin — siap dikirim", copy_fail: "Tidak bisa membagikan, silakan salin manual",
+  share_head: "Guanbu · Wejangan Sang Resi"
+});
+
+const ROMAN = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+const RESULT_ID = {yijing:'yijing-result',tarot:'tarot-result',runes:'runes-result',daily:'daily-result',ziwei:'ziwei-result'};
+
+function renderExtras(){
+  const L = dict[currentLang];
+  const now = new Date();
+  const dayNo = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
+  const q = L.quotes[dayNo % L.quotes.length];
+  const dq = document.getElementById('daily-quote');
+  if (dq) dq.innerHTML = `<b>${esc(L.quote_label)}</b>${esc(q)}`;
+  document.querySelectorAll('.chips[data-chips]').forEach(box=>{
+    const list = L['chips_'+box.dataset.chips] || [];
+    box.innerHTML = list.map(t=>`<button type="button" class="chip">${esc(t)}</button>`).join('');
+    box.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{
+      const inp = document.getElementById(box.dataset.target);
+      if (inp){ inp.value = ch.textContent; inp.focus(); }
+    });
+  });
+}
+
+function toast(msg){
+  let t = document.getElementById('toast');
+  if (!t){ t = document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._h); toast._h = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function shareReading(question, text){
+  const L = dict[currentLang];
+  const url = location.href.split('#')[0];
+  const full = `${L.share_head}\n${question ? '「'+question+'」\n' : ''}\n${text}\n\n${url}`;
+  if (navigator.share){
+    try { await navigator.share({ title: L.share_head, text: full }); return; }
+    catch(e){ if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(full); toast(L.copied); }
+  catch { toast(L.copy_fail); }
+}
+
+function ritualHTML(kind){
+  const L = dict[currentLang];
+  let art = '';
+  if (kind==='yijing') art = '<div class="coins"><div class="coin"></div><div class="coin"></div><div class="coin"></div></div>';
+  else if (kind==='tarot') art = '<div class="deck"><div class="back"></div><div class="back"></div><div class="back"></div></div>';
+  else if (kind==='runes') art = '<div class="orb" style="--orb:#5C7A99">ᚨ</div>';
+  else if (kind==='daily') art = '<div class="orb" style="--orb:#C9A227">☀</div>';
+  else art = '<div class="orb" style="--orb:#6B4E8E">✦</div>';
+  return `<div class="ritual">${art}<div class="ritual-text">${esc(L['rit_'+kind])}</div></div>`;
+}
+
+// 按下按鈕 → 先跑一小段儀式動畫 → 再顯示原本的結果（核心演算法完全不動）
+function onRitual(btnId, kind, fn){
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('click', ()=>{
+    if (btn.disabled) return;
+    const resEl = document.getElementById(RESULT_ID[kind]);
+    if (kind==='ziwei' && (!document.getElementById('zw-date').value || !document.getElementById('zw-hour').value)) { fn(); return; }
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    btn.disabled = true;
+    resEl.classList.remove('reveal');
+    resEl.innerHTML = ritualHTML(kind);
+    setTimeout(()=>{
+      try { fn(); }
+      finally {
+        btn.disabled = false;
+        void resEl.offsetWidth;
+        resEl.classList.add('reveal');
+      }
+    }, reduce ? 250 : 1500);
+  });
+}
+
+function tarotPos(mode, i){
+  const L = dict[currentLang];
+  return mode===3 ? L.tarot_pos3[i] : L.tarot_pos1;
+}
+function tarotCardHTML(p, i, mode){
+  const L = dict[currentLang];
+  const full = TAROT[p.idx][0];
+  const zh = full.replace(/^[A-Za-z\s]+/, '') || full;
+  const en = (full.match(/^[A-Za-z\s]+/)||[''])[0].trim();
+  const shown = currentLang==='zh' ? zh : (en || zh);
+  return `<div class="tcard ${p.reversed?'rev':''}"><div class="t-num">${ROMAN[p.idx]}</div><div class="t-star">✦</div><div class="t-name">${esc(shown)}</div><div class="t-pos">${esc(tarotPos(mode,i))}・${p.reversed?L.t_rev:L.t_up}</div></div>`;
+}
+
 function applyLang(lang) {
   currentLang = lang;
   localStorage.setItem('guanbu_lang', lang);
@@ -338,6 +571,7 @@ function applyLang(lang) {
     const key = el.getAttribute('i18n-ph');
     if (dict[lang][key]) el.placeholder = dict[lang][key];
   });
+  renderExtras();
 }
 
 document.getElementById('lang-toggle').onclick = () => {
@@ -366,13 +600,15 @@ function aiCardPlaceholder(title) {
   const hint = hints[Math.floor(Math.random() * hints.length)];
   return {
     id,
-    html: `<div class="smart-card" id="${id}"><div class="smart-title">${esc(title)}</div><div class="smart-text" style="color:var(--sub);font-style:italic;">${hint}</div></div>`,
+    html: `<div class="smart-card oracle" id="${id}"><div class="smart-title">— ${esc(title)} —</div><div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${esc(hint)}</div></div>`,
   };
 }
 
 async function fillAiExplain(id, module, question, facts) {
   const el = document.getElementById(id);
   if (!el) return;
+  const L = dict[currentLang];
+  const head = `<div class="smart-title">— ${esc(L.ai_title)} —</div>`;
   try {
     const res = await fetch('/ask', {
       method: 'POST',
@@ -380,44 +616,52 @@ async function fillAiExplain(id, module, question, facts) {
       body: JSON.stringify({ module, question: question || '', facts, lang: currentLang }),
     });
     const data = await res.json().catch(() => null);
-    if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text">${esc(data.explanation).replace(/\n+/g,'<br/>')}</div>`;
+    if (!res.ok || !data?.ok || !data.explanation) throw new Error(data?.error || `HTTP ${res.status}`);
+    const paras = String(data.explanation).split(/\n+/).map(t=>t.trim()).filter(Boolean).map(t=>`<p>${esc(t)}</p>`).join('');
+    el.innerHTML = `${head}<div class="smart-text">${paras}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${esc(L.share)}</button></div>`;
+    el.querySelector('[data-act="share"]').onclick = () => shareReading(question, data.explanation);
   } catch (e) {
-    el.innerHTML = `<div class="smart-title">${dict[currentLang].ai_title}</div><div class="smart-text" style="color:var(--sub);">Failed: ${esc(e.message)}</div>`;
+    el.innerHTML = `${head}<div class="smart-text" style="color:var(--sub);">${esc(L.ai_fail)}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="retry">${esc(L.retry)}</button></div>`;
+    el.querySelector('[data-act="retry"]').onclick = () => {
+      el.innerHTML = `${head}<div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${esc(L.thinking)}</div>`;
+      fillAiExplain(id, module, question, facts);
+    };
   }
 }
 
 function attachChatSection(containerId, moduleName, question, facts) {
   const container = document.getElementById(containerId);
   if (!container) return;
-
+  const L = dict[currentLang];
   const chatBoxId = `chat-box-${Date.now()}`;
   const inputId = `chat-input-${Date.now()}`;
   const history = [];
+  let busy = false;
 
-  const chatHTML = `
-    <div class="smart-card" style="border-color:rgba(92,122,153,0.4);">
-      <div class="smart-title" style="color:var(--runic);">${dict[currentLang].ai_chat_title}</div>
-      <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn secondary small" id="${chatBoxId}-q1">${dict[currentLang].chat_q1}</button>
-        <button class="btn secondary small" id="${chatBoxId}-q2">${dict[currentLang].chat_q2}</button>
+  container.insertAdjacentHTML('beforeend', `
+    <div class="smart-card chat-card">
+      <div class="smart-title">💬 ${esc(L.ai_chat_title)}</div>
+      <div class="chips" style="margin:0 0 10px;">
+        <button type="button" class="chip" data-q="chat_q1">${esc(L.chat_q1)}</button>
+        <button type="button" class="chip" data-q="chat_q2">${esc(L.chat_q2)}</button>
+        <button type="button" class="chip" data-q="chat_q3">${esc(L.chat_q3)}</button>
       </div>
       <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
       <div style="display:flex; gap:6px;">
-        <input class="input" id="${inputId}" placeholder="${dict[currentLang].chat_ph}" style="font-size:13px;" />
-        <button class="btn secondary small" id="${chatBoxId}-clear" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_clear}</button>
-        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${dict[currentLang].chat_send}</button>
+        <input class="input" id="${inputId}" maxlength="200" enterkeyhint="send" placeholder="${esc(L.chat_ph)}" style="font-size:14px;" />
+        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${esc(L.chat_send)}</button>
       </div>
-    </div>
-  `;
-  container.insertAdjacentHTML('beforeend', chatHTML);
+      <div style="text-align:right;margin-top:6px;"><button type="button" class="chip" id="${chatBoxId}-clear">${esc(L.chat_clear)}</button></div>
+    </div>`);
+
+  const historyEl = document.getElementById(`${chatBoxId}-history`);
+  const sendBtn = document.getElementById(`${chatBoxId}-send`);
 
   const sendMsg = async (msgText) => {
-    if (!msgText) return;
-    const historyEl = document.getElementById(`${chatBoxId}-history`);
-    historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--gold); font-size:13px;"><strong>You:</strong> ${esc(msgText)}</div>`);
-    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" style="color:var(--sub); font-size:13px; font-style:italic;">AI thinking...</div>`);
-
+    if (!msgText || busy) return;
+    busy = true; sendBtn.disabled = true;
+    historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-me">${esc(msgText)}</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" class="bubble-note thinking">${esc(L.thinking)}</div>`);
     try {
       const res = await fetch('/chat', {
         method: 'POST',
@@ -426,33 +670,30 @@ function attachChatSection(containerId, moduleName, question, facts) {
       });
       const data = await res.json().catch(() => null);
       document.getElementById(`${chatBoxId}-temp`)?.remove();
-      if (res.ok && data?.ok) {
-        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--text); font-size:14px; background:#0F0E17; padding:8px 10px; border-radius:8px; border:1px solid var(--panel-border);">${esc(data.reply).replace(/\n+/g,'<br/>')}</div>`);
+      if (res.ok && data?.ok && data.reply) {
+        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-sage">${esc(data.reply).replace(/\n+/g,'<br/>')}</div>`);
         history.push({ role: 'user', content: msgText });
         history.push({ role: 'assistant', content: data.reply });
       } else {
-        historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Error: ${esc(data?.error || 'Failed')}</div>`);
+        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${esc(L.chat_fail)}</div>`);
       }
     } catch (e) {
       document.getElementById(`${chatBoxId}-temp`)?.remove();
-      historyEl.insertAdjacentHTML('beforeend', `<div style="color:var(--crimson); font-size:12px;">Network Error</div>`);
+      historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${esc(L.net_fail)}</div>`);
+    } finally {
+      busy = false; sendBtn.disabled = false;
     }
   };
 
-  document.getElementById(`${chatBoxId}-send`).onclick = () => {
-    const el = document.getElementById(inputId);
-    const txt = el.value.trim();
-    if (txt) { sendMsg(txt); el.value = ''; }
-  };
+  const inputEl = document.getElementById(inputId);
+  const sendFromInput = () => { const txt = inputEl.value.trim(); if (txt && !busy) { sendMsg(txt); inputEl.value = ''; } };
+  sendBtn.onclick = sendFromInput;
+  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendFromInput(); } });
 
   document.getElementById(`${chatBoxId}-clear`).onclick = () => {
-    history.length = 0;
-    document.getElementById(`${chatBoxId}-history`).innerHTML = '';
-    document.getElementById(inputId).value = '';
+    history.length = 0; historyEl.innerHTML = ''; inputEl.value = '';
   };
-
-  document.getElementById(`${chatBoxId}-q1`).onclick = () => sendMsg(dict[currentLang].chat_q1);
-  document.getElementById(`${chatBoxId}-q2`).onclick = () => sendMsg(dict[currentLang].chat_q2);
+  container.querySelectorAll(`.chat-card [data-q]`).forEach(b => b.onclick = () => sendMsg(L[b.dataset.q]));
 }
 
 // 預設套用語言
@@ -461,7 +702,7 @@ applyLang(currentLang);
 // ---------------- 完全不改動核心算術與演算法 ----------------
 const TAROT = [["The Fool愚者","可以踏出第一步"],["The Magician魔術師","手上的牌其實夠用"],["The High Priestess女祭司","答案在你心裡"],["The Empress皇后","適合養與創造"],["The Emperor皇帝","把規則界線講清楚"],["The Hierophant教皇","可以聽前輩建議"],["The Lovers戀人","到了要選的時候"],["The Chariot戰車","方向對了就全力推"],["Strength力量","溫柔堅定比硬槓贏"],["The Hermit隱者","想清楚再出場"],["Wheel of Fortune命運之輪","風向在轉順勢走"],["Justice正義","誠實面對算清楚"],["The Hanged Man倒吊人","換個角度看問題"],["Death死神","舊的結束新的才會來"],["Temperance節制","慢一點融合會更穩"],["The Devil惡魔","看清是什麼綁住你"],["The Tower高塔","舊架構該震一下崩掉"],["The Star星星","希望與微光漸回"],["The Moon月亮","霧沒散先別大決定"],["The Sun太陽","天氣好適合往前"],["Judgement審判","該醒了認帳往前"],["The World世界","完成收尾開新章"]];
 
-document.getElementById('tarot-btn').addEventListener('click', ()=>{
+onRitual('tarot-btn','tarot', ()=>{
   const mode = Number(document.getElementById('tarot-mode').value);
   const question = document.getElementById('tarot-question').value.trim();
   const picked = [];
@@ -474,9 +715,10 @@ document.getElementById('tarot-btn').addEventListener('click', ()=>{
   }
 
   let html = question?`<div class="question-echo">「${esc(question)}」</div>`:'';
+  html += `<div class="cards-row">${picked.map((p,i)=>tarotCardHTML(p,i,mode)).join('')}</div>`;
   picked.forEach((p,i)=>{
     const [name,text]=TAROT[p.idx];
-    html += `<div class="meta-card"><div class="meta-row"><span>Card ${i+1}</span><strong>${name} ${p.reversed?'(Rev)':'(Upright)'}</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
+    html += `<div class="meta-card"><div class="meta-row"><span>${esc(tarotPos(mode,i))}</span><strong>${name}（${p.reversed?dict[currentLang].t_rev:dict[currentLang].t_up}）</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
   });
 
   const aiTarot = aiCardPlaceholder(dict[currentLang].ai_title);
@@ -498,7 +740,7 @@ function trigramIndex(bits){ const key = bits.join(''); const map = {"111":0,"11
 function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[upperIdx][lowerIdx]; }
 function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
 
-document.getElementById('yijing-btn').addEventListener('click', ()=>{
+onRitual('yijing-btn','yijing', ()=>{
   const question = document.getElementById('yijing-question').value.trim();
   const lines = [];
   for(let i=0;i<6;i++) lines.push(tossLine());
@@ -567,7 +809,7 @@ const RUNES = [
   ["ᛞ","Dagaz 黎明符文","天亮了。舊夜結束，可以往新的一段走。"]
 ];
 
-document.getElementById('runes-btn').addEventListener('click', ()=>{
+onRitual('runes-btn','runes', ()=>{
   const mode = Number(document.getElementById('runes-mode').value);
   const question = document.getElementById('runes-question').value.trim();
   const used=new Set(), picked=[];
@@ -604,7 +846,7 @@ const DAILY_MSGS = [
   "回頭看長期計畫的進度。微調方向，通常比重來一輪省力。"
 ];
 
-document.getElementById('daily-btn').addEventListener('click', ()=>{
+onRitual('daily-btn','daily', ()=>{
   const birth = document.getElementById('daily-birth').value || '';
   const d = new Date();
   const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
@@ -636,7 +878,11 @@ function getChineseCalendarParts(dateVal, timeVal){
   const monthPart=parts.find(p=>p.type==='month')?.value||'';
   const dayPart=parts.find(p=>p.type==='day')?.value||'';
   const yearPart=parts.find(p=>p.type==='relatedYear')?.value||'';
-  const mn=Number((monthPart.match(/\d+/)||['0'])[0]), dn=Number((dayPart.match(/\d+/)||['0'])[0]);
+  const cnNum=(t)=>{ const d=t.match(/\d+/); if(d) return Number(d[0]);
+    const m=t.replace(/[閏闰月日初]/g,''); const map={'正':1,'冬':11,'臘':12,'腊':12,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'十一':11,'十二':12};
+    if(map[m]) return map[m]; const g=m.match(/^([二三])?十([一二三四五六七八九])?$/);
+    if(g) return (g[1]?map[g[1]]:1)*10+(g[2]?map[g[2]]:0); if(m==='廿') return 20; if(m.startsWith('廿')) return 20+(map[m.slice(1)]||0); return 0; };
+  const mn=cnNum(monthPart), dn=cnNum(dayPart);
   if(!mn||!dn) throw new Error('Chinese calendar conversion unavailable');
   return {lunarYear:Number(yearPart)||y,lunarMonth:mn,lunarDay:dn};
 }
@@ -678,12 +924,13 @@ function buildZiweiFramework(dateVal,timeVal,gender){
   const yearStemIdx=yearStemIndex(lunar.lunarYear), yearStem=ZW_STEMS[yearStemIdx], yearBranch=ZW_BRANCHES[mod12(lunar.lunarYear-4)];
   const hourBranch=earthlyBranchIndexForHour(hour), monthBranch=mod12(2+lunar.lunarMonth-1), monthStemIdx=stemAtLunarMonth(yearStemIdx,lunar.lunarMonth);
   const lifeBranch=mod12(monthBranch-hourBranch), bodyBranch=mod12(monthBranch+hourBranch);
-  const lifeStemIdx=(monthStemIdx+mod12(lifeBranch-2))%10, lifeStem=ZW_STEMS[lifeStemIdx];
-  const bureau=ZW_BUREAU_BY_STEM_BRANCH[yearStem]?.[ZW_BRANCHES[lifeBranch]];
+  const yinStemIdx=[2,4,6,8,0][yearStemIdx%5]; // 五虎遁：甲己丙寅、乙庚戊寅、丙辛庚寅、丁壬壬寅、戊癸甲寅
+  const lifeStemIdx=(yinStemIdx+mod12(lifeBranch-2))%10, lifeStem=ZW_STEMS[lifeStemIdx];
+  const bureau=ZW_BUREAU_BY_STEM_BRANCH[ZW_STEMS[yearStemIdx%5]]?.[ZW_BRANCHES[lifeBranch]]; // 甲己、乙庚、丙辛、丁壬、戊癸同一組
   if(!bureau) throw new Error('Five-element bureau unavailable for this chart');
-  const bureauNum=Number((bureau.match(/\d+/)||['0'])[0]);
+  const bureauNum={'二':2,'三':3,'四':4,'五':5,'六':6}[bureau.charAt(1)]||0; // 「水二局」→ 2
   const naYin=ZW_NA_YIN[lifeStem+ZW_BRANCHES[lifeBranch]]||'';
-  const palaceCells=ZW_BRANCHES.map((branch,i)=>({branch,palace:ZW_PALACES[mod12(i-lifeBranch)],stars:[],transforms:[],stem:ZW_STEMS[(lifeStemIdx+mod12(i-lifeBranch))%10]}));
+  const palaceCells=ZW_BRANCHES.map((branch,i)=>({branch,palace:ZW_PALACES[mod12(lifeBranch-i)],stars:[],transforms:[],stem:ZW_STEMS[(yinStemIdx+mod12(i-2))%10]}));
   const put=(star,idx)=>palaceCells[mod12(idx)].stars.push(star);
   const purpleByBureau={
     2:['丑','寅','寅','卯','卯','辰','辰','巳','巳','午','午','未','未','申','申','酉','酉','戌','戌','亥','亥','子','子','丑','丑','寅','寅','卯','卯','辰'],
@@ -703,13 +950,14 @@ function buildZiweiFramework(dateVal,timeVal,gender){
   const four=ZW_FOUR_TRANSFORMS[yearStem]||[];
   four.forEach(([star,mark])=>{const cell=palaceCells.find(c=>c.stars.includes(star)); if(cell) cell.transforms.push(mark);});
   const isYangYear=yearStemIdx%2===0, forward=(gender==='M')===isYangYear;
-  const ageNow=lunar.lunarYear-Number(dateVal.slice(0,4))+1;
+  const _t=new Date(), _today=_t.getFullYear()+'-'+String(_t.getMonth()+1).padStart(2,'0')+'-'+String(_t.getDate()).padStart(2,'0');
+  let ageNow; try{ ageNow=getChineseCalendarParts(_today,'12:00').lunarYear-lunar.lunarYear+1; }catch{ ageNow=_t.getFullYear()-Number(dateVal.slice(0,4))+1; }
   const currentIndex=Math.max(0,Math.min(11,Math.floor(Math.max(0,ageNow-bureauNum)/10)));
-  const daxian=Array.from({length:12},(_,i)=>{const idx=mod12(lifeBranch+(forward?i:-i));return {ageStart:bureauNum+i*10,ageEnd:bureauNum+i*10+9,palace:ZW_PALACES[mod12(i)],branch:ZW_BRANCHES[idx],index:idx};});
+  const daxian=Array.from({length:12},(_,i)=>{const idx=mod12(lifeBranch+(forward?i:-i));return {ageStart:bureauNum+i*10,ageEnd:bureauNum+i*10+9,palace:palaceCells[idx].palace,branch:ZW_BRANCHES[idx],index:idx};});
   return {lunar,yearStem,yearBranch,yearStemIdx,hourBranch,lifeBranch,bodyBranch,lifeStem,bureau,bureauNum,naYin,palaceCells,four,forward,daxian,currentIndex,ageNow};
 }
 
-document.getElementById('ziwei-btn').addEventListener('click', () => {
+onRitual('ziwei-btn','ziwei', () => {
   const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
   if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty">'+dict[currentLang].zw_err_date+'</div>';return;}
   try{
