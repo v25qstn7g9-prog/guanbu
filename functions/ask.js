@@ -3,7 +3,7 @@
  */
 const ASK_VERSION = "guanbu-ask-2.7";
 const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
-const GEMINI_MODEL = "gemini-3.5-flash-lite";
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 const MAX_QUESTION_LEN = 200;
 const MAX_FACTS_LEN = 2500;
@@ -135,7 +135,7 @@ export async function onRequestPost(context) {
     } catch (primaryErr) {
       explanation = String(await callGeminiFallback(context.env, SYSTEM_PROMPT, [{ role: "user", content: userPromptText }]) || "").trim();
       if (!explanation) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
+      usedProvider = "Google Gemini 3.5 Flash (Fallback)";
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, explanation });
@@ -190,7 +190,7 @@ export async function onRequestPostChat(context) {
     } catch (primaryErr) {
       reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory) || "").trim();
       if (!reply) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.5 Flash-Lite (Fallback)";
+      usedProvider = "Google Gemini 3.5 Flash (Fallback)";
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, reply });
