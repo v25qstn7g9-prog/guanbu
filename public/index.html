@@ -8,6 +8,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+TC:wght@500;700&family=EB+Garamond:ital@0;1&display=swap');
 
   :root{
+    color-scheme:dark;
     --bg:#0B0B14;
     --panel:#15141F;
     --panel-border:#2A2438;
@@ -21,13 +22,14 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:'EB Garamond', serif; min-height:100%;}
+    font-family:'EB Garamond', serif; min-height:100%;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;}
   body{
     background-image:
       radial-gradient(circle at 20% 0%, rgba(201,162,39,0.06), transparent 40%),
       radial-gradient(circle at 90% 80%, rgba(92,122,153,0.06), transparent 45%);
   }
-  .app{max-width:460px;margin:0 auto;min-height:100vh;padding:22px 18px 60px;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;padding:22px 12px 60px;}
 
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .lang-btn{background:#1B1A26;border:1px solid var(--gold);color:var(--gold);
@@ -101,10 +103,13 @@
   .daily-date{text-align:center;color:var(--sub);font-size:12px;margin-bottom:6px;
     letter-spacing:.1em;}
 
-  .field{margin:10px 0 14px;}
+  .field{margin:8px 0 12px;}
   .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:7px;}
   .input,.select{width:100%;background:#0F0E17;color:var(--text);border:1px solid var(--panel-border);
-    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;}
+    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;box-sizing:border-box;}
+  input[type="date"].input,input[type="time"].input{
+    -webkit-appearance:none;appearance:none;color-scheme:dark;
+    height:46px;padding:0 12px;font-size:15px;line-height:46px;}
   .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.08);}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
