@@ -14,6 +14,21 @@ const MAX_BODY_BYTES = 64 * 1024;
 const PRIMARY_AI_TIMEOUT_MS = 12000;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 
+async function withTimeout(promise, ms, label) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} Timeout`)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -123,7 +138,7 @@ export async function onRequestPost(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await Promise.race([
+      const result = await withTimeout(
         ai.run(PRIMARY_MODEL, {
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
@@ -131,8 +146,9 @@ export async function onRequestPost(context) {
           ],
           max_tokens: MAX_TOKENS,
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Primary AI Timeout")), PRIMARY_AI_TIMEOUT_MS)),
-      ]);
+        PRIMARY_AI_TIMEOUT_MS,
+        "Primary AI"
+      );
 
       explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!explanation) throw new Error("Primary AI Empty");
@@ -184,13 +200,14 @@ export async function onRequestPostChat(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await Promise.race([
+      const result = await withTimeout(
         ai.run(PRIMARY_MODEL, {
           messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
           max_tokens: 350,
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Primary AI Timeout")), PRIMARY_AI_TIMEOUT_MS)),
-      ]);
+        PRIMARY_AI_TIMEOUT_MS,
+        "Primary AI"
+      );
 
       reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!reply) throw new Error("Primary AI Empty");
