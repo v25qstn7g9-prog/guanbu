@@ -11,6 +11,7 @@ const MAX_TOKENS = 600;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_MSG_LEN = 500;
 const MAX_BODY_BYTES = 64 * 1024;
+const PRIMARY_AI_TIMEOUT_MS = 12000;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 
 function jsonResponse(data, status = 200) {
@@ -122,13 +123,16 @@ export async function onRequestPost(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await ai.run(PRIMARY_MODEL, {
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPromptText },
-        ],
-        max_tokens: MAX_TOKENS,
-      });
+      const result = await Promise.race([
+        ai.run(PRIMARY_MODEL, {
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userPromptText },
+          ],
+          max_tokens: MAX_TOKENS,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Primary AI Timeout")), PRIMARY_AI_TIMEOUT_MS)),
+      ]);
 
       explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!explanation) throw new Error("Primary AI Empty");
@@ -180,10 +184,13 @@ export async function onRequestPostChat(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await ai.run(PRIMARY_MODEL, {
-        messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
-        max_tokens: 350,
-      });
+      const result = await Promise.race([
+        ai.run(PRIMARY_MODEL, {
+          messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
+          max_tokens: 350,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Primary AI Timeout")), PRIMARY_AI_TIMEOUT_MS)),
+      ]);
 
       reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!reply) throw new Error("Primary AI Empty");
