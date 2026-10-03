@@ -3,7 +3,7 @@
  */
 const ASK_VERSION = "guanbu-ask-3.0";
 const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
-const GEMINI_MODEL = "gemini-3.5-flash";
+const GEMINI_MODEL = "gemini-3.6-flash";
 
 const MAX_QUESTION_LEN = 200;
 const MAX_FACTS_LEN = 2500;
@@ -11,9 +11,25 @@ const MAX_TOKENS = 700;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_MSG_LEN = 500;
 const MAX_BODY_BYTES = 64 * 1024;
+const PRIMARY_AI_TIMEOUT_MS = 12000;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 const ALLOWED_MODULES = new Set(["yijing", "tarot", "runes", "ziwei", "daily"]);
 const DEFAULT_MODULE = "yijing";
+
+async function withTimeout(promise, ms, label) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} Timeout`)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -140,20 +156,24 @@ export async function onRequestPost(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await ai.run(PRIMARY_MODEL, {
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPromptText },
-        ],
-        max_tokens: MAX_TOKENS,
-      });
+      const result = await withTimeout(
+        ai.run(PRIMARY_MODEL, {
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPromptText },
+          ],
+          max_tokens: MAX_TOKENS,
+        }),
+        PRIMARY_AI_TIMEOUT_MS,
+        "Primary AI"
+      );
 
       explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!explanation) throw new Error("Primary AI Empty");
     } catch (primaryErr) {
       explanation = String(await callGeminiFallback(context.env, systemPrompt, [{ role: "user", content: userPromptText }]) || "").trim();
       if (!explanation) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.5 Flash (Fallback)";
+      usedProvider = "Google Gemini 3.6 Flash (Fallback)";
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, explanation });
@@ -200,17 +220,21 @@ export async function onRequestPostChat(context) {
       const ai = context.env.AI;
       if (!ai) throw new Error("No Workers AI Binding");
 
-      const result = await ai.run(PRIMARY_MODEL, {
-        messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
-        max_tokens: 500,
-      });
+      const result = await withTimeout(
+        ai.run(PRIMARY_MODEL, {
+          messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
+          max_tokens: 500,
+        }),
+        PRIMARY_AI_TIMEOUT_MS,
+        "Primary AI"
+      );
 
       reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
       if (!reply) throw new Error("Primary AI Empty");
     } catch (primaryErr) {
       reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory) || "").trim();
       if (!reply) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.5 Flash (Fallback)";
+      usedProvider = "Google Gemini 3.6 Flash (Fallback)";
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, reply });
