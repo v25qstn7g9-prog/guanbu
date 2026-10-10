@@ -7,6 +7,6 @@
   },
   "ai": {
     "primary": "@cf/openai/gpt-oss-120b",
-    "fallback": "gemini-3.5-flash"
+    "fallback": "gemini-3.6-flash"
   }
 }

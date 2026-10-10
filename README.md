@@ -7,7 +7,7 @@
 - App：`2.5.0`
 - AI API：`guanbu-ask-2.7`
 - Primary AI：`@cf/openai/gpt-oss-120b`
-- Gemini fallback：`gemini-3.5-flash`
+- Gemini fallback：`gemini-3.6-flash`
 - 最後版本同步：2026-09-25
 
 ## Runtime
