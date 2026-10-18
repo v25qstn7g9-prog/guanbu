@@ -33,7 +33,7 @@
 
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .lang-btn{background:#1B1A26;border:1px solid var(--gold);color:var(--gold);
-    padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
+    min-height:44px;padding:8px 12px;border-radius:24px;font-size:12px;cursor:pointer;font-family:'Noto Serif TC',serif;}
 
   .hero{text-align:center;margin-bottom:14px;}
   .hero .mark{font-size:13px;letter-spacing:.35em;color:var(--sub);margin-bottom:6px;}
@@ -62,7 +62,7 @@
     color:var(--sub);margin-bottom:14px;text-align:center;}
   .section-title.cn{font-family:'Noto Serif TC',serif;letter-spacing:.08em;}
 
-  .btn{display:block;width:100%;padding:13px;border-radius:10px;border:none;
+  .btn{display:block;width:100%;min-height:44px;padding:13px;border-radius:10px;border:none;
     font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px;cursor:pointer;
     margin-top:16px;transition:transform .15s;}
   .btn:active{transform:scale(0.98);}
@@ -106,10 +106,10 @@
   .field{margin:8px 0 12px;}
   .field label{display:block;color:var(--sub);font-family:'Noto Serif TC',serif;font-size:12px;margin-bottom:7px;}
   .input,.select{width:100%;background:#0F0E17;color:var(--text);border:1px solid var(--panel-border);
-    border-radius:10px;padding:11px 12px;font-size:14px;outline:none;box-sizing:border-box;}
+    border-radius:10px;padding:11px 12px;min-height:44px;font-size:16px;outline:none;box-sizing:border-box;}
   input[type="date"].input,input[type="time"].input{
     -webkit-appearance:none;appearance:none;color-scheme:dark;
-    height:46px;padding:0 12px;font-size:15px;line-height:46px;}
+    height:46px;padding:0 12px;font-size:16px;line-height:46px;}
   .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.08);}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .meta-card{margin:12px 0;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:#11101A;}
@@ -127,7 +127,7 @@
   .hint{font-size:12px;color:var(--sub);line-height:1.55;margin-top:8px;}
   .toolbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
   .btn.secondary{background:#211F2B;color:var(--sub);border:1px solid var(--panel-border);}
-  .btn.small{padding:9px 10px;margin-top:0;font-size:13px;}
+  .btn.small{min-height:44px;padding:9px 10px;margin-top:0;font-size:13px;}
   @media (max-width:380px){.hex-pair{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr;}}
 
   .smart-card{margin:14px 0;padding:15px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:linear-gradient(160deg,#171520,#111019);}
@@ -143,19 +143,20 @@
   /* --- Zi Wei chart grid --- */
   .zw-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
   .zw-meta .smart-chip{border-color:rgba(107,78,142,.4);}
-  .zw-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
-    gap:4px;aspect-ratio:1/1;margin:14px 0;}
+  .zw-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(120px,auto));
+    gap:4px;margin:14px 0;}
   .zw-cell{border:1px solid var(--panel-border);border-radius:8px;background:#11101A;
-    padding:5px 4px;display:flex;flex-direction:column;font-size:10px;position:relative;overflow:hidden;}
+    padding:5px 4px;display:flex;flex-direction:column;font-size:10px;position:relative;}
   .zw-cell.life{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset;}
   .zw-cell.body{outline:1.5px dashed var(--gold);outline-offset:-3px;}
   .zw-cell .zw-branch{position:absolute;top:3px;right:5px;color:var(--sub);font-size:9px;}
-  .zw-cell .zw-stem{position:absolute;top:3px;left:5px;color:var(--sub);font-size:9px;}
+  .zw-cell .zw-stem{color:var(--sub);font-size:9px;min-height:14px;margin-top:auto;padding-top:4px;overflow-wrap:anywhere;}
   .zw-cell .zw-palace{font-family:'Noto Serif TC',serif;font-size:11px;color:var(--gold);
     margin-top:14px;text-align:center;}
-  .zw-cell .zw-stars{margin-top:4px;display:flex;flex-direction:column;gap:1px;align-items:center;}
-  .zw-cell .zw-star{color:var(--text);font-size:11px;font-family:'Noto Serif TC',serif;white-space:nowrap;}
+  .zw-cell .zw-stars{min-width:0;margin-top:4px;display:flex;flex-direction:column;gap:1px;align-items:center;}
+  .zw-cell .zw-star{color:var(--text);font-size:11px;font-family:'Noto Serif TC',serif;overflow-wrap:anywhere;}
   .zw-cell .zw-star.main{color:#E8D4F5;font-weight:700;}
+  .zw-cell .zw-transform{overflow-wrap:anywhere;font-size:9px;text-align:center;}
   .zw-cell .zw-sihua{color:var(--gold);font-size:9px;margin-left:2px;}
   .zw-cell .zw-aux{font-size:9px;white-space:nowrap;}
   .zw-cell .zw-aux.lucky{color:var(--jade);}
@@ -175,7 +176,7 @@
     background:rgba(201,162,39,.05);font-size:13.5px;color:#D9CFB7;line-height:1.65;font-family:'Noto Serif TC',serif;text-align:left;}
   .daily-quote b{color:var(--gold);font-weight:700;margin-right:6px;}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
-  .chip{padding:6px 11px;border-radius:999px;border:1px solid var(--panel-border);background:#0F0E17;color:var(--sub);
+  .chip{min-height:44px;padding:9px 11px;border-radius:999px;border:1px solid var(--panel-border);background:#0F0E17;color:var(--sub);
     font-size:12.5px;cursor:pointer;font-family:'Noto Serif TC',serif;transition:border-color .2s,color .2s;}
   .chip:hover,.chip:active{border-color:var(--gold);color:var(--gold);}
   .btn:disabled{opacity:.6;cursor:wait;}
@@ -209,16 +210,16 @@
   .reveal > *:nth-child(n+6){animation-delay:.6s}
   @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-  .tcard{width:92px;height:142px;border-radius:10px;border:1px solid var(--gold);position:relative;
+  .tcard{width:92px;min-height:164px;border-radius:10px;border:1px solid var(--gold);position:relative;
     background:linear-gradient(160deg,#2B1621,#15101A 70%);box-shadow:0 8px 20px rgba(0,0,0,.5);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 6px 40px;text-align:center;
     animation:cardin .7s ease both;}
   .tcard:nth-child(2){animation-delay:.15s}.tcard:nth-child(3){animation-delay:.3s}
   @keyframes cardin{from{opacity:0;transform:rotateY(90deg)}to{opacity:1;transform:none}}
   .tcard .t-num{font-family:'Cinzel',serif;color:var(--gold);font-size:13px;position:absolute;top:7px;}
   .tcard .t-star{font-size:26px;color:#E8D48A;margin-bottom:6px;}
-  .tcard .t-name{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--text);}
-  .tcard .t-pos{position:absolute;bottom:7px;font-size:10px;color:var(--sub);letter-spacing:.08em;}
+  .tcard .t-name{max-width:100%;overflow-wrap:anywhere;line-height:1.25;font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--text);}
+  .tcard .t-pos{position:absolute;bottom:7px;left:6px;right:6px;font-size:10px;color:var(--sub);letter-spacing:.08em;}
   .tcard.rev .t-star{transform:rotate(180deg);}
   .tcard.rev{border-color:#8B5A2B;}
 
@@ -339,10 +340,11 @@
   <div class="footer-note" i18n="footer">僅供參考娛樂｜v3.1｜重要決策仍以現實資訊為準</div>
 </div>
 
+<script src="readings-i18n.js"></script>
 <script>
 // ---------------- i18n 三語完整對照表 ----------------
 const languages = ['zh', 'en', 'id'];
-let currentLang = localStorage.getItem('guanbu_lang') || 'zh';
+let currentLang = languages.includes(localStorage.getItem('guanbu_lang')) ? localStorage.getItem('guanbu_lang') : 'zh';
 
 const dict = {
   zh: {
@@ -548,6 +550,8 @@ function onRitual(btnId, kind, fn){
   btn.addEventListener('click', ()=>{
     if (btn.disabled) return;
     const resEl = document.getElementById(RESULT_ID[kind]);
+    if (kind==='ziwei' && !validBirthDate(document.getElementById('zw-date'), RESULT_ID[kind])) return;
+    if (kind==='daily' && !validBirthDate(document.getElementById('daily-birth'), RESULT_ID[kind])) return;
     if (kind==='ziwei' && (!document.getElementById('zw-date').value || !document.getElementById('zw-hour').value)) { fn(); return; }
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     btn.disabled = true;
@@ -564,21 +568,50 @@ function onRitual(btnId, kind, fn){
   });
 }
 
-function tarotPos(mode, i){
-  const L = dict[currentLang];
-  return mode===3 ? L.tarot_pos3[i] : L.tarot_pos1;
-}
 function tarotCardHTML(p, i, mode){
-  const L = dict[currentLang];
   const full = TAROT[p.idx][0];
   const zh = full.replace(/^[A-Za-z\s]+/, '') || full;
-  const en = (full.match(/^[A-Za-z\s]+/)||[''])[0].trim();
-  const shown = currentLang==='zh' ? zh : (en || zh);
-  return `<div class="tcard ${p.reversed?'rev':''}"><div class="t-num">${ROMAN[p.idx]}</div><div class="t-star">✦</div><div class="t-name">${esc(shown)}</div><div class="t-pos">${esc(tarotPos(mode,i))}・${p.reversed?L.t_rev:L.t_up}</div></div>`;
+  return `<div class="tcard ${p.reversed?'rev':''}"><div class="t-num">${ROMAN[p.idx]}</div><div class="t-star">✦</div><div class="t-name">${readingText(full, zh)}</div><div class="t-pos">${mode===3?uiText('tarot_pos3',i):uiText('tarot_pos1')}・${uiText(p.reversed?'t_rev':'t_up')}</div></div>`;
 }
 
+function localReadingText(text, zhText = text) {
+  return currentLang === 'zh' ? zhText : (LOCAL_READING_TRANSLATIONS[currentLang]?.[text] || text);
+}
+function readingText(text, zhText = text) {
+  return `<span data-reading-text="${esc(text)}" data-reading-zh="${esc(zhText)}">${esc(localReadingText(text, zhText))}</span>`;
+}
+function uiText(key, index) {
+  const value = index === undefined ? dict[currentLang][key] : dict[currentLang][key]?.[index];
+  return `<span data-ui-key="${key}"${index === undefined ? '' : ` data-ui-index="${index}"`}>${esc(value)}</span>`;
+}
+function refreshReadingLanguage() {
+  document.querySelectorAll('[data-reading-text]').forEach(el => {
+    el.textContent = localReadingText(el.dataset.readingText, el.dataset.readingZh);
+  });
+  document.querySelectorAll('[data-ui-key]').forEach(el => {
+    const value = dict[currentLang][el.dataset.uiKey];
+    el.textContent = el.dataset.uiIndex === undefined ? value : value[Number(el.dataset.uiIndex)];
+  });
+  document.querySelectorAll('[data-chart-zoom]').forEach(button => {
+    button.textContent = readingLayoutLabels()[button.getAttribute('aria-pressed') === 'true' ? 'fit' : 'zoom'];
+  });
+  document.querySelectorAll('.chart-scroll').forEach(el => el.setAttribute('aria-label', readingLayoutLabels().chart));
+  document.querySelectorAll('.reading-details summary').forEach(el => el.textContent = readingLayoutLabels().more);
+}
+function localDateToday() {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function validBirthDate(input, resultId) {
+  if (input.value && input.value > localDateToday()) {
+    document.getElementById(resultId).innerHTML = `<div class="empty" role="alert">${uiText('birth_future')}</div>`;
+    return false;
+  }
+  return true;
+}
 function applyLang(lang) {
   currentLang = lang;
+  document.documentElement.lang = {zh:'zh-Hant',en:'en',id:'id'}[lang];
   localStorage.setItem('guanbu_lang', lang);
   document.getElementById('lang-toggle').innerText = dict[lang].btn_lang;
   
@@ -588,9 +621,10 @@ function applyLang(lang) {
   });
   document.querySelectorAll('[i18n-ph]').forEach(el => {
     const key = el.getAttribute('i18n-ph');
-    if (dict[lang][key]) el.placeholder = dict[lang][key];
+    if (dict[lang][key]) { el.placeholder = dict[lang][key]; if (el.closest('.chat-card')) el.setAttribute('aria-label', dict[lang][key]); }
   });
   renderExtras();
+  refreshReadingLanguage();
 }
 
 document.getElementById('lang-toggle').onclick = () => {
@@ -628,21 +662,20 @@ function readingBodyHtml(explanation){
   return `<div class="smart-text"><p>${esc(lead)}</p>${rest?`<details class="reading-details"><summary>${esc(readingLayoutLabels().more)}</summary>${rest}</details>`:''}</div>`;
 }
 let aiCardSeq = 0;
-function aiCardPlaceholder(title) {
+function aiCardPlaceholder() {
   const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
   const hints = dict[currentLang].hints;
-  const hint = hints[Math.floor(Math.random() * hints.length)];
+  const hintIndex = Math.floor(Math.random() * hints.length);
   return {
     id,
-    html: `<div class="smart-card oracle" id="${id}"><div class="smart-title">— ${esc(title)} —</div><div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${esc(hint)}</div></div>`,
+    html: `<div class="smart-card oracle" id="${id}"><div class="smart-title">— ${uiText('ai_title')} —</div><div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${uiText('hints', hintIndex)}</div></div>`,
   };
 }
 
 async function fillAiExplain(id, module, question, facts) {
   const el = document.getElementById(id);
   if (!el) return;
-  const L = dict[currentLang];
-  const head = `<div class="smart-title">— ${esc(L.ai_title)} —</div>`;
+  const head = () => `<div class="smart-title">— ${uiText('ai_title')} —</div>`;
   try {
     const res = await fetch('/ask', {
       method: 'POST',
@@ -651,12 +684,12 @@ async function fillAiExplain(id, module, question, facts) {
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data?.ok || !data.explanation) throw new Error(data?.error || `HTTP ${res.status}`);
-    el.innerHTML = `${head}${readingBodyHtml(data.explanation)}<div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${esc(L.share)}</button></div>`;
+    el.innerHTML = `${head()}${readingBodyHtml(data.explanation)}<div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${uiText('share')}</button></div>`;
     el.querySelector('[data-act="share"]').onclick = () => shareReading(question, data.explanation);
   } catch (e) {
-    el.innerHTML = `${head}<div class="smart-text" style="color:var(--sub);">${esc(L.ai_fail)}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="retry">${esc(L.retry)}</button></div>`;
+    el.innerHTML = `${head()}<div class="smart-text" style="color:var(--sub);">${uiText('ai_fail')}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="retry">${uiText('retry')}</button></div>`;
     el.querySelector('[data-act="retry"]').onclick = () => {
-      el.innerHTML = `${head}<div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${esc(L.thinking)}</div>`;
+      el.innerHTML = `${head()}<div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${uiText('thinking')}</div>`;
       fillAiExplain(id, module, question, facts);
     };
   }
@@ -670,21 +703,22 @@ function attachChatSection(containerId, moduleName, question, facts) {
   const inputId = `chat-input-${Date.now()}`;
   const history = [];
   let busy = false;
+  let chatGeneration = 0;
 
   container.insertAdjacentHTML('beforeend', `
     <div class="smart-card chat-card">
-      <div class="smart-title">💬 ${esc(L.ai_chat_title)}</div>
+      <div class="smart-title">💬 ${uiText('ai_chat_title')}</div>
       <div class="chips" style="margin:0 0 10px;">
-        <button type="button" class="chip" data-q="chat_q1">${esc(L.chat_q1)}</button>
-        <button type="button" class="chip" data-q="chat_q2">${esc(L.chat_q2)}</button>
-        <button type="button" class="chip" data-q="chat_q3">${esc(L.chat_q3)}</button>
+        <button type="button" class="chip" data-q="chat_q1">${uiText('chat_q1')}</button>
+        <button type="button" class="chip" data-q="chat_q2">${uiText('chat_q2')}</button>
+        <button type="button" class="chip" data-q="chat_q3">${uiText('chat_q3')}</button>
       </div>
       <div id="${chatBoxId}-history" style="margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
       <div style="display:flex; gap:6px;">
-        <input class="input" id="${inputId}" maxlength="200" enterkeyhint="send" placeholder="${esc(L.chat_ph)}" style="font-size:14px;" />
-        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${esc(L.chat_send)}</button>
+        <input class="input" id="${inputId}" maxlength="200" enterkeyhint="send" i18n-ph="chat_ph" aria-label="${esc(L.chat_ph)}" placeholder="${esc(L.chat_ph)}" style="font-size:16px;" />
+        <button class="btn gold small" id="${chatBoxId}-send" style="width:auto; white-space:nowrap;">${uiText('chat_send')}</button>
       </div>
-      <div style="text-align:right;margin-top:6px;"><button type="button" class="chip" id="${chatBoxId}-clear">${esc(L.chat_clear)}</button></div>
+      <div style="text-align:right;margin-top:6px;"><button type="button" class="chip" id="${chatBoxId}-clear">${uiText('chat_clear')}</button></div>
     </div>`);
 
   const historyEl = document.getElementById(`${chatBoxId}-history`);
@@ -692,9 +726,10 @@ function attachChatSection(containerId, moduleName, question, facts) {
 
   const sendMsg = async (msgText) => {
     if (!msgText || busy) return;
+    const generation = chatGeneration;
     busy = true; sendBtn.disabled = true;
     historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-me">${esc(msgText)}</div>`);
-    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" class="bubble-note thinking">${esc(L.thinking)}</div>`);
+    historyEl.insertAdjacentHTML('beforeend', `<div id="${chatBoxId}-temp" class="bubble-note thinking">${uiText('thinking')}</div>`);
     try {
       const res = await fetch('/chat', {
         method: 'POST',
@@ -702,19 +737,21 @@ function attachChatSection(containerId, moduleName, question, facts) {
         body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText, lang: currentLang })
       });
       const data = await res.json().catch(() => null);
+      if (generation !== chatGeneration) return;
       document.getElementById(`${chatBoxId}-temp`)?.remove();
       if (res.ok && data?.ok && data.reply) {
         historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-sage">${esc(data.reply).replace(/\n+/g,'<br/>')}</div>`);
         history.push({ role: 'user', content: msgText });
         history.push({ role: 'assistant', content: data.reply });
       } else {
-        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${esc(L.chat_fail)}</div>`);
+        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${uiText('chat_fail')}</div>`);
       }
     } catch (e) {
+      if (generation !== chatGeneration) return;
       document.getElementById(`${chatBoxId}-temp`)?.remove();
-      historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${esc(L.net_fail)}</div>`);
+      historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${uiText('net_fail')}</div>`);
     } finally {
-      busy = false; sendBtn.disabled = false;
+      if (generation === chatGeneration) { busy = false; sendBtn.disabled = false; }
     }
   };
 
@@ -724,11 +761,18 @@ function attachChatSection(containerId, moduleName, question, facts) {
   inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendFromInput(); } });
 
   document.getElementById(`${chatBoxId}-clear`).onclick = () => {
+    chatGeneration++;
+    busy = false; sendBtn.disabled = false;
     history.length = 0; historyEl.innerHTML = ''; inputEl.value = '';
   };
-  container.querySelectorAll(`.chat-card [data-q]`).forEach(b => b.onclick = () => sendMsg(L[b.dataset.q]));
+  container.querySelectorAll(`.chat-card [data-q]`).forEach(b => b.onclick = () => sendMsg(dict[currentLang][b.dataset.q]));
 }
 
+// Date limits use the same local calendar day as the daily reading.
+Object.assign(dict.zh, {birth_future:'出生日期不能在未來', age_unit:'歲', transform_connector:'化'});
+Object.assign(dict.en, {birth_future:'Birth date cannot be in the future', age_unit:' years', transform_connector:' · '});
+Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', age_unit:' tahun', transform_connector:' · '});
+['zw-date','daily-birth'].forEach(id => document.getElementById(id).max = localDateToday());
 // 預設套用語言
 applyLang(currentLang);
 
@@ -751,10 +795,10 @@ onRitual('tarot-btn','tarot', ()=>{
   html += `<div class="cards-row">${picked.map((p,i)=>tarotCardHTML(p,i,mode)).join('')}</div>`;
   picked.forEach((p,i)=>{
     const [name,text]=TAROT[p.idx];
-    html += `<div class="meta-card"><div class="meta-row"><span>${esc(tarotPos(mode,i))}</span><strong>${name}（${p.reversed?dict[currentLang].t_rev:dict[currentLang].t_up}）</strong></div><div class="result-text" style="text-align:left">${text}</div></div>`;
+    html += `<div class="meta-card"><div class="meta-row"><span>${mode===3?uiText('tarot_pos3',i):uiText('tarot_pos1')}</span><strong>${readingText(name)}（${uiText(p.reversed?'t_rev':'t_up')}）</strong></div><div class="result-text" style="text-align:left">${readingText(text)}</div></div>`;
   });
 
-  const aiTarot = aiCardPlaceholder(dict[currentLang].ai_title);
+  const aiTarot = aiCardPlaceholder();
   html += aiTarot.html;
   const resContainer = document.getElementById('tarot-result');
   resContainer.innerHTML = html;
@@ -785,25 +829,25 @@ onRitual('yijing-btn','yijing', ()=>{
   const moving = lines.map((v,i)=>(v===6||v===9)?i:-1).filter(i=>i>=0);
 
   function renderHex(vals, title, num, changedView=false){
-    let h = `<div class="hex-box"><div class="section-title cn">${title}</div><div class="hexagram">`;
+    let h = `<div class="hex-box"><div class="section-title cn">${uiText(title)}</div><div class="hexagram">`;
     vals.forEach((v,i)=>{
       const solid = changedView ? !!changedBits[i] : (v===7||v===9);
       const changing = !changedView && (v===6||v===9);
       h += `<div class="line ${solid?'solid':'broken'} ${changing?'changing':''}"><div class="bar"></div>${solid?'':'<div class="bar"></div>'}</div>`;
     });
-    h += `</div><div class="result-name">${HEX_NAMES[num]}卦</div></div>`;
+    h += `</div><div class="result-name">${readingText(HEX_NAMES[num]+'卦')}</div></div>`;
     return h;
   }
 
   let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
-  html += `<div class="hex-pair">${renderHex(lines, dict[currentLang].hex_orig, hexNum)}${renderHex(lines, dict[currentLang].hex_change, changedNum, true)}</div>`;
+  html += `<div class="hex-pair">${renderHex(lines, 'hex_orig', hexNum)}${renderHex(lines, 'hex_change', changedNum, true)}</div>`;
   html += `<div class="meta-card">`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_now}</span><strong>${HEX_NAMES[hexNum]}｜${HEX_TEXT[hexNum]}</strong></div>`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_moving}</span><strong class="moving">${moving.length?moving.map(lineLabel).join('、'):dict[currentLang].label_none}</strong></div>`;
-  html += `<div class="meta-row"><span>${dict[currentLang].label_after}</span><strong>${HEX_NAMES[changedNum]}｜${HEX_TEXT[changedNum]}</strong></div>`;
+  html += `<div class="meta-row"><span>${uiText('label_now')}</span><strong>${readingText(HEX_NAMES[hexNum])}｜${readingText(HEX_TEXT[hexNum])}</strong></div>`;
+  html += `<div class="meta-row"><span>${uiText('label_moving')}</span><strong class="moving">${moving.length?moving.map(i=>readingText(lineLabel(i))).join('、'):uiText('label_none')}</strong></div>`;
+  html += `<div class="meta-row"><span>${uiText('label_after')}</span><strong>${readingText(HEX_NAMES[changedNum])}｜${readingText(HEX_TEXT[changedNum])}</strong></div>`;
   html += `</div>`;
 
-  const aiHex = aiCardPlaceholder(dict[currentLang].ai_title);
+  const aiHex = aiCardPlaceholder();
   html += aiHex.html;
 
   const resContainer = document.getElementById('yijing-result');
@@ -851,10 +895,10 @@ onRitual('runes-btn','runes', ()=>{
   let html=question?`<div class="question-echo">「${esc(question)}」</div>`:'';
   picked.forEach((idx,i)=>{
     const [glyph,name,text]=RUNES[idx];
-    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${labels[i]}｜${name}</div><div class="result-text" style="margin-top:10px;">${text}</div></div>`;
+    html += `<div class="meta-card"><div class="rune-glyph">${glyph}</div><div class="rune-name">${mode===3?uiText('rune_labels',i):uiText('rune_single')}｜${readingText(name)}</div><div class="result-text" style="margin-top:10px;">${readingText(text)}</div></div>`;
   });
 
-  const aiRune = aiCardPlaceholder(dict[currentLang].ai_title);
+  const aiRune = aiCardPlaceholder();
   html += aiRune.html;
 
   const resContainer = document.getElementById('runes-result');
@@ -880,6 +924,7 @@ const DAILY_MSGS = [
 ];
 
 onRitual('daily-btn','daily', ()=>{
+  if (!validBirthDate(document.getElementById('daily-birth'), 'daily-result')) return;
   const birth = document.getElementById('daily-birth').value || '';
   const d = new Date();
   const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
@@ -890,9 +935,9 @@ onRitual('daily-btn','daily', ()=>{
   const advice = DAILY_MSGS[adviceIndex];
   const energy = 3 + (seed % 3);
   let html = `<div class="daily-date">${dateStr}</div>`;
-  html += `<div class="stars"><span class="label">${dict[currentLang].daily_energy}</span><span class="dots">${'●'.repeat(energy)}${'○'.repeat(5-energy)}</span></div>`;
-  html += `<div class="daily-msg">${esc(advice)}</div>`;
-  const aiDaily = aiCardPlaceholder(dict[currentLang].ai_title);
+  html += `<div class="stars"><span class="label">${uiText('daily_energy')}</span><span class="dots">${'●'.repeat(energy)}${'○'.repeat(5-energy)}</span></div>`;
+  html += `<div class="daily-msg">${readingText(advice)}</div>`;
+  const aiDaily = aiCardPlaceholder();
   html += aiDaily.html;
   const resContainer = document.getElementById('daily-result');
   resContainer.innerHTML = html;
@@ -992,25 +1037,28 @@ function buildZiweiFramework(dateVal,timeVal,gender){
 
 onRitual('ziwei-btn','ziwei', () => {
   const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
-  if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty">'+dict[currentLang].zw_err_date+'</div>';return;}
+  if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_err_date')+'</div>';return;}
+  if(!validBirthDate(document.getElementById('zw-date'),'ziwei-result')) return;
   try{
-    const c=buildZiweiFramework(dateVal,timeVal,gender), genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male, ai=aiCardPlaceholder(dict[currentLang].ai_title), cur=c.daxian[c.currentIndex];
+    const c=buildZiweiFramework(dateVal,timeVal,gender), genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male, ai=aiCardPlaceholder(), cur=c.daxian[c.currentIndex];
     let html='<div class="zw-meta">';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_dob+'</span><strong>'+esc(dateVal)+'</strong></div>';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_tob+'</span><strong>'+esc(timeVal)+' · '+ZW_BRANCHES[c.hourBranch]+dict[currentLang].zw_hour_suffix+'</strong></div>';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].lbl_gender+'</span><strong>'+esc(genderLabel)+'</strong></div>';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].lunar+'</span><strong>'+c.lunar.lunarYear+' / '+c.lunar.lunarMonth+' / '+c.lunar.lunarDay+'</strong></div>';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_bureau+'</span><strong>'+c.bureau+'</strong></div>';
-    html+='<div class="smart-chip"><span>'+dict[currentLang].zw_current+'</span><strong>'+c.ageNow+'歲 · '+cur.ageStart+'–'+cur.ageEnd+'歲</strong></div></div>';
-    const chartLabels=readingLayoutLabels();
-    html+='<div class="chart-toolbar"><button type="button" class="btn secondary small" data-chart-zoom aria-pressed="false">'+esc(chartLabels.zoom)+'</button></div><div class="chart-scroll" tabindex="0" role="region" aria-label="'+esc(chartLabels.chart)+'"><div class="zw-grid">';
-    [2,3,4,5,6,7,8,9,10,11,0,1].forEach(i=>{const x=c.palaceCells[i], tf=x.transforms.length?'<span class="zw-transform">'+x.transforms.join('、')+'</span>':''; html+='<div class="zw-cell '+(i===c.lifeBranch?'life ':'')+(i===c.bodyBranch?'body':'')+'"><span class="zw-branch">'+x.branch+'</span><div class="zw-palace">'+x.palace+(i===c.lifeBranch?' ★':'')+'</div><div class="zw-stars">'+(x.stars.map(z=>'<span class="zw-star">'+z+'</span>').join('')||'<span class="zw-star">—</span>')+tf+'</div><div class="zw-stem">'+x.stem+(i===c.bodyBranch?' · '+dict[currentLang].zw_body:'')+'</div></div>';});
-    html+='<div class="zw-center"><div class="zw-c-title">'+dict[currentLang].zw_center_title+'</div><div class="zw-c-line">'+dict[currentLang].zw_life+'：'+ZW_BRANCHES[c.lifeBranch]+'　'+dict[currentLang].zw_body+'：'+ZW_BRANCHES[c.bodyBranch]+'<br/>'+dict[currentLang].zw_year+'：'+c.yearStem+c.yearBranch+'　'+dict[currentLang].zw_nayin+'：'+c.naYin+dict[currentLang].zw_element_suffix+'<br/>'+dict[currentLang].zw_direction+'：'+(c.forward?dict[currentLang].zw_forward:dict[currentLang].zw_backward)+'</div></div></div>';
-    html+='</div><div class="meta-card"><div class="meta-row"><span>'+dict[currentLang].zw_four+'</span><strong>'+c.four.map(x=>x[0]+'化'+x[1]).join('　')+'</strong></div><div class="meta-row"><span>'+dict[currentLang].zw_current_daxian+'</span><strong>'+cur.ageStart+'–'+cur.ageEnd+'歲｜'+cur.palace+'｜'+cur.branch+'</strong></div></div>';
-    html+='<div class="hint">'+dict[currentLang].zw_v3_hint+'</div>'+ai.html;
+    html+='<div class="smart-chip"><span>'+uiText('lbl_dob')+'</span><strong>'+esc(dateVal)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+uiText('lbl_tob')+'</span><strong>'+esc(timeVal)+' · '+readingText(ZW_BRANCHES[c.hourBranch])+uiText('zw_hour_suffix')+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+uiText('lbl_gender')+'</span><strong>'+uiText(gender==='F'?'opt_female':'opt_male')+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+uiText('lunar')+'</span><strong>'+c.lunar.lunarYear+' / '+c.lunar.lunarMonth+' / '+c.lunar.lunarDay+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+uiText('zw_bureau')+'</span><strong>'+readingText(c.bureau)+'</strong></div>';
+    html+='<div class="smart-chip"><span>'+uiText('zw_current')+'</span><strong>'+c.ageNow+uiText('age_unit')+' · '+cur.ageStart+'–'+cur.ageEnd+uiText('age_unit')+'</strong></div></div>';
+    html+='<div class="chart-toolbar"><button type="button" class="btn secondary small" data-chart-zoom aria-pressed="false">'+esc(readingLayoutLabels().zoom)+'</button></div><div class="chart-scroll" tabindex="0" role="region" aria-label="'+esc(readingLayoutLabels().chart)+'"><div class="zw-grid">';
+    [2,3,4,5,6,7,8,9,10,11,0,1].forEach(i=>{
+      const x=c.palaceCells[i], tf=x.transforms.length?'<span class="zw-transform">'+x.transforms.map(text=>readingText(text)).join(' · ')+'</span>':'';
+      html+='<div class="zw-cell '+(i===c.lifeBranch?'life ':'')+(i===c.bodyBranch?'body':'')+'"><span class="zw-branch">'+readingText(x.branch)+'</span><div class="zw-palace">'+readingText(x.palace)+(i===c.lifeBranch?' ★':'')+'</div><div class="zw-stars">'+(x.stars.map(z=>'<span class="zw-star">'+readingText(z)+'</span>').join('')||'<span class="zw-star">—</span>')+tf+'</div><div class="zw-stem">'+readingText(x.stem)+(i===c.bodyBranch?' · '+uiText('zw_body'):'')+'</div></div>';
+    });
+    html+='<div class="zw-center"><div class="zw-c-title">'+uiText('zw_center_title')+'</div><div class="zw-c-line">'+uiText('zw_life')+': '+readingText(ZW_BRANCHES[c.lifeBranch])+'<br/>'+uiText('zw_body')+': '+readingText(ZW_BRANCHES[c.bodyBranch])+'<br/>'+uiText('zw_year')+': '+readingText(c.yearStem)+readingText(c.yearBranch)+'<br/>'+uiText('zw_nayin')+': '+readingText(c.naYin)+uiText('zw_element_suffix')+'<br/>'+uiText('zw_direction')+': '+uiText(c.forward?'zw_forward':'zw_backward')+'</div></div></div>';
+    html+='</div><div class="meta-card"><div class="meta-row"><span>'+uiText('zw_four')+'</span><strong>'+c.four.map(x=>readingText(x[0])+uiText('transform_connector')+readingText(x[1])).join(' / ')+'</strong></div><div class="meta-row"><span>'+uiText('zw_current_daxian')+'</span><strong>'+cur.ageStart+'–'+cur.ageEnd+uiText('age_unit')+' | '+readingText(cur.palace)+' | '+readingText(cur.branch)+'</strong></div></div>';
+    html+='<div class="hint">'+uiText('zw_v3_hint')+'</div>'+ai.html;
     resultEl.innerHTML=html;
     const chartZoom=resultEl.querySelector('[data-chart-zoom]');
-    chartZoom.onclick=()=>{const expanded=resultEl.querySelector('.chart-scroll').classList.toggle('expanded');chartZoom.setAttribute('aria-pressed',String(expanded));chartZoom.textContent=expanded?chartLabels.fit:chartLabels.zoom;};
+    chartZoom.onclick=()=>{const expanded=resultEl.querySelector('.chart-scroll').classList.toggle('expanded');chartZoom.setAttribute('aria-pressed',String(expanded));chartZoom.textContent=readingLayoutLabels()[expanded?'fit':'zoom'];};
     const facts={BirthDate:dateVal,BirthTime:timeVal,Gender:genderLabel,LunarDate:c.lunar.lunarYear+'-'+c.lunar.lunarMonth+'-'+c.lunar.lunarDay,YearPillar:c.yearStem+c.yearBranch,HourBranch:ZW_BRANCHES[c.hourBranch],LifePalace:ZW_BRANCHES[c.lifeBranch],BodyPalace:ZW_BRANCHES[c.bodyBranch],LifeStem:c.lifeStem,Bureau:c.bureau,MainStars:c.palaceCells.map(x=>x.palace+':'+(x.stars.join('、')||'空宮')),FourTransformations:c.four.map(x=>x[0]+'化'+x[1]),CurrentDecadal:cur.ageStart+'-'+cur.ageEnd+'歲 '+cur.palace,ChartStatus:'v3.0 14-main-star framework + four transformations + decadal cycle'};
     fillAiExplain(ai.id,'ziwei','',facts); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
   }catch(e){resultEl.innerHTML='<div class="empty">'+esc(e.message||'Chart calculation failed')+'</div>';}
