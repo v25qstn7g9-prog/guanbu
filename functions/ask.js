@@ -1,7 +1,7 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-3.0";
+const ASK_VERSION = "guanbu-ask-3.1";
 const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
 const GEMINI_MODEL = "gemini-3.6-flash";
 
@@ -51,6 +51,19 @@ const PERSONA_INTRO = {
   daily: `你是「觀卜」App 中親切實在的每日運勢指引者，像個懂你的朋友，每天幫你留意該注意的重點。你的任務是把系統算出的今日運勢資料，轉化成溫暖、白話、一聽就懂的提醒。`,
 };
 
+// 個別模組的額外任務（放在核心原則後面，與核心原則衝突時以這裡為準）
+const MODULE_TASK = {
+  ziwei: `
+
+【紫微綜合總結任務】（本段優先於第 4 點）
+App 畫面已經逐宮列出每一宮的星曜白話說明，你這次只負責最後的「綜合總結」：
+- 以命宮的主星、亮度與四化為核心，說清楚這個人整體的個性與一生主軸；命宮是空宮時，就用借來的對宮主星說明。
+- 再搭配三方四正（財帛宮、官祿宮、遷移宮）講錢財、事業和對外發展，並提到身宮落在哪一宮。
+- 若有目前大限，說明這十年的重點方向；有格局才順帶一提，若有出生地與真太陽時資料不必特別解釋。
+- 不要逐宮重述、不要列清單，用 2-3 段白話把重點串起來，最後給一兩句實際做得到的建議。
+- 不必提到事實資料的每一項；長度約 200 ~ 300 字（英文/印尼文約 130 ~ 180 words）。`,
+};
+
 function personaIntro(mod) {
   return PERSONA_INTRO[mod] || PERSONA_INTRO[DEFAULT_MODULE];
 }
@@ -67,7 +80,7 @@ function buildSystemPrompt(mod) {
 6. 語言回應規定:
    - 若 lang 為 "en"，請全程使用溫暖自然、用詞簡單的英文 (English) 回應。
    - 若 lang 為 "id"，請全程使用溫暖自然、用詞簡單的印尼文 (Bahasa Indonesia) 回應。
-   - 若 lang 為 "zh"，請全程使用淺顯白話的繁體中文回應。`;
+   - 若 lang 為 "zh"，請全程使用淺顯白話的繁體中文回應。${MODULE_TASK[mod] || ""}`;
 }
 
 function buildChatSystemPrompt(mod) {

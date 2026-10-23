@@ -49,3 +49,22 @@ test('clear and start over resets a panel after a result and stays hidden otherw
   assert.equal(await p.locator('#tarot-question').inputValue(),'');assert.equal(await p.locator('#tarot-mode').inputValue(),'1');
   assert.equal(await p.locator('#tarot-result .tcard').count(),0);assert.doesNotMatch(await p.locator('#tarot-result').innerText(),/[㐀-鿿]/);
 }finally{await p.close();}});
+async function ziweiPlace(p,country,city){await p.locator('[data-t=ziwei]').click();await p.locator('#zw-country').selectOption(country);if(city!==undefined)await p.locator('#zw-city').selectOption(String(city));}
+test('a chosen birthplace charts by true solar time, including that year\'s daylight saving',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});
+  await ziweiChart(p,'1970-01-20','07:03');assert.match(await p.locator('.zw-meta').innerText(),/07:03 · 辰時/);
+  await ziweiPlace(p,'tw',0);await draw(p,'ziwei');let meta=await p.locator('.zw-meta').innerText();assert.match(meta,/07:03 · 卯時/);assert.match(meta,/台灣 · 台北/);assert.match(meta,/真太陽時\s*06:59/);
+  assert.equal(asks.at(-1).facts.BirthPlace,'台灣 台北');assert.equal(asks.at(-1).facts.TrueSolarTime,'1970-01-20 06:59');
+  await p.locator('#zw-date').fill('1988-07-15');await p.locator('#zw-hour').fill('07:30');await ziweiPlace(p,'cn',0);await draw(p,'ziwei');meta=await p.locator('.zw-meta').innerText();assert.match(meta,/07:30 · 卯時/);assert.match(meta,/06:09/);
+  await ziweiPlace(p,'');await draw(p,'ziwei');meta=await p.locator('.zw-meta').innerText();assert.match(meta,/07:30 · 辰時/);assert.doesNotMatch(meta,/真太陽時/);assert.equal(asks.at(-1).facts.BirthPlace,undefined);
+}finally{await p.close();}});
+test('a country without a city asks for the city before charting or asking AI',async()=>{const p=await page();try{let requests=0;p.on('request',r=>{if(r.url().endsWith('/ask'))requests++;});await ziweiPlace(p,'us');await p.locator('#zw-date').fill('1990-01-01');await p.locator('#zw-hour').fill('12:00');await draw(p,'ziwei');assert.match(await p.locator('#ziwei-result').innerText(),/請再選出生城市/);assert.equal(await p.locator('.zw-grid').count(),0);assert.equal(requests,0);
+  await ziweiPlace(p,'sg');assert.equal(await p.locator('#zw-city').inputValue(),'0');await ziweiPlace(p,'');assert.equal(await p.locator('#zw-city').isDisabled(),true);}finally{await p.close();}});
+test('the chart explains all twelve palaces from the Life Palace and ends with the AI summary',async()=>{const p=await page(390);try{await ziweiPlace(p,'tw',0);await ziweiChart(p,'1970-01-20','06:00');
+  const names=await p.locator('.zw-ex-palace .zw-ex-name').allInnerTexts();assert.deepEqual(names.map(n=>n.split(' · ')[0]),['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母']);
+  assert.equal(await p.locator('.zw-ex-palace[open]').count(),1);const life=await p.locator('.zw-ex-palace[open]').innerText();assert.match(life,/個性/);assert.match(life,/天機/);assert.match(life,/化科/);
+  assert.ok(await p.locator('.zw-ex-stars li').count()>=14);
+  const order=await p.locator('#ziwei-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('zw-explain')?'explain':e.classList.contains('oracle')?'summary':'chat'));assert.deepEqual(order,['explain','summary','chat']);
+  assert.match(await p.locator('#ziwei-result .oracle .smart-title').innerText(),/綜合總結/);
+  for(const lang of ['en','id']){await p.locator('#lang-toggle').click();assert.doesNotMatch(await p.locator('.zw-explain').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('.zw-meta').innerText(),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('#zw-country').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.equal(await p.locator('#zw-country').inputValue(),'tw');}
+}finally{await p.close();}});
+test('every explained star, palace and brightness has text in three languages',async()=>{const p=await page();try{const missing=await p.evaluate(()=>{const keys=[...Object.values(ZWX_STAR_KEY).map(k=>'zwx_s_'+k),...Object.values(ZWX_PALACE_KEY).map(k=>'zwx_p_'+k),...Object.values(ZWX_BRIGHT_GROUP).map(k=>'zwx_b_'+k),...Object.values(ZWX_SIHUA_KEY).map(k=>'zwx_h_'+k)];return ['zh','en','id'].flatMap(l=>keys.filter(k=>!dict[l][k]).map(k=>l+':'+k)).concat(Object.keys(ZWX.zh).filter(k=>!ZWX.en[k]||!ZWX.id[k]));});assert.deepEqual(missing,[]);}finally{await p.close();}});
