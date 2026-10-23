@@ -1,17 +1,22 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-3.2";
-const PRIMARY_MODEL = "@cf/openai/gpt-oss-120b";
+const ASK_VERSION = "guanbu-ask-3.3";
+// 主、副 AI 都用各家的「平衡型」：Cloudflare 上的 DeepSeek V4 Flash、Google 的 Gemini Flash
+const PRIMARY_MODEL = "@cf/deepseek-ai/deepseek-v4-flash-0731";
+const PRIMARY_LABEL = "Cloudflare Workers AI · DeepSeek V4 Flash";
+// 先想一下再回答，但不要想太久（思考也會算在輸出長度裡）
+const PRIMARY_REASONING = "low";
 const GEMINI_MODEL = "gemini-3.6-flash";
+const GEMINI_LABEL = "Google Gemini 3.6 Flash (Fallback)";
 
 const MAX_QUESTION_LEN = 200;
 const MAX_FACTS_LEN = 2500;
-const MAX_TOKENS = 700;
+const MAX_TOKENS = 2000;
 const MAX_HISTORY_ITEMS = 6;
 const MAX_HISTORY_MSG_LEN = 500;
 const MAX_BODY_BYTES = 64 * 1024;
-const PRIMARY_AI_TIMEOUT_MS = 12000;
+const PRIMARY_AI_TIMEOUT_MS = 20000;
 const ALLOWED_LANGS = new Set(["zh", "en", "id"]);
 const ALLOWED_MODULES = new Set(["yijing", "tarot", "runes", "ziwei", "daily"]);
 const DEFAULT_MODULE = "yijing";
@@ -79,12 +84,26 @@ App 畫面已經逐宮列出每一宮的星曜說明，你負責最後的「綜�
 };
 
 // 各模組的輸出長度與等待時間（紫微總結比較長，給足 tokens 與時間）
-const DEFAULT_LIMITS = { maxTokens: MAX_TOKENS, primaryTimeoutMs: PRIMARY_AI_TIMEOUT_MS, fallbackTimeoutMs: 20000 };
+const DEFAULT_LIMITS = { maxTokens: MAX_TOKENS, primaryTimeoutMs: PRIMARY_AI_TIMEOUT_MS, fallbackTimeoutMs: 25000 };
+const CHAT_LIMITS = { maxTokens: 1500, primaryTimeoutMs: PRIMARY_AI_TIMEOUT_MS, fallbackTimeoutMs: 25000 };
 const MODULE_LIMITS = {
   ziwei: { maxTokens: 6000, primaryTimeoutMs: 45000, fallbackTimeoutMs: 60000 },
 };
 function moduleLimits(mod) {
   return MODULE_LIMITS[mod] || DEFAULT_LIMITS;
+}
+
+// 呼叫主 AI，回傳文字；失敗或沒內容就丟錯，讓外面改用 Gemini
+async function runPrimary(ai, messages, limits) {
+  if (!ai) throw new Error("No Workers AI Binding");
+  const result = await withTimeout(
+    ai.run(PRIMARY_MODEL, { messages, max_completion_tokens: limits.maxTokens, reasoning_effort: PRIMARY_REASONING }),
+    limits.primaryTimeoutMs,
+    "Primary AI"
+  );
+  const text = String(result?.choices?.[0]?.message?.content || (typeof result?.response === "string" ? result.response : "") || "").trim();
+  if (!text) throw new Error("Primary AI Empty");
+  return text;
 }
 
 function personaIntro(mod) {
@@ -187,30 +206,17 @@ export async function onRequestPost(context) {
     const limits = moduleLimits(mod);
 
     let explanation = "";
-    let usedProvider = "Cloudflare Workers AI";
+    let usedProvider = PRIMARY_LABEL;
 
     try {
-      const ai = context.env.AI;
-      if (!ai) throw new Error("No Workers AI Binding");
-
-      const result = await withTimeout(
-        ai.run(PRIMARY_MODEL, {
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPromptText },
-          ],
-          max_tokens: limits.maxTokens,
-        }),
-        limits.primaryTimeoutMs,
-        "Primary AI"
-      );
-
-      explanation = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
-      if (!explanation) throw new Error("Primary AI Empty");
+      explanation = await runPrimary(context.env.AI, [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPromptText },
+      ], limits);
     } catch (primaryErr) {
       explanation = String(await callGeminiFallback(context.env, systemPrompt, [{ role: "user", content: userPromptText }], limits) || "").trim();
       if (!explanation) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.6 Flash (Fallback)";
+      usedProvider = GEMINI_LABEL;
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, explanation });
@@ -251,27 +257,14 @@ export async function onRequestPostChat(context) {
     const conversationHistory = [...history, { role: "user", content: userMessage }];
 
     let reply = "";
-    let usedProvider = "Cloudflare Workers AI";
+    let usedProvider = PRIMARY_LABEL;
 
     try {
-      const ai = context.env.AI;
-      if (!ai) throw new Error("No Workers AI Binding");
-
-      const result = await withTimeout(
-        ai.run(PRIMARY_MODEL, {
-          messages: [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory],
-          max_tokens: 500,
-        }),
-        PRIMARY_AI_TIMEOUT_MS,
-        "Primary AI"
-      );
-
-      reply = String(result?.response || result?.choices?.[0]?.message?.content || "").trim();
-      if (!reply) throw new Error("Primary AI Empty");
+      reply = await runPrimary(context.env.AI, [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory], CHAT_LIMITS);
     } catch (primaryErr) {
-      reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory) || "").trim();
+      reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory, CHAT_LIMITS) || "").trim();
       if (!reply) throw new Error("Fallback AI Empty");
-      usedProvider = "Google Gemini 3.6 Flash (Fallback)";
+      usedProvider = GEMINI_LABEL;
     }
 
     return jsonResponse({ ok: true, version: ASK_VERSION, provider: usedProvider, reply });
