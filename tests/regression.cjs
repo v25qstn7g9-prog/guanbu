@@ -98,3 +98,4 @@ test('the Zi Wei summary shows every section in full with its headings',async()=
   assert.deepEqual(await card.locator('.reading-head').allInnerTexts(),['整體來看','你的個性','給你的建議']);assert.equal(await card.locator('details').count(),0);
   assert.match(await card.innerText(),/2\. 重要決定先睡一晚再說/);assert.doesNotMatch(await card.innerText(),/【/);
   await draw(p,'tarot');assert.equal(await p.locator('#tarot-result .reading-head').count(),0);}finally{await p.close();}});
+test('manual line fields stay two per row on a narrow phone',async()=>{const p=await page(320);try{await p.locator('#yijing-cast').selectOption('manual');const rows=await p.locator('#yj-manual select').evaluateAll(a=>new Set(a.map(e=>Math.round(e.getBoundingClientRect().top))).size);assert.equal(rows,3);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth-innerWidth),0);}finally{await p.close();}});
