@@ -193,6 +193,8 @@
   .btn:disabled{opacity:.6;cursor:wait;}
   .meta-row span{flex-shrink:0;}
   .panel .btn.main-action{margin:4px 0 16px;box-shadow:0 6px 18px rgba(0,0,0,.35);}
+  .panel .btn.clear-action{margin:-6px 0 16px;}
+  .panel .btn.clear-action[hidden]{display:none;}
 
   .ritual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:36px 10px;min-height:210px;}
   .ritual-text{color:#D9CFB7;font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.08em;text-align:center;animation:breathe 1.6s ease-in-out infinite;}
@@ -305,6 +307,7 @@
       <div class="chips" data-chips="yijing" data-target="yijing-question"></div>
     </div>
     <button class="btn jade main-action" id="yijing-btn" i18n="btn_yijing">起卦</button>
+    <button type="button" class="btn secondary clear-action" data-clear="yijing" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="yijing-result"><div class="empty" i18n="empty_yijing">心中默想欲問之事<br/>按下起卦，以三枚銅錢法擲出六爻</div></div>
   </div>
 
@@ -314,6 +317,7 @@
     <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="tarot-question" maxlength="120" placeholder="例：這件事接下來三個月的發展？" i18n-ph="ph_tarot" /><div class="chips" data-chips="tarot" data-target="tarot-question"></div></div>
     <div class="field"><label i18n="lbl_spread">牌陣</label><select class="select" id="tarot-mode"><option value="1" i18n="opt_t1">單張指引</option><option value="3" i18n="opt_t3">三張牌｜過去・現在・未來</option></select></div>
     <button class="btn crimson main-action" id="tarot-btn" i18n="btn_tarot">抽牌</button>
+    <button type="button" class="btn secondary clear-action" data-clear="tarot" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="tarot-result"><div class="empty" i18n="empty_tarot">靜心片刻<br/>抽牌看看此刻該留意什麼</div></div>
   </div>
 
@@ -323,6 +327,7 @@
     <div class="field"><label i18n="lbl_question_opt">問題（可留白）</label><input class="input" id="runes-question" maxlength="120" placeholder="例：我現在最需要注意什麼？" i18n-ph="ph_runes" /><div class="chips" data-chips="runes" data-target="runes-question"></div></div>
     <div class="field"><label i18n="lbl_spread">符文陣</label><select class="select" id="runes-mode"><option value="1" i18n="opt_r1">單枚指引</option><option value="3" i18n="opt_r3">三枚｜現況・阻力・建議</option></select></div>
     <button class="btn runic main-action" id="runes-btn" i18n="btn_runes">抽符文</button>
+    <button type="button" class="btn secondary clear-action" data-clear="runes" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="runes-result"><div class="empty" i18n="empty_runes">伸手入符文袋中<br/>抽出符文，聆聽它的訊息</div></div>
   </div>
 
@@ -331,6 +336,7 @@
     <div class="section-title cn" i18n="title_daily">今日運勢</div>
     <div class="field"><label i18n="lbl_birth">生日（選填）</label><input class="input" type="date" id="daily-birth" /></div>
     <button class="btn gold main-action" id="daily-btn" i18n="btn_daily">查看今日運勢</button>
+    <button type="button" class="btn secondary clear-action" data-clear="daily" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="daily-result"><div class="empty" i18n="empty_daily">按下查看，抓出今天的運勢</div></div>
   </div>
 
@@ -345,6 +351,7 @@
       </div>
     </div>
     <button class="btn main-action" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
+    <button type="button" class="btn secondary clear-action" data-clear="ziwei" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
   </div>
 
@@ -556,6 +563,29 @@ function ritualHTML(kind){
   return `<div class="ritual">${art}<div class="ritual-text">${esc(L['rit_'+kind])}</div></div>`;
 }
 
+// 「清除重來」：清空這個面板的輸入與結果，回到剛打開的樣子
+const PANEL_RESET = {
+  yijing:{inputs:['yijing-question']},
+  tarot:{inputs:['tarot-question'], selects:{'tarot-mode':'1'}},
+  runes:{inputs:['runes-question'], selects:{'runes-mode':'1'}},
+  daily:{inputs:['daily-birth']},
+  ziwei:{inputs:['zw-date','zw-hour'], selects:{'zw-gender':'M'}},
+};
+function setClearVisible(kind, visible){
+  const b = document.querySelector(`[data-clear="${kind}"]`);
+  if (b) b.hidden = !visible;
+}
+document.querySelectorAll('[data-clear]').forEach(btn => btn.addEventListener('click', () => {
+  const kind = btn.dataset.clear, reset = PANEL_RESET[kind];
+  reset.inputs.forEach(id => { document.getElementById(id).value = ''; });
+  Object.entries(reset.selects || {}).forEach(([id, value]) => { document.getElementById(id).value = value; });
+  const key = 'empty_' + kind, resEl = document.getElementById(RESULT_ID[kind]);
+  resEl.classList.remove('reveal');
+  resEl.innerHTML = `<div class="empty" i18n="${key}">${dict[currentLang][key]}</div>`;
+  btn.hidden = true;
+  document.getElementById(kind + '-btn').focus();
+}));
+
 // 按下按鈕 → 先跑一小段儀式動畫 → 再顯示原本的結果（核心演算法完全不動）
 function onRitual(btnId, kind, fn){
   const btn = document.getElementById(btnId);
@@ -567,12 +597,14 @@ function onRitual(btnId, kind, fn){
     if (kind==='ziwei' && (!document.getElementById('zw-date').value || !document.getElementById('zw-hour').value)) { fn(); return; }
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     btn.disabled = true;
+    setClearVisible(kind, false);
     resEl.classList.remove('reveal');
     resEl.innerHTML = ritualHTML(kind);
     setTimeout(async ()=>{
       try { await fn(); }
       finally {
         btn.disabled = false;
+        setClearVisible(kind, true);
         void resEl.offsetWidth;
         resEl.classList.add('reveal');
       }
@@ -784,6 +816,9 @@ function attachChatSection(containerId, moduleName, question, facts) {
 Object.assign(dict.zh, {birth_future:'出生日期不能在未來', age_unit:'歲', transform_connector:'化'});
 Object.assign(dict.en, {birth_future:'Birth date cannot be in the future', age_unit:' years', transform_connector:' · '});
 Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', age_unit:' tahun', transform_connector:' · '});
+Object.assign(dict.zh, {btn_clear_panel:'清除重來'});
+Object.assign(dict.en, {btn_clear_panel:'Clear and start over'});
+Object.assign(dict.id, {btn_clear_panel:'Hapus dan mulai lagi'});
 Object.assign(dict.zh, {zw_engine_error:'紫微排盤引擎載入失敗，請確認網路後再試一次', zw_leap:'閏', zw_late_zi:'出生時間在 23 點後，依子時換日規則以隔天子時排盤', zw_mingzhu:'命主', zw_shenzhu:'身主', zw_patterns:'格局', zw_engine_hint:'排盤引擎：Renhuai123/ziwei-doushu（MIT 授權，以 iztro 為核心，亮度依《紫微斗數全書》）。採農曆正月初一換年；未做出生地真太陽時校正，出生時間接近時辰交界時，請以專業排盤為準。'});
 Object.assign(dict.en, {zw_engine_error:'The Zi Wei chart engine could not load. Check your connection and try again.', zw_leap:'Leap ', zw_late_zi:'Born after 23:00, so the chart uses the next day\'s Zi hour.', zw_mingzhu:'Life Star', zw_shenzhu:'Body Star', zw_patterns:'Patterns', zw_engine_hint:'Chart engine: Renhuai123/ziwei-doushu (MIT licence, built on iztro; star brightness follows the Zi Wei Dou Shu Quanshu). The year changes at Lunar New Year. Birthplace solar-time correction is not applied, so if you were born near an hour boundary, check a professional chart.'});
 Object.assign(dict.id, {zw_engine_error:'Mesin bagan Zi Wei gagal dimuat. Periksa koneksi lalu coba lagi.', zw_leap:'Kabisat ', zw_late_zi:'Lahir setelah pukul 23.00, jadi bagan memakai jam Zi hari berikutnya.', zw_mingzhu:'Bintang Kehidupan', zw_shenzhu:'Bintang Tubuh', zw_patterns:'Pola', zw_engine_hint:'Mesin bagan: Renhuai123/ziwei-doushu (lisensi MIT, berbasis iztro; tingkat kecerahan bintang mengikuti Zi Wei Dou Shu Quanshu). Tahun berganti pada Tahun Baru Imlek. Koreksi waktu matahari tempat lahir belum diterapkan, jadi jika lahir dekat batas jam, periksa bagan profesional.'});

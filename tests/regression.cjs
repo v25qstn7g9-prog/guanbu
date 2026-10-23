@@ -37,3 +37,15 @@ test('every term the Zi Wei engine can show has Traditional Chinese, English and
   assert.deepEqual(missing,[]);}finally{await p.close();}});
 test('a birth after 23:00 is charted on the next day and the chart says so',async()=>{const p=await page();try{await ziweiChart(p,'1990-05-09','23:30');assert.match(await p.locator('#ziwei-result').innerText(),/隔天子時/);assert.ok(await p.locator('.zw-grid').count()===1);}finally{await p.close();}});
 test('if the Zi Wei engine cannot load the panel explains it and asks no AI',async()=>{const p=await page();try{let requests=0;p.on('request',r=>{if(r.url().endsWith('/ask'))requests++;});await p.route('**/ziwei-engine.js',r=>r.fulfill({status:500,body:''}));await ziweiChart(p,'1990-01-01','12:00');assert.match(await p.locator('#ziwei-result').innerText(),/引擎載入失敗/);assert.equal(await p.locator('.zw-grid').count(),0);assert.equal(requests,0);}finally{await p.close();}});
+test('clear and start over resets a panel after a result and stays hidden otherwise',async()=>{const p=await page(390);try{
+  assert.equal(await p.locator('[data-clear=ziwei]').isVisible(),false);
+  await ziweiChart(p,'1985-03-04','10:20','F');
+  const clear=p.locator('[data-clear=ziwei]');assert.equal(await clear.isVisible(),true);assert.ok((await clear.boundingBox()).height>=44);
+  await clear.click();
+  assert.deepEqual([await p.locator('#zw-date').inputValue(),await p.locator('#zw-hour').inputValue(),await p.locator('#zw-gender').inputValue()],['','','M']);
+  assert.equal(await p.locator('.zw-grid').count(),0);assert.match(await p.locator('#ziwei-result').innerText(),/輸入出生資料/);assert.equal(await clear.isVisible(),false);
+  await p.locator('[data-t=tarot]').click();await p.locator('#tarot-question').fill('Work?');await p.locator('#tarot-mode').selectOption('3');await draw(p,'tarot');
+  await p.locator('#lang-toggle').click();const tclear=p.locator('[data-clear=tarot]');assert.equal(await tclear.innerText(),'Clear and start over');await tclear.click();
+  assert.equal(await p.locator('#tarot-question').inputValue(),'');assert.equal(await p.locator('#tarot-mode').inputValue(),'1');
+  assert.equal(await p.locator('#tarot-result .tcard').count(),0);assert.doesNotMatch(await p.locator('#tarot-result').innerText(),/[㐀-鿿]/);
+}finally{await p.close();}});
