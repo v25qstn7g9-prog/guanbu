@@ -170,6 +170,12 @@
   .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
   @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
   .zw-cell.now{border-color:var(--gold);}
+  .hex-detail{padding:10px 0;border-top:1px solid var(--panel-border);}
+  .hex-detail:first-of-type{border-top:0;padding-top:4px;}
+  .hex-detail-head{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;font-weight:600;margin-bottom:4px;overflow-wrap:anywhere;}
+  .hex-detail-head span{color:var(--sub);font-size:13px;font-weight:400;margin-left:4px;}
+  .hex-detail p{margin:6px 0;color:var(--text);font-size:14px;line-height:1.7;overflow-wrap:anywhere;}
+  .hex-detail p b{display:inline-block;margin-right:6px;color:#E8D4F5;font-size:13px;font-weight:600;}
   .zw-place-hint{margin:-4px 0 12px;}
   .zw-explain .zw-ex-palace{border-top:1px solid var(--panel-border);}
   .zw-explain .hint{margin:0 0 8px;}
@@ -381,6 +387,7 @@
 </div>
 
 <script src="readings-i18n.js"></script>
+<script src="yijing-hexagrams.js"></script>
 <script src="ziwei-terms.js"></script>
 <script src="ziwei-place.js"></script>
 <script src="ziwei-explain.js"></script>
@@ -842,6 +849,9 @@ function attachChatSection(containerId, moduleName, question, facts) {
 Object.assign(dict.zh, {birth_future:'出生日期不能在未來', age_unit:'歲', transform_connector:'化'});
 Object.assign(dict.en, {birth_future:'Birth date cannot be in the future', age_unit:' years', transform_connector:' · '});
 Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', age_unit:' tahun', transform_connector:' · '});
+Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'原文', hex_ni:'倪師要義', hex_advice:'占斷', hex_detail_source:'卦象資料整理自 Renhuai123/ziwei-doushu（MIT 授權），參考倪海廈《人間道·64卦易圖》與《斷易天機》。'});
+Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Original text', hex_ni:'Master Ni\'s key point', hex_advice:'Verdict', hex_detail_source:'Hexagram notes from Renhuai123/ziwei-doushu (MIT licence), based on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji.'});
+Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Teks asli', hex_ni:'Inti ajaran Guru Ni', hex_advice:'Petunjuk', hex_detail_source:'Catatan heksagram dari Renhuai123/ziwei-doushu (lisensi MIT), berdasarkan kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji.'});
 Object.assign(dict.zh, {btn_clear_panel:'清除重來'});
 Object.assign(dict.en, {btn_clear_panel:'Clear and start over'});
 Object.assign(dict.id, {btn_clear_panel:'Hapus dan mulai lagi'});
@@ -910,8 +920,24 @@ const HEX_TEXT = {1:"能量很足，可以主動出手，別再只是觀望。",
 const TRI_MATRIX = [[1,43,14,34,9,5,26,11],[10,58,38,54,61,60,41,19],[13,49,30,55,37,63,22,36],[25,17,21,51,42,3,27,24],[44,28,50,32,57,48,18,46],[6,47,64,40,59,29,4,7],[33,31,56,62,53,39,52,15],[12,45,35,16,20,8,23,2]];
 function tossLine(){ let sum=0; for(let i=0;i<3;i++) sum += Math.random()<0.5?2:3; return sum; }
 function trigramIndex(bits){ const key = bits.join(''); const map = {"111":0,"110":1,"101":2,"100":3,"011":4,"010":5,"001":6,"000":7}; return map[key]; }
-function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[upperIdx][lowerIdx]; }
+function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[lowerIdx][upperIdx]; } // TRI_MATRIX 每列是下卦、每欄是上卦
 function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
+
+// 卦象詳解：卦象組成、原文、倪師要義、占斷（資料見 yijing-hexagrams.js）
+function hexDetailHTML(labelKey, num){
+  const d = HEX_DETAIL[num];
+  return `<div class="hex-detail"><div class="hex-detail-head">${uiText(labelKey)} · ${readingText(HEX_NAMES[num]+'卦')} <span>${readingText(d.image)}</span></div>`
+    + ['text','ni','advice'].map(k => `<p><b>${uiText('hex_'+k)}</b> ${readingText(d[k])}</p>`).join('') + `</div>`;
+}
+function hexDetailCardHTML(hexNum, changedNum){
+  return `<div class="smart-card hex-detail-card"><div class="smart-title">— ${uiText('hex_detail_title')} —</div>`
+    + hexDetailHTML('hex_orig', hexNum) + (changedNum !== hexNum ? hexDetailHTML('hex_change', changedNum) : '')
+    + `<div class="hint">${uiText('hex_detail_source')}</div></div>`;
+}
+function hexDetailFact(num){
+  const d = HEX_DETAIL[num];
+  return `${d.image}；原文：${d.text}；倪師要義：${d.ni}；占斷：${d.advice}`;
+}
 
 onRitual('yijing-btn','yijing', ()=>{
   const question = document.getElementById('yijing-question').value.trim();
@@ -942,6 +968,7 @@ onRitual('yijing-btn','yijing', ()=>{
   html += `<div class="meta-row"><span>${uiText('label_moving')}</span><strong class="moving">${moving.length?moving.map(i=>readingText(lineLabel(i))).join('、'):uiText('label_none')}</strong></div>`;
   html += `<div class="meta-row"><span>${uiText('label_after')}</span><strong>${readingText(HEX_NAMES[changedNum])}｜${readingText(HEX_TEXT[changedNum])}</strong></div>`;
   html += `</div>`;
+  html += hexDetailCardHTML(hexNum, changedNum);
 
   const aiHex = aiCardPlaceholder();
   html += aiHex.html;
@@ -949,7 +976,7 @@ onRitual('yijing-btn','yijing', ()=>{
   const resContainer = document.getElementById('yijing-result');
   resContainer.innerHTML = html;
 
-  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], MovingLines: moving.length ? moving.map(lineLabel) : 'None' };
+  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None' };
   fillAiExplain(aiHex.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });

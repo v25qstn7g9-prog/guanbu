@@ -68,3 +68,14 @@ test('the chart explains all twelve palaces from the Life Palace and ends with t
   for(const lang of ['en','id']){await p.locator('#lang-toggle').click();assert.doesNotMatch(await p.locator('.zw-explain').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('.zw-meta').innerText(),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('#zw-country').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.equal(await p.locator('#zw-country').inputValue(),'tw');}
 }finally{await p.close();}});
 test('every explained star, palace and brightness has text in three languages',async()=>{const p=await page();try{const missing=await p.evaluate(()=>{const keys=[...Object.values(ZWX_STAR_KEY).map(k=>'zwx_s_'+k),...Object.values(ZWX_PALACE_KEY).map(k=>'zwx_p_'+k),...Object.values(ZWX_BRIGHT_GROUP).map(k=>'zwx_b_'+k),...Object.values(ZWX_SIHUA_KEY).map(k=>'zwx_h_'+k)];return ['zh','en','id'].flatMap(l=>keys.filter(k=>!dict[l][k]).map(k=>l+':'+k)).concat(Object.keys(ZWX.zh).filter(k=>!ZWX.en[k]||!ZWX.id[k]));});assert.deepEqual(missing,[]);}finally{await p.close();}});
+test('hexagram details match the cast lines and have three languages',async()=>{const p=await page();try{const problems=await p.evaluate(()=>{const T={'111':'乾','110':'兌','101':'離','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};const out=[];
+  for(let n=0;n<64;n++){const bits=[0,1,2,3,4,5].map(i=>(n>>i)&1),num=hexFromBits(bits),d=HEX_DETAIL[num];if(!d){out.push('missing '+num);continue;}
+    if(T[bits.slice(0,3).join('')]!==d.lower||T[bits.slice(3).join('')]!==d.upper)out.push(num+' trigrams');
+    if(!d.image.includes(HEX_NAMES[num]))out.push(num+' name '+d.image);
+    for(const lang of ['en','id'])for(const k of ['image','text','ni','advice'])if(!LOCAL_READING_TRANSLATIONS[lang][d[k]])out.push(lang+' '+num+' '+k);}
+  return out.concat(Object.keys(HEX_DETAIL).length===64?[]:['count']);});assert.deepEqual(problems,[]);}finally{await p.close();}});
+test('an I Ching reading shows hexagram details before the AI card and sends them to AI',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});await draw(p,'yijing');
+  const card=p.locator('.hex-detail-card');assert.equal(await card.count(),1);const text=await card.innerText();assert.match(text,/原文/);assert.match(text,/倪師要義/);assert.match(text,/占斷/);
+  const order=await p.locator('#yijing-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('hex-detail-card')?'detail':e.classList.contains('oracle')?'ai':'chat'));assert.deepEqual(order,['detail','ai','chat']);
+  assert.match(asks[0].facts.PresentDetail,/原文：.+倪師要義：.+占斷：/);assert.match(asks[0].facts.FutureDetail,/占斷：/);
+  await p.locator('#lang-toggle').click();assert.doesNotMatch(await card.innerText(),/[㐀-鿿]/);assert.match(await card.innerText(),/Verdict/);}finally{await p.close();}});
