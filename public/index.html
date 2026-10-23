@@ -170,6 +170,9 @@
   .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
   @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
   .zw-cell.now{border-color:var(--gold);}
+  .yj-manual .mini-grid{margin-top:6px;}
+  .yj-manual .field{margin:4px 0 8px;}
+  .yj-manual[hidden]{display:none;}
   .hex-detail{padding:10px 0;border-top:1px solid var(--panel-border);}
   .hex-detail:first-of-type{border-top:0;padding-top:4px;}
   .hex-detail-head{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;font-weight:600;margin-bottom:4px;overflow-wrap:anywhere;}
@@ -328,6 +331,18 @@
       <label i18n="lbl_question">你想問什麼？</label>
       <input class="input" id="yijing-question" maxlength="120" placeholder="例：2027 年工作是否會有重大轉變？" i18n-ph="ph_yijing" />
       <div class="chips" data-chips="yijing" data-target="yijing-question"></div>
+    </div>
+    <div class="field"><label for="yijing-cast" i18n="lbl_yj_cast">起卦方式</label><select class="select" id="yijing-cast"><option value="auto" i18n="opt_yj_auto">自動擲錢</option><option value="manual" i18n="opt_yj_manual">手動填爻（自己擲錢）</option></select></div>
+    <div class="yj-manual" id="yj-manual" hidden>
+      <div class="hint" i18n="yj_manual_hint">三枚硬幣擲一次：正面算 3、反面算 2，三枚加起來（6～9）就是這一爻。從第 1 爻（最下面）依序擲到第 6 爻（最上面）。</div>
+      <div class="mini-grid">
+        <div class="field"><label for="yj-line-1"><span i18n="yj_line_1">第1爻</span></label><select class="select" id="yj-line-1"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+        <div class="field"><label for="yj-line-2"><span i18n="yj_line_2">第2爻</span></label><select class="select" id="yj-line-2"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+        <div class="field"><label for="yj-line-3"><span i18n="yj_line_3">第3爻</span></label><select class="select" id="yj-line-3"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+        <div class="field"><label for="yj-line-4"><span i18n="yj_line_4">第4爻</span></label><select class="select" id="yj-line-4"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+        <div class="field"><label for="yj-line-5"><span i18n="yj_line_5">第5爻</span></label><select class="select" id="yj-line-5"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+        <div class="field"><label for="yj-line-6"><span i18n="yj_line_6">第6爻</span></label><select class="select" id="yj-line-6"><option value="" i18n="yj_pick">請選</option><option value="9" i18n="yj_v9">9 老陽（會變）</option><option value="8" i18n="yj_v8">8 少陰</option><option value="7" i18n="yj_v7">7 少陽</option><option value="6" i18n="yj_v6">6 老陰（會變）</option></select></div>
+      </div>
     </div>
     <button class="btn jade main-action" id="yijing-btn" i18n="btn_yijing">起卦</button>
     <button type="button" class="btn secondary clear-action" data-clear="yijing" i18n="btn_clear_panel" hidden>清除重來</button>
@@ -596,7 +611,7 @@ function ritualHTML(kind){
 
 // 「清除重來」：清空這個面板的輸入與結果，回到剛打開的樣子
 const PANEL_RESET = {
-  yijing:{inputs:['yijing-question']},
+  yijing:{inputs:['yijing-question',...[1,2,3,4,5,6].map(i=>'yj-line-'+i)], selects:{'yijing-cast':'auto'}, after:()=>showYijingCast()},
   tarot:{inputs:['tarot-question'], selects:{'tarot-mode':'1'}},
   runes:{inputs:['runes-question'], selects:{'runes-mode':'1'}},
   daily:{inputs:['daily-birth']},
@@ -624,6 +639,7 @@ function onRitual(btnId, kind, fn){
   btn.addEventListener('click', ()=>{
     if (btn.disabled) return;
     const resEl = document.getElementById(RESULT_ID[kind]);
+    if (kind==='yijing' && !manualLinesReady()) return;
     if (kind==='ziwei' && !validBirthDate(document.getElementById('zw-date'), RESULT_ID[kind])) return;
     if (kind==='daily' && !validBirthDate(document.getElementById('daily-birth'), RESULT_ID[kind])) return;
     if (kind==='ziwei' && (!document.getElementById('zw-date').value || !document.getElementById('zw-hour').value)) { fn(); return; }
@@ -849,6 +865,9 @@ function attachChatSection(containerId, moduleName, question, facts) {
 Object.assign(dict.zh, {birth_future:'出生日期不能在未來', age_unit:'歲', transform_connector:'化'});
 Object.assign(dict.en, {birth_future:'Birth date cannot be in the future', age_unit:' years', transform_connector:' · '});
 Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', age_unit:' tahun', transform_connector:' · '});
+Object.assign(dict.zh, {lbl_yj_cast:'起卦方式', opt_yj_auto:'自動擲錢', opt_yj_manual:'手動填爻（自己擲錢）', yj_manual_hint:'三枚硬幣擲一次：正面算 3、反面算 2，三枚加起來（6～9）就是這一爻。從第 1 爻（最下面）依序擲到第 6 爻（最上面）。', yj_pick:'請選', yj_v9:'9 老陽（會變）', yj_v8:'8 少陰', yj_v7:'7 少陽', yj_v6:'6 老陰（會變）', yj_line_1:'第1爻（初爻，最下）', yj_line_2:'第2爻', yj_line_3:'第3爻', yj_line_4:'第4爻', yj_line_5:'第5爻', yj_line_6:'第6爻（上爻，最上）', yj_err_lines:'手動填爻要把第 1～6 爻都選好，才能起卦'});
+Object.assign(dict.en, {lbl_yj_cast:'How to cast', opt_yj_auto:'Automatic coin toss', opt_yj_manual:'Enter lines myself (my own coins)', yj_manual_hint:'Toss three coins at once: heads count 3, tails count 2. The total (6 to 9) is that line. Start with line 1 (bottom) and finish with line 6 (top).', yj_pick:'Choose', yj_v9:'9 Old yang (changing)', yj_v8:'8 Young yin', yj_v7:'7 Young yang', yj_v6:'6 Old yin (changing)', yj_line_1:'Line 1 (bottom)', yj_line_2:'Line 2', yj_line_3:'Line 3', yj_line_4:'Line 4', yj_line_5:'Line 5', yj_line_6:'Line 6 (top)', yj_err_lines:'For manual casting, choose all six lines (1 to 6) first.'});
+Object.assign(dict.id, {lbl_yj_cast:'Cara melempar', opt_yj_auto:'Lempar koin otomatis', opt_yj_manual:'Isi garis sendiri (koin sendiri)', yj_manual_hint:'Lempar tiga koin sekaligus: gambar dihitung 3, angka dihitung 2. Jumlahnya (6 sampai 9) adalah garis itu. Mulai dari garis 1 (paling bawah) sampai garis 6 (paling atas).', yj_pick:'Pilih', yj_v9:'9 Yang tua (berubah)', yj_v8:'8 Yin muda', yj_v7:'7 Yang muda', yj_v6:'6 Yin tua (berubah)', yj_line_1:'Garis 1 (paling bawah)', yj_line_2:'Garis 2', yj_line_3:'Garis 3', yj_line_4:'Garis 4', yj_line_5:'Garis 5', yj_line_6:'Garis 6 (paling atas)', yj_err_lines:'Untuk cara manual, pilih keenam garis (1 sampai 6) dulu.'});
 Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'原文', hex_ni:'倪師要義', hex_advice:'占斷', hex_detail_source:'卦象資料整理自 Renhuai123/ziwei-doushu（MIT 授權），參考倪海廈《人間道·64卦易圖》與《斷易天機》。'});
 Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Original text', hex_ni:'Master Ni\'s key point', hex_advice:'Verdict', hex_detail_source:'Hexagram notes from Renhuai123/ziwei-doushu (MIT licence), based on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji.'});
 Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Teks asli', hex_ni:'Inti ajaran Guru Ni', hex_advice:'Petunjuk', hex_detail_source:'Catatan heksagram dari Renhuai123/ziwei-doushu (lisensi MIT), berdasarkan kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji.'});
@@ -923,6 +942,24 @@ function trigramIndex(bits){ const key = bits.join(''); const map = {"111":0,"11
 function hexFromBits(bits){ const lowerIdx = trigramIndex(bits.slice(0,3)); const upperIdx = trigramIndex(bits.slice(3,6)); return TRI_MATRIX[lowerIdx][upperIdx]; } // TRI_MATRIX 每列是下卦、每欄是上卦
 function lineLabel(i){ return ["初爻","二爻","三爻","四爻","五爻","上爻"][i]; }
 
+// 手動填爻：使用者自己擲三枚硬幣，從第 1 爻填到第 6 爻（6、7、8、9）
+function showYijingCast(){
+  document.getElementById('yj-manual').hidden = document.getElementById('yijing-cast').value !== 'manual';
+}
+function manualLines(){
+  if (document.getElementById('yijing-cast').value !== 'manual') return null;
+  return [1,2,3,4,5,6].map(i => Number(document.getElementById('yj-line-'+i).value));
+}
+function manualLinesReady(){
+  const lines = manualLines();
+  if (!lines || lines.every(v => v >= 6 && v <= 9)) return true;
+  const first = lines.findIndex(v => !(v >= 6 && v <= 9)) + 1;
+  document.getElementById('yijing-result').innerHTML = `<div class="empty" role="alert">${uiText('yj_err_lines')}</div>`;
+  document.getElementById('yj-line-'+first).focus();
+  return false;
+}
+document.getElementById('yijing-cast').addEventListener('change', showYijingCast);
+
 // 卦象詳解：卦象組成、原文、倪師要義、占斷（資料見 yijing-hexagrams.js）
 function hexDetailHTML(labelKey, num){
   const d = HEX_DETAIL[num];
@@ -941,8 +978,9 @@ function hexDetailFact(num){
 
 onRitual('yijing-btn','yijing', ()=>{
   const question = document.getElementById('yijing-question').value.trim();
-  const lines = [];
-  for(let i=0;i<6;i++) lines.push(tossLine());
+  const manual = manualLines();
+  const lines = manual || [];
+  if (!manual) for(let i=0;i<6;i++) lines.push(tossLine());
 
   const bits = lines.map(v => (v===7||v===9)?1:0);
   const changedBits = lines.map((v,i)=> (v===6||v===9) ? 1-bits[i] : bits[i]);
@@ -976,7 +1014,7 @@ onRitual('yijing-btn','yijing', ()=>{
   const resContainer = document.getElementById('yijing-result');
   resContainer.innerHTML = html;
 
-  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None' };
+  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None', CastMethod: manual ? '使用者自己擲錢、手動填入六爻' : '程式自動擲錢' };
   fillAiExplain(aiHex.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });

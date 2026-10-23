@@ -79,3 +79,15 @@ test('an I Ching reading shows hexagram details before the AI card and sends the
   const order=await p.locator('#yijing-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('hex-detail-card')?'detail':e.classList.contains('oracle')?'ai':'chat'));assert.deepEqual(order,['detail','ai','chat']);
   assert.match(asks[0].facts.PresentDetail,/原文：.+倪師要義：.+占斷：/);assert.match(asks[0].facts.FutureDetail,/占斷：/);
   await p.locator('#lang-toggle').click();assert.doesNotMatch(await card.innerText(),/[㐀-鿿]/);assert.match(await card.innerText(),/Verdict/);}finally{await p.close();}});
+test('manual I Ching casting uses the six numbers the user entered, from line 1 at the bottom',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});
+  assert.equal(await p.locator('#yj-manual').isVisible(),false);await p.locator('#yijing-cast').selectOption('manual');assert.equal(await p.locator('#yj-manual').isVisible(),true);
+  await p.locator('#yj-line-1').selectOption('9');await p.locator('#yj-line-2').selectOption('7');await draw(p,'yijing');
+  assert.match(await p.locator('#yijing-result').innerText(),/第 1～6 爻都選好/);assert.equal(await p.locator('.hex-pair').count(),0);assert.equal(asks.length,0);
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'yj-line-3');
+  for(const [i,v] of [[3,'7'],[4,'8'],[5,'8'],[6,'8']])await p.locator('#yj-line-'+i).selectOption(v);
+  await p.evaluate(()=>{Math.random=()=>0;});await draw(p,'yijing');
+  assert.deepEqual(await p.locator('.result-name').allInnerTexts(),['泰卦','升卦']);assert.match(await p.locator('.moving').innerText(),/初爻/);
+  assert.equal(asks.length,1);assert.equal(asks[0].facts.PresentHexagram,'泰');assert.equal(asks[0].facts.FutureHexagram,'升');assert.match(asks[0].facts.CastMethod,/手動/);
+  await p.locator('[data-clear=yijing]').click();assert.equal(await p.locator('#yijing-cast').inputValue(),'auto');assert.equal(await p.locator('#yj-manual').isVisible(),false);assert.equal(await p.locator('#yj-line-1').inputValue(),'');
+  await p.locator('#lang-toggle').click();await p.locator('#yijing-cast').selectOption('manual');assert.doesNotMatch(await p.locator('#panel-yijing').innerText(),/[㐀-鿿]/);
+}finally{await p.close();}});
