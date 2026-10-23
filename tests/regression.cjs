@@ -91,3 +91,10 @@ test('manual I Ching casting uses the six numbers the user entered, from line 1 
   await p.locator('[data-clear=yijing]').click();assert.equal(await p.locator('#yijing-cast').inputValue(),'auto');assert.equal(await p.locator('#yj-manual').isVisible(),false);assert.equal(await p.locator('#yj-line-1').inputValue(),'');
   await p.locator('#lang-toggle').click();await p.locator('#yijing-cast').selectOption('manual');assert.doesNotMatch(await p.locator('#panel-yijing').innerText(),/[㐀-鿿]/);
 }finally{await p.close();}});
+test('the Zi Wei summary shows every section in full with its headings',async()=>{const p=await page(390);try{await p.unroute('**/ask');
+  const body='【整體來看】你是很會思考的人。\n\n【你的個性】反應快。\n【給你的建議】\n1. 每週固定一天整理財務。\n2. 重要決定先睡一晚再說。';
+  await p.route('**/ask',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,explanation:body})}));
+  await ziweiChart(p,'1970-01-20','06:00');await p.waitForSelector('#ziwei-result .oracle .reading-head');const card=p.locator('#ziwei-result .oracle');
+  assert.deepEqual(await card.locator('.reading-head').allInnerTexts(),['整體來看','你的個性','給你的建議']);assert.equal(await card.locator('details').count(),0);
+  assert.match(await card.innerText(),/2\. 重要決定先睡一晚再說/);assert.doesNotMatch(await card.innerText(),/【/);
+  await draw(p,'tarot');assert.equal(await p.locator('#tarot-result .reading-head').count(),0);}finally{await p.close();}});

@@ -173,6 +173,8 @@
   .yj-manual .mini-grid{margin-top:6px;}
   .yj-manual .field{margin:4px 0 8px;}
   .yj-manual[hidden]{display:none;}
+  .smart-text p.reading-head{margin:16px 0 4px;color:var(--gold);font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;}
+  .smart-text p.reading-head:first-child{margin-top:4px;}
   .hex-detail{padding:10px 0;border-top:1px solid var(--panel-border);}
   .hex-detail:first-of-type{border-top:0;padding-top:4px;}
   .hex-detail-head{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;font-weight:600;margin-bottom:4px;overflow-wrap:anywhere;}
@@ -742,8 +744,14 @@ function esc(s){
 function readingLayoutLabels(){
   return ({zh:{more:'展開完整解讀',zoom:'放大命盤 · 可左右滑動',fit:'縮回命盤',chart:'紫微命盤'},en:{more:'Read full interpretation',zoom:'Enlarge chart · swipe to explore',fit:'Fit chart',chart:'Zi Wei chart'},id:{more:'Baca tafsir lengkap',zoom:'Perbesar bagan · geser untuk melihat',fit:'Sesuaikan bagan',chart:'Bagan Zi Wei'}})[currentLang];
 }
-function readingBodyHtml(explanation){
+// 段落開頭的【小標】顯示成標題
+function readingParagraph(t){
+  const m=t.match(/^【([^】]{1,30})】\s*(.*)$/);
+  return m?`<p class="reading-head">${esc(m[1])}</p>${m[2]?`<p>${esc(m[2])}</p>`:''}`:`<p>${esc(t)}</p>`;
+}
+function readingBodyHtml(explanation, full=false){
   const parts=String(explanation).split(/\n+/).map(t=>t.trim()).filter(Boolean);
+  if(full) return `<div class="smart-text">${parts.map(readingParagraph).join('')}</div>`;
   if(parts[0]?.length>240){
     const first=parts.shift();
     const boundary=first.slice(100,240).search(/[。！？.!?]/);
@@ -777,7 +785,7 @@ async function fillAiExplain(id, module, question, facts, titleKey = 'ai_title')
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data?.ok || !data.explanation) throw new Error(data?.error || `HTTP ${res.status}`);
-    el.innerHTML = `${head()}${readingBodyHtml(data.explanation)}<div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${uiText('share')}</button></div>`;
+    el.innerHTML = `${head()}${readingBodyHtml(data.explanation, module === 'ziwei')}<div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${uiText('share')}</button></div>`;
     el.querySelector('[data-act="share"]').onclick = () => shareReading(question, data.explanation);
   } catch (e) {
     el.innerHTML = `${head()}<div class="smart-text" style="color:var(--sub);">${uiText('ai_fail')}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="retry">${uiText('retry')}</button></div>`;
