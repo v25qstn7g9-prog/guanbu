@@ -16,6 +16,17 @@
 
 目前 AI 路由為 Cloudflare Workers AI 主線；主線逾時或失敗時自動切換 Gemini 3.5 Flash 備援。占卜計算與 UI 行為不受此路由調整影響。
 
+## 紫微排盤引擎
+
+紫微頁的排盤來自 [Renhuai123/ziwei-doushu](https://github.com/Renhuai123/ziwei-doushu) 的 `lib/ziwei`（MIT，原始檔與授權在 `ziwei-engine/`），以 [iztro](https://github.com/SylarLong/iztro) 與 [lunar-javascript](https://github.com/6tail/lunar-javascript) 為核心。打包好的 `public/ziwei-engine.js` 在第一次打開紫微時才載入；引擎輸出的簡體星名由 `public/ziwei-terms.js` 轉成正體並提供英文／印尼文。
+
+改了 `ziwei-engine/` 之後重新打包：
+
+```sh
+npm ci
+npm run build:ziwei
+```
+
 ## 本機回歸測試
 
 需要 Node.js 20 以上。先安裝鎖定的測試套件與 Chromium：

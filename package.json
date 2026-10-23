@@ -3,10 +3,14 @@
   "private": true,
   "scripts": {
     "build": "echo 'guanbu: 靜態資源與 Worker 無需建置步驟'",
-    "test": "node --test tests/*.cjs"
+    "test": "node --test tests/*.cjs",
+    "build:ziwei": "node ziwei-engine/build.mjs"
   },
   "version": "2.5.0",
   "devDependencies": {
+    "esbuild": "0.28.2",
+    "iztro": "2.6.1",
+    "lunar-javascript": "1.7.7",
     "playwright": "1.62.1"
   }
 }
