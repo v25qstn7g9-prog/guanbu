@@ -170,6 +170,23 @@
   .zw-center .zw-c-line{color:var(--sub);font-size:11px;line-height:1.6;}
   @media (max-width:380px){.zw-cell{font-size:9px;}.zw-cell .zw-star{font-size:10px;}}
   .zw-cell.now{border-color:var(--gold);}
+  .zw-place-hint{margin:-4px 0 12px;}
+  .zw-explain .zw-ex-palace{border-top:1px solid var(--panel-border);}
+  .zw-explain .hint{margin:0 0 8px;}
+  .zw-ex-palace summary{cursor:pointer;min-height:44px;display:flex;align-items:center;flex-wrap:wrap;gap:2px 8px;padding:6px 0;list-style:none;}
+  .zw-ex-palace summary::-webkit-details-marker{display:none;}
+  .zw-ex-palace summary::before{content:'＋';color:var(--sub);font-size:13px;}
+  .zw-ex-palace[open] summary::before{content:'−';}
+  .zw-ex-name{color:var(--gold);font-family:'Noto Serif TC',serif;font-size:15px;font-weight:600;}
+  .zw-ex-main{color:#E8D4F5;font-size:13px;}
+  .zw-ex-age{margin-left:auto;color:var(--sub);font-size:12px;}
+  .zw-ex-palace.now .zw-ex-age{color:var(--gold);font-weight:700;}
+  .zw-ex-palace p,.zw-ex-palace li{color:var(--text);font-size:14px;line-height:1.7;margin:6px 0;overflow-wrap:anywhere;}
+  .zw-ex-palace p.zw-ex-note{color:#E8D4F5;}
+  .zw-ex-palace p.zw-ex-minor{color:var(--sub);font-size:13px;}
+  .zw-ex-stars{margin:6px 0 10px;padding-left:18px;}
+  .zw-ex-tag{display:inline-block;margin-left:4px;padding:0 6px;border:1px solid var(--panel-border);border-radius:999px;color:var(--sub);font-size:12px;line-height:1.5;}
+  .zw-ex-tag.hua{color:var(--gold);border-color:rgba(201,162,39,.5);}
   .zw-cell .zw-star.lucky{color:var(--text);font-size:10px;}
   .zw-cell .zw-star.sha{color:#D98C97;font-size:10px;}
   .zw-cell .zw-star.minor{color:var(--sub);font-size:9px;}
@@ -350,6 +367,11 @@
         <select class="select" id="zw-gender"><option value="M" i18n="opt_male">男</option><option value="F" i18n="opt_female">女</option></select>
       </div>
     </div>
+    <div class="mini-grid">
+      <div class="field"><label for="zw-country" i18n="lbl_zw_country">出生國家（可不選）</label><select class="select" id="zw-country"></select></div>
+      <div class="field"><label for="zw-city" i18n="lbl_zw_city">出生城市</label><select class="select" id="zw-city" disabled></select></div>
+    </div>
+    <div class="hint zw-place-hint" i18n="zw_place_hint">選了出生地，會用當地經度換算「真太陽時」來排盤，出生在時辰交界附近會更準。不選就照鐘錶時間排。</div>
     <button class="btn main-action" id="ziwei-btn" style="background:var(--violet);color:#F3EAF9;" i18n="btn_ziwei">排盤</button>
     <button type="button" class="btn secondary clear-action" data-clear="ziwei" i18n="btn_clear_panel" hidden>清除重來</button>
     <div id="ziwei-result"><div class="empty" i18n="empty_ziwei">輸入出生資料<br/>按下排盤，起出你的十二宮命盤</div></div>
@@ -360,6 +382,8 @@
 
 <script src="readings-i18n.js"></script>
 <script src="ziwei-terms.js"></script>
+<script src="ziwei-place.js"></script>
+<script src="ziwei-explain.js"></script>
 <script>
 // ---------------- i18n 三語完整對照表 ----------------
 const languages = ['zh', 'en', 'id'];
@@ -569,7 +593,7 @@ const PANEL_RESET = {
   tarot:{inputs:['tarot-question'], selects:{'tarot-mode':'1'}},
   runes:{inputs:['runes-question'], selects:{'runes-mode':'1'}},
   daily:{inputs:['daily-birth']},
-  ziwei:{inputs:['zw-date','zw-hour'], selects:{'zw-gender':'M'}},
+  ziwei:{inputs:['zw-date','zw-hour'], selects:{'zw-gender':'M','zw-country':''}, after:()=>renderZwPlaces()},
 };
 function setClearVisible(kind, visible){
   const b = document.querySelector(`[data-clear="${kind}"]`);
@@ -579,6 +603,7 @@ document.querySelectorAll('[data-clear]').forEach(btn => btn.addEventListener('c
   const kind = btn.dataset.clear, reset = PANEL_RESET[kind];
   reset.inputs.forEach(id => { document.getElementById(id).value = ''; });
   Object.entries(reset.selects || {}).forEach(([id, value]) => { document.getElementById(id).value = value; });
+  if (reset.after) reset.after();
   const key = 'empty_' + kind, resEl = document.getElementById(RESULT_ID[kind]);
   resEl.classList.remove('reveal');
   resEl.innerHTML = `<div class="empty" i18n="${key}">${dict[currentLang][key]}</div>`;
@@ -668,6 +693,7 @@ function applyLang(lang) {
     if (dict[lang][key]) { el.placeholder = dict[lang][key]; if (el.closest('.chat-card')) el.setAttribute('aria-label', dict[lang][key]); }
   });
   renderExtras();
+  renderZwPlaces();
   refreshReadingLanguage();
 }
 
@@ -706,20 +732,20 @@ function readingBodyHtml(explanation){
   return `<div class="smart-text"><p>${esc(lead)}</p>${rest?`<details class="reading-details"><summary>${esc(readingLayoutLabels().more)}</summary>${rest}</details>`:''}</div>`;
 }
 let aiCardSeq = 0;
-function aiCardPlaceholder() {
+function aiCardPlaceholder(titleKey = 'ai_title') {
   const id = `ai-card-${Date.now()}-${aiCardSeq++}`;
   const hints = dict[currentLang].hints;
   const hintIndex = Math.floor(Math.random() * hints.length);
   return {
     id,
-    html: `<div class="smart-card oracle" id="${id}"><div class="smart-title">— ${uiText('ai_title')} —</div><div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${uiText('hints', hintIndex)}</div></div>`,
+    html: `<div class="smart-card oracle" id="${id}"><div class="smart-title">— ${uiText(titleKey)} —</div><div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${uiText('hints', hintIndex)}</div></div>`,
   };
 }
 
-async function fillAiExplain(id, module, question, facts) {
+async function fillAiExplain(id, module, question, facts, titleKey = 'ai_title') {
   const el = document.getElementById(id);
   if (!el) return;
-  const head = () => `<div class="smart-title">— ${uiText('ai_title')} —</div>`;
+  const head = () => `<div class="smart-title">— ${uiText(titleKey)} —</div>`;
   try {
     const res = await fetch('/ask', {
       method: 'POST',
@@ -734,7 +760,7 @@ async function fillAiExplain(id, module, question, facts) {
     el.innerHTML = `${head()}<div class="smart-text" style="color:var(--sub);">${uiText('ai_fail')}</div><div class="oracle-actions"><button type="button" class="btn secondary small" data-act="retry">${uiText('retry')}</button></div>`;
     el.querySelector('[data-act="retry"]').onclick = () => {
       el.innerHTML = `${head()}<div class="smart-text thinking" style="color:var(--sub);font-style:italic;">${uiText('thinking')}</div>`;
-      fillAiExplain(id, module, question, facts);
+      fillAiExplain(id, module, question, facts, titleKey);
     };
   }
 }
@@ -819,10 +845,30 @@ Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', 
 Object.assign(dict.zh, {btn_clear_panel:'清除重來'});
 Object.assign(dict.en, {btn_clear_panel:'Clear and start over'});
 Object.assign(dict.id, {btn_clear_panel:'Hapus dan mulai lagi'});
-Object.assign(dict.zh, {zw_engine_error:'紫微排盤引擎載入失敗，請確認網路後再試一次', zw_leap:'閏', zw_late_zi:'出生時間在 23 點後，依子時換日規則以隔天子時排盤', zw_mingzhu:'命主', zw_shenzhu:'身主', zw_patterns:'格局', zw_engine_hint:'排盤引擎：Renhuai123/ziwei-doushu（MIT 授權，以 iztro 為核心，亮度依《紫微斗數全書》）。採農曆正月初一換年；未做出生地真太陽時校正，出生時間接近時辰交界時，請以專業排盤為準。'});
-Object.assign(dict.en, {zw_engine_error:'The Zi Wei chart engine could not load. Check your connection and try again.', zw_leap:'Leap ', zw_late_zi:'Born after 23:00, so the chart uses the next day\'s Zi hour.', zw_mingzhu:'Life Star', zw_shenzhu:'Body Star', zw_patterns:'Patterns', zw_engine_hint:'Chart engine: Renhuai123/ziwei-doushu (MIT licence, built on iztro; star brightness follows the Zi Wei Dou Shu Quanshu). The year changes at Lunar New Year. Birthplace solar-time correction is not applied, so if you were born near an hour boundary, check a professional chart.'});
-Object.assign(dict.id, {zw_engine_error:'Mesin bagan Zi Wei gagal dimuat. Periksa koneksi lalu coba lagi.', zw_leap:'Kabisat ', zw_late_zi:'Lahir setelah pukul 23.00, jadi bagan memakai jam Zi hari berikutnya.', zw_mingzhu:'Bintang Kehidupan', zw_shenzhu:'Bintang Tubuh', zw_patterns:'Pola', zw_engine_hint:'Mesin bagan: Renhuai123/ziwei-doushu (lisensi MIT, berbasis iztro; tingkat kecerahan bintang mengikuti Zi Wei Dou Shu Quanshu). Tahun berganti pada Tahun Baru Imlek. Koreksi waktu matahari tempat lahir belum diterapkan, jadi jika lahir dekat batas jam, periksa bagan profesional.'});
+Object.assign(dict.zh, {zw_engine_error:'紫微排盤引擎載入失敗，請確認網路後再試一次', zw_leap:'閏', zw_late_zi:'出生時間在 23 點後，依子時換日規則以隔天子時排盤', zw_mingzhu:'命主', zw_shenzhu:'身主', zw_patterns:'格局', zw_engine_hint:'排盤引擎：Renhuai123/ziwei-doushu（MIT 授權，以 iztro 為核心，亮度依《紫微斗數全書》）。採農曆正月初一換年；有選出生地時，依當地經度與均時差換算真太陽時（含當年夏令時間）；沒選就照鐘錶時間排盤。'});
+Object.assign(dict.en, {zw_engine_error:'The Zi Wei chart engine could not load. Check your connection and try again.', zw_leap:'Leap ', zw_late_zi:'Born after 23:00, so the chart uses the next day\'s Zi hour.', zw_mingzhu:'Life Star', zw_shenzhu:'Body Star', zw_patterns:'Patterns', zw_engine_hint:'Chart engine: Renhuai123/ziwei-doushu (MIT licence, built on iztro; star brightness follows the Zi Wei Dou Shu Quanshu). The year changes at Lunar New Year. If you choose a birthplace, the hour uses true solar time from its longitude and the equation of time (daylight saving included); otherwise the clock time is used.'});
+Object.assign(dict.id, {zw_engine_error:'Mesin bagan Zi Wei gagal dimuat. Periksa koneksi lalu coba lagi.', zw_leap:'Kabisat ', zw_late_zi:'Lahir setelah pukul 23.00, jadi bagan memakai jam Zi hari berikutnya.', zw_mingzhu:'Bintang Kehidupan', zw_shenzhu:'Bintang Tubuh', zw_patterns:'Pola', zw_engine_hint:'Mesin bagan: Renhuai123/ziwei-doushu (lisensi MIT, berbasis iztro; tingkat kecerahan bintang mengikuti Zi Wei Dou Shu Quanshu). Tahun berganti pada Tahun Baru Imlek. Jika tempat lahir dipilih, jam memakai waktu matahari sejati dari garis bujur dan persamaan waktu (termasuk waktu musim panas); jika tidak, dipakai jam biasa.'});
 ['zw-date','daily-birth'].forEach(id => document.getElementById(id).max = localDateToday());
+Object.assign(dict.zh, ZWX.zh, {lbl_zw_country:'出生國家（可不選）', lbl_zw_city:'出生城市', zw_place_none:'不指定', zw_city_pick:'請選城市', zw_place:'出生地', zw_tst:'真太陽時', zw_err_city:'已選出生國家，請再選出生城市；或把國家改回「不指定」', zw_place_hint:'選了出生地，會用當地經度換算「真太陽時」來排盤，出生在時辰交界附近會更準。不選就照鐘錶時間排。', zw_late_zi_tst:'換算成真太陽時後在 23 點後，依子時換日規則以隔天子時排盤', zw_tst_shift:'換算成真太陽時後跨到另一天，以換算後的日期排盤'});
+Object.assign(dict.en, ZWX.en, {lbl_zw_country:'Birth country (optional)', lbl_zw_city:'Birth city', zw_place_none:'Not specified', zw_city_pick:'Choose a city', zw_place:'Birthplace', zw_tst:'True solar time', zw_err_city:'You chose a birth country. Please also choose a city, or set the country back to "Not specified".', zw_place_hint:'If you choose a birthplace, the chart uses true solar time from its longitude, which is more accurate if you were born near an hour boundary. Leave it blank to use clock time.', zw_late_zi_tst:'In true solar time you were born after 23:00, so the chart uses the next day\'s Zi hour.', zw_tst_shift:'True solar time falls on a different day, so the chart uses that date.'});
+Object.assign(dict.id, ZWX.id, {lbl_zw_country:'Negara lahir (opsional)', lbl_zw_city:'Kota lahir', zw_place_none:'Tidak dipilih', zw_city_pick:'Pilih kota', zw_place:'Tempat lahir', zw_tst:'Waktu matahari sejati', zw_err_city:'Anda memilih negara lahir. Pilih juga kotanya, atau kembalikan negara ke "Tidak dipilih".', zw_place_hint:'Jika tempat lahir dipilih, bagan memakai waktu matahari sejati dari garis bujurnya, lebih akurat bila lahir dekat batas jam. Kosongkan untuk memakai jam biasa.', zw_late_zi_tst:'Menurut waktu matahari sejati Anda lahir setelah pukul 23.00, jadi bagan memakai jam Zi hari berikutnya.', zw_tst_shift:'Waktu matahari sejati jatuh di hari lain, jadi bagan memakai tanggal itu.'});
+// 出生地選單：國家 → 城市（換語言時重畫，保留已選的值）
+function renderZwPlaces(){
+  const countryEl = document.getElementById('zw-country');
+  const keepCountry = countryEl.value, keepCity = document.getElementById('zw-city').value;
+  countryEl.innerHTML = `<option value="">${esc(dict[currentLang].zw_place_none)}</option>` + ZW_PLACES.map(c => `<option value="${c.id}">${esc(zwPlaceName(c.name, currentLang))}</option>`).join('');
+  countryEl.value = keepCountry;
+  renderZwCities(keepCity);
+}
+function renderZwCities(keepCity){
+  const country = ZW_PLACES.find(c => c.id === document.getElementById('zw-country').value), cityEl = document.getElementById('zw-city');
+  if (!country) { cityEl.innerHTML = '<option value="">—</option>'; cityEl.value = ''; cityEl.disabled = true; return; }
+  const single = country.cities.length === 1;
+  cityEl.disabled = false;
+  cityEl.innerHTML = (single ? '' : `<option value="">${esc(dict[currentLang].zw_city_pick)}</option>`) + country.cities.map((c, i) => `<option value="${i}">${esc(zwPlaceName(c, currentLang))}</option>`).join('');
+  cityEl.value = keepCity && country.cities[Number(keepCity)] ? keepCity : (single ? '0' : '');
+}
+document.getElementById('zw-country').addEventListener('change', () => renderZwCities(''));
 // 預設套用語言
 applyLang(currentLang);
 
@@ -1026,8 +1072,10 @@ const ZW_STAR_ORDER={major:0,lucky:1,sha:2,minor:3};
 // 引擎輸出簡體，轉成畫面與翻譯表用的正體
 function zwTerm(s){ return ZW_S2T[s] || s; }
 
-function buildZiweiReading(engine, dateVal, timeVal, gender){
-  const r=engine.buildChart({date:dateVal,time:timeVal,gender});
+function buildZiweiReading(engine, dateVal, timeVal, gender, place){
+  // 有出生地就先換成真太陽時，再交給引擎（引擎照樣處理 23 點換日）
+  const tst=place?zwTrueSolarTime(dateVal,timeVal,place.longitude,place.timeZone):null;
+  const r=engine.buildChart({date:tst?tst.date:dateVal,time:tst?tst.time:timeVal,gender});
   const c=r.chart;
   const byBranch={}; c.palaces.forEach(p=>{byBranch[p.branch]=p;});
   const ming=byBranch[c.mingGongBranch], shen=byBranch[c.shenGongBranch];
@@ -1037,7 +1085,7 @@ function buildZiweiReading(engine, dateVal, timeVal, gender){
   c.palaces.forEach(p=>p.stars.forEach(s=>{ if(s.siHua) four.push([s.name,s.siHua]); }));
   four.sort((a,b)=>ZW_SIHUA_ORDER.indexOf(a[1])-ZW_SIHUA_ORDER.indexOf(b[1]));
   const naYin=ZW_NA_YIN[ZW_STEMS[ming.stem]+ZW_BRANCHES[ming.branch]]||'';
-  return {r,c,byBranch,ming,shen,cur,forward,four,naYin};
+  return {r,c,byBranch,ming,shen,cur,forward,four,naYin,tst};
 }
 
 function ziweiStarHTML(s){
@@ -1047,28 +1095,73 @@ function ziweiStarHTML(s){
     +(s.siHua?'<span class="zw-sihua">'+readingText(zwTerm(s.siHua))+'</span>':'')+'</span>';
 }
 
+// 命盤說明：從命宮開始依序說明十二宮（固定文字，跟著語言切換）
+function ziweiExplainStar(s, withBright){
+  const key=ZWX_STAR_KEY[s.name], group=withBright&&s.brightnessRaw?ZWX_BRIGHT_GROUP[s.brightnessRaw]:'';
+  return '<li><strong>'+readingText(zwTerm(s.name))+'</strong>'
+    +(s.brightnessRaw?'<span class="zw-ex-tag">'+readingText(zwTerm(s.brightnessRaw))+'</span>':'')
+    +(s.siHua?'<span class="zw-ex-tag hua">'+readingText(zwTerm(s.siHua))+'</span>':'')
+    +' '+uiText('zwx_s_'+key)+(group?uiText('zwx_sp')+uiText('zwx_b_'+group):'')+(s.siHua?uiText('zwx_sp')+uiText('zwx_h_'+ZWX_SIHUA_KEY[s.siHua]):'')+'</li>';
+}
+function ziweiExplainHTML(z){
+  const c=z.c, cur=z.cur;
+  const palaces=ZWX_PALACE_ORDER.map(n=>c.palaces.find(p=>ZWX_PALACE_KEY[p.name]===ZWX_PALACE_KEY[n])).filter(Boolean);
+  let html='<div class="smart-card zw-explain"><div class="smart-title">— '+uiText('zwx_title')+' —</div><div class="hint">'+uiText('zwx_intro')+'</div>';
+  palaces.forEach(p=>{
+    const mains=p.stars.filter(s=>s.type==='major'), aux=p.stars.filter(s=>s.type!=='major'&&ZWX_STAR_KEY[s.name]), minor=p.stars.filter(s=>!ZWX_STAR_KEY[s.name]);
+    const isNow=!!cur&&cur.palaceBranch===p.branch;
+    html+='<details class="zw-ex-palace'+(isNow?' now':'')+'"'+(p.branch===c.mingGongBranch?' open':'')+'><summary><span class="zw-ex-name">'+readingText(zwTerm(p.name))+' · '+readingText(ZW_BRANCHES[p.branch])+'</span>'
+      +(mains.length?'<span class="zw-ex-main">'+mains.map(s=>readingText(zwTerm(s.name))).join(' / ')+'</span>':'')
+      +(p.daXianAge?'<span class="zw-ex-age">'+uiText('zwx_decade')+' '+p.daXianAge[0]+'–'+p.daXianAge[1]+'</span>':'')+'</summary>';
+    html+='<p>'+uiText('zwx_p_'+ZWX_PALACE_KEY[p.name])+'</p>';
+    if(isNow) html+='<p class="zw-ex-note"><strong>'+cur.startAge+'–'+cur.endAge+uiText('age_unit')+'</strong> '+uiText('zwx_now')+'</p>';
+    if(p.branch===c.shenGongBranch) html+='<p class="zw-ex-note">'+uiText('zwx_body')+'</p>';
+    let lines=mains.map(s=>ziweiExplainStar(s,true)).join('');
+    if(!mains.length){
+      const opp=z.byBranch[(p.branch+6)%12], borrowed=opp?opp.stars.filter(s=>s.type==='major'):[];
+      if(borrowed.length){
+        html+='<p>'+uiText('zwx_empty')+' '+borrowed.map(s=>'<strong>'+readingText(zwTerm(s.name))+'</strong>').join(' / ')+' ('+readingText(zwTerm(opp.name))+')</p>';
+        lines=borrowed.map(s=>ziweiExplainStar({name:s.name},false)).join('');
+      } else html+='<p>'+uiText('zwx_empty_none')+'</p>';
+    }
+    lines+=aux.map(s=>ziweiExplainStar(s,false)).join('');
+    if(lines) html+='<ul class="zw-ex-stars">'+lines+'</ul>';
+    if(minor.length) html+='<p class="zw-ex-minor">'+uiText('zwx_minor')+minor.map(s=>readingText(zwTerm(s.name))).join(' / ')+uiText('zwx_sp')+'—'+uiText('zwx_sp')+uiText('zwx_minor_note')+'</p>';
+    html+='</details>';
+  });
+  return html+'</div>';
+}
+
 function ziweiFactStar(s){ return zwTerm(s.name)+(s.brightnessRaw?zwTerm(s.brightnessRaw):'')+(s.siHua?'化'+zwTerm(s.siHua):''); }
 
 onRitual('ziwei-btn','ziwei', async () => {
   const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
   if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_err_date')+'</div>';return;}
+  const countryVal=document.getElementById('zw-country').value, place=countryVal?zwFindPlace(countryVal,document.getElementById('zw-city').value):null;
+  if(countryVal&&!place){resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_err_city')+'</div>';return;}
   if(!validBirthDate(document.getElementById('zw-date'),'ziwei-result')) return;
   let engine;
   try{ engine=await ensureZiweiEngine(); }
   catch{ resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_engine_error')+'</div>'; return; }
   try{
-    const z=buildZiweiReading(engine,dateVal,timeVal,gender), c=z.c, cur=z.cur, ai=aiCardPlaceholder();
+    const z=buildZiweiReading(engine,dateVal,timeVal,gender,place), c=z.c, cur=z.cur, tst=z.tst, ai=aiCardPlaceholder('zwx_summary_title');
     const genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male;
     const hourBranch=ZW_BRANCHES[c.birthInfo.hour];
     const li=c.lunarInfo, lunarText=li.lunarYear+' / '+(li.isLeapMonth?uiText('zw_leap'):'')+Math.abs(li.lunarMonth)+' / '+li.lunarDay;
     let html='<div class="zw-meta">';
     html+='<div class="smart-chip"><span>'+uiText('lbl_dob')+'</span><strong>'+esc(dateVal)+'</strong></div>';
     html+='<div class="smart-chip"><span>'+uiText('lbl_tob')+'</span><strong>'+esc(timeVal)+' · '+readingText(hourBranch)+uiText('zw_hour_suffix')+'</strong></div>';
+    if(tst){
+      html+='<div class="smart-chip"><span>'+uiText('zw_place')+'</span><strong>'+readingText(place.country.name[0])+(place.country.cities.length>1?' · '+readingText(place.city[0]):'')+'</strong></div>';
+      html+='<div class="smart-chip"><span>'+uiText('zw_tst')+'</span><strong>'+(tst.date!==dateVal?esc(tst.date)+' ':'')+esc(tst.time)+'</strong></div>';
+    }
     html+='<div class="smart-chip"><span>'+uiText('lbl_gender')+'</span><strong>'+uiText(gender==='F'?'opt_female':'opt_male')+' · '+readingText(zwTerm(c.yinYangGender))+'</strong></div>';
     html+='<div class="smart-chip"><span>'+uiText('lunar')+'</span><strong>'+lunarText+'</strong></div>';
     html+='<div class="smart-chip"><span>'+uiText('zw_bureau')+'</span><strong>'+readingText(zwTerm(c.wuxingJuName))+'</strong></div>';
     html+='<div class="smart-chip"><span>'+uiText('zw_current')+'</span><strong>'+c.currentAge+uiText('age_unit')+(cur?' · '+cur.startAge+'–'+cur.endAge+uiText('age_unit'):'')+'</strong></div></div>';
-    if(z.r.chartDate!==dateVal) html+='<div class="hint">'+uiText('zw_late_zi')+'</div>';
+    const usedTime=tst?tst.time:timeVal;
+    if(usedTime.slice(0,2)==='23') html+='<div class="hint">'+uiText(tst?'zw_late_zi_tst':'zw_late_zi')+'</div>';
+    else if(tst&&tst.date!==dateVal) html+='<div class="hint">'+uiText('zw_tst_shift')+'</div>';
     html+='<div class="chart-toolbar"><button type="button" class="btn secondary small" data-chart-zoom aria-pressed="false">'+esc(readingLayoutLabels().zoom)+'</button></div><div class="chart-scroll" tabindex="0" role="region" aria-label="'+esc(readingLayoutLabels().chart)+'"><div class="zw-grid">';
     [5,6,7,8,4,null,null,9,3,null,null,10,2,1,0,11].forEach((b,pos)=>{
       if(b===null){ if(pos===5) html+='<div class="zw-center"><div class="zw-c-title">'+uiText('zw_center_title')+'</div><div class="zw-c-line">'
@@ -1086,12 +1179,12 @@ onRitual('ziwei-btn','ziwei', async () => {
     html+='</div></div><div class="meta-card"><div class="meta-row"><span>'+uiText('zw_four')+'</span><strong>'+z.four.map(x=>readingText(zwTerm(x[0]))+uiText('transform_connector')+readingText(zwTerm(x[1]))).join(' / ')+'</strong></div>';
     html+='<div class="meta-row"><span>'+uiText('zw_current_daxian')+'</span><strong>'+(cur?cur.startAge+'–'+cur.endAge+uiText('age_unit')+' | '+readingText(zwTerm(cur.palaceName))+' | '+readingText(ZW_BRANCHES[cur.palaceBranch]):uiText('label_none'))+'</strong></div>';
     html+='<div class="meta-row"><span>'+uiText('zw_patterns')+'</span><strong>'+(z.r.patterns.length?z.r.patterns.map(p=>readingText(zwTerm(p.name))).join(' / '):uiText('label_none'))+'</strong></div></div>';
-    html+='<div class="hint">'+uiText('zw_engine_hint')+'</div>'+ai.html;
+    html+='<div class="hint">'+uiText('zw_engine_hint')+'</div>'+ziweiExplainHTML(z)+ai.html;
     resultEl.innerHTML=html;
     const chartZoom=resultEl.querySelector('[data-chart-zoom]');
     chartZoom.onclick=()=>{const expanded=resultEl.querySelector('.chart-scroll').classList.toggle('expanded');chartZoom.setAttribute('aria-pressed',String(expanded));chartZoom.textContent=readingLayoutLabels()[expanded?'fit':'zoom'];};
     const palaceFact=p=>{const ss=p.stars.filter(s=>s.type!=='minor');return zwTerm(p.name)+'('+ZW_STEMS[p.stem]+ZW_BRANCHES[p.branch]+(p.daXianAge?' '+p.daXianAge[0]+'-'+p.daXianAge[1]:'')+'): '+(ss.length?ss.map(ziweiFactStar).join('、'):'空宮');};
-    const facts={BirthDate:dateVal,BirthTime:timeVal,ChartDate:z.r.chartDate,Gender:genderLabel,YinYang:zwTerm(c.yinYangGender),
+    const facts={BirthDate:dateVal,BirthTime:timeVal,...(tst?{BirthPlace:place.country.name[0]+' '+place.city[0],TrueSolarTime:tst.date+' '+tst.time}:{}),ChartDate:z.r.chartDate,Gender:genderLabel,YinYang:zwTerm(c.yinYangGender),
       LunarDate:li.lunarYear+'-'+(li.isLeapMonth?'閏':'')+Math.abs(li.lunarMonth)+'-'+li.lunarDay,FourPillars:(li.fourPillarsLunar||li.fourPillars||[]).join(' '),
       Bureau:zwTerm(c.wuxingJuName),LifePalace:ZW_BRANCHES[c.mingGongBranch],BodyPalace:ZW_BRANCHES[c.shenGongBranch]+' '+zwTerm(z.shen.name),
       MingZhu:zwTerm(c.mingZhu),ShenZhu:zwTerm(c.shenZhu),
@@ -1100,7 +1193,7 @@ onRitual('ziwei-btn','ziwei', async () => {
       CurrentDecadal:cur?cur.startAge+'-'+cur.endAge+'歲 '+zwTerm(cur.palaceName):'童限',CurrentAge:c.currentAge,
       Patterns:z.r.patterns.map(p=>zwTerm(p.name)+'('+p.level+')'),
       ChartStatus:'ziwei-doushu engine (iztro): 14 main + auxiliary stars, brightness, four transformations, decadal cycles, patterns'};
-    fillAiExplain(ai.id,'ziwei','',facts); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
+    fillAiExplain(ai.id,'ziwei','',facts,'zwx_summary_title'); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
   }catch(e){resultEl.innerHTML='<div class="empty">'+esc(e.message||'Chart calculation failed')+'</div>';}
 });
 </script>
