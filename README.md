@@ -5,16 +5,16 @@
 ## 目前版本
 
 - App：`2.5.0`
-- AI API：`guanbu-ask-2.7`
-- Primary AI：`@cf/openai/gpt-oss-120b`
+- AI API：`guanbu-ask-3.3`
+- Primary AI：`@cf/deepseek-ai/deepseek-v4-flash-0731`（平衡型，reasoning_effort: low；需 Workers Paid 方案）
 - Gemini fallback：`gemini-3.6-flash`
-- 最後版本同步：2026-09-25
+- 最後版本同步：2026-10-23
 
 ## Runtime
 
 `worker.js` 提供 `POST /ask` 與 `POST /chat`，其餘請求交由 Cloudflare Static Assets。
 
-目前 AI 路由為 Cloudflare Workers AI 主線；主線逾時或失敗時自動切換 Gemini 3.5 Flash 備援。占卜計算與 UI 行為不受此路由調整影響。
+目前 AI 路由為 Cloudflare Workers AI 主線；主線逾時或失敗時自動切換 Gemini 3.6 Flash 備援。主、副都採各家的平衡型（Flash）模型。占卜計算與 UI 行為不受此路由調整影響。
 
 ## 紫微排盤引擎
 
