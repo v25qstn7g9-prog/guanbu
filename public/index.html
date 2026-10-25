@@ -423,6 +423,7 @@
 
 <script src="readings-i18n.js"></script>
 <script src="yijing-hexagrams.js"></script>
+<script src="yijing-evidence.js"></script>
 <script src="ziwei-terms.js"></script>
 <script src="ziwei-place.js"></script>
 <script src="ziwei-explain.js"></script>
@@ -454,7 +455,7 @@ const dict = {
     chat_q1: "下一步該怎麼做？", chat_q2: "最需要注意什麼坑？", chat_ph: "輸入你想追問的細節...", chat_send: "發送", chat_clear: "清除",
     hints: ["仙師正閉目沉思，為你解讀符號背後的訊息…", "仙師正梳理當前的氣運與脈絡…", "仙師正為你斟酌一句溫和的行動建議…"],
     // 動態介面補充標籤
-    hex_orig: "本卦", hex_change: "之卦", label_now: "現在", label_moving: "有變化", label_after: "之後", label_none: "沒有",
+    hex_orig: "本卦", hex_change: "之卦", label_now: "本卦", label_moving: "有變化", label_after: "之卦", label_none: "沒有",
     rune_labels: ['現況','阻力','建議'], rune_single: '指引',
     daily_energy: "能量", lunar: "農曆", zw_hour_suffix: "時", zw_bureau: "五行局", zw_current: "虛歲／大限", zw_empty: "空宮", zw_life: "命宮", zw_body: "身宮", zw_year: "生年", zw_nayin: "納音", zw_element_suffix: "行", zw_direction: "大限方向", zw_forward: "順行", zw_backward: "逆行", zw_four: "生年四化", zw_current_daxian: "目前大限", zw_v3_hint: "v3.0 已加入十四主星、四化與大限框架。農曆日期採瀏覽器 Chinese Calendar，閏月與少數流派差異仍可能造成排盤差異。", zw_hint: "已完成農曆日期、時辰、命宮與身宮定位。主星、四化與大限尚未納入，因此不將此版本標示為完整星曜命盤。", zw_center_title: "觀卜 · 紫微命盤", zw_body: "身宮在", zw_daxian: "現走大限", zw_err_date: "請先輸入完整的出生日期與時間"
   },
@@ -479,7 +480,7 @@ const dict = {
     ai_title: "The Sage's Insight", ai_chat_title: "💡 Have questions about this reading? Ask the Ancient Sage",
     chat_q1: "What should I do next?", chat_q2: "What pitfall to avoid?", chat_ph: "Ask follow-up details...", chat_send: "Send", chat_clear: "Clear",
     hints: ["The sage is reading the signs for you...", "The sage is tracing the current currents of fortune...", "The sage is weighing a gentle piece of advice..."],
-    hex_orig: "Original", hex_change: "Transformed", label_now: "Present", label_moving: "Changing", label_after: "Future", label_none: "None",
+    hex_orig: "Original", hex_change: "Transformed", label_now: "Original", label_moving: "Changing", label_after: "Changed", label_none: "None",
     rune_labels: ['Current Status','Obstacle','Advice'], rune_single: 'Guidance',
     daily_energy: "Energy", lunar: "Lunar", zw_hour_suffix: " hour", zw_bureau: "Five-Element Bureau", zw_current: "Age / Decadal", zw_empty: "Empty", zw_life: "Life Palace", zw_body: "Body Palace", zw_year: "Year Pillar", zw_nayin: "Na Yin", zw_element_suffix: " element", zw_direction: "Decadal Direction", zw_forward: "Forward", zw_backward: "Reverse", zw_four: "Birth-Year Transformations", zw_current_daxian: "Current Decadal", zw_v3_hint: "v3.0 adds the 14 main stars, four transformations and decadal-cycle framework. Lunar dates use the browser Chinese Calendar; leap-month and school-specific conventions may differ.", zw_hint: "Lunar date, time branch, Life Palace and Body Palace have been calculated. Major stars, transformations and decadal cycles are not yet included, so this is not a full star chart.", zw_center_title: "Guanbu · Zi Wei Chart", zw_body: "Body Palace at", zw_daxian: "Current Decadal", zw_err_date: "Please enter complete birth date and time"
   },
@@ -504,7 +505,7 @@ const dict = {
     ai_title: "Wejangan Sang Resi", ai_chat_title: "💡 Ada pertanyaan tentang hasil ini? Tanyakan pada Sang Resi Bijak",
     chat_q1: "Apa langkah saya selanjutnya?", chat_q2: "Hal apa yang harus dihindari?", chat_ph: "Tanyakan detail tindak lanjut...", chat_send: "Kirim", chat_clear: "Hapus",
     hints: ["Sang Resi sedang membaca makna di balik simbol ini...", "Sang Resi sedang menelusuri arus keberuntungan saat ini...", "Sang Resi sedang menyusun sepatah saran yang lembut..."],
-    hex_orig: "Asli", hex_change: "Berubah", label_now: "Saat Ini", label_moving: "Berubah", label_after: "Masa Depan", label_none: "Tidak Ada",
+    hex_orig: "Asli", hex_change: "Berubah", label_now: "Asli", label_moving: "Berubah", label_after: "Perubahan", label_none: "Tidak Ada",
     rune_labels: ['Status Saat Ini','Hambatan','Saran'], rune_single: 'Panduan',
     zw_center_title: "Guanbu · Bagan Zi Wei", zw_body: "Istana Tubuh di", zw_daxian: "Dekade Ini", zw_err_date: "Harap masukkan tanggal dan waktu lahir lengkap", daily_energy: "Energi", lunar: "Lunar", zw_hour_suffix: " jam", zw_bureau: "Biro Lima Unsur", zw_current: "Usia / Dekade", zw_empty: "Kosong", zw_life: "Istana Kehidupan", zw_body: "Istana Tubuh", zw_year: "Pilar Tahun", zw_nayin: "Na Yin", zw_element_suffix: "", zw_direction: "Arah Dekade", zw_forward: "Maju", zw_backward: "Mundur", zw_four: "Transformasi Tahun Lahir", zw_current_daxian: "Dekade Saat Ini", zw_v3_hint: "v3.0 menambahkan 14 bintang utama, empat transformasi, dan kerangka siklus dekade. Tanggal lunar memakai Chinese Calendar browser; aturan bulan kabisat dan aliran tradisi tertentu dapat berbeda.", zw_hint: "Tanggal lunar, cabang waktu, Istana Kehidupan dan Istana Tubuh telah dihitung. Bintang utama, transformasi dan siklus dekade belum dimasukkan, jadi ini bukan bagan bintang lengkap.",
 
@@ -896,9 +897,9 @@ Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', 
 Object.assign(dict.zh, {lbl_yj_cast:'起卦方式', opt_yj_auto:'自動擲錢', opt_yj_manual:'手動填爻（自己擲錢）', yj_manual_hint:'三枚硬幣擲一次：正面算 3、反面算 2，三枚加起來（6～9）就是這一爻，其中 9 和 6 是會變的爻。從第 1 爻（最下面）依序擲到第 6 爻（最上面）。', yj_pick:'請選', yj_v9:'9 老陽·變', yj_v8:'8 少陰', yj_v7:'7 少陽', yj_v6:'6 老陰·變', yj_line_1:'第1爻（初爻，最下）', yj_line_2:'第2爻', yj_line_3:'第3爻', yj_line_4:'第4爻', yj_line_5:'第5爻', yj_line_6:'第6爻（上爻，最上）', yj_err_lines:'手動填爻要把第 1～6 爻都選好，才能起卦'});
 Object.assign(dict.en, {lbl_yj_cast:'How to cast', opt_yj_auto:'Automatic coin toss', opt_yj_manual:'Enter lines myself (my own coins)', yj_manual_hint:'Toss three coins at once: heads count 3, tails count 2. The total (6 to 9) is that line; 9 and 6 (marked *) are changing lines. Start with line 1 (bottom) and finish with line 6 (top).', yj_pick:'Choose', yj_v9:'9 Yang*', yj_v8:'8 Yin', yj_v7:'7 Yang', yj_v6:'6 Yin*', yj_line_1:'Line 1 (bottom)', yj_line_2:'Line 2', yj_line_3:'Line 3', yj_line_4:'Line 4', yj_line_5:'Line 5', yj_line_6:'Line 6 (top)', yj_err_lines:'For manual casting, choose all six lines (1 to 6) first.'});
 Object.assign(dict.id, {lbl_yj_cast:'Cara melempar', opt_yj_auto:'Lempar koin otomatis', opt_yj_manual:'Isi garis sendiri (koin sendiri)', yj_manual_hint:'Lempar tiga koin sekaligus: gambar dihitung 3, angka dihitung 2. Jumlahnya (6 sampai 9) adalah garis itu; 9 dan 6 (bertanda *) adalah garis yang berubah. Mulai dari garis 1 (paling bawah) sampai garis 6 (paling atas).', yj_pick:'Pilih', yj_v9:'9 Yang*', yj_v8:'8 Yin', yj_v7:'7 Yang', yj_v6:'6 Yin*', yj_line_1:'Garis 1 (paling bawah)', yj_line_2:'Garis 2', yj_line_3:'Garis 3', yj_line_4:'Garis 4', yj_line_5:'Garis 5', yj_line_6:'Garis 6 (paling atas)', yj_err_lines:'Untuk cara manual, pilih keenam garis (1 sampai 6) dulu.'});
-Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'經文節錄', hex_ni:'第三方天紀摘要', hex_advice:'占斷', hex_detail_source:'以上是第三方專案 Renhuai123/ziwei-doushu 整理的簡短摘要（程式 MIT 授權，取自上游 1059c34 版），上游自述參考倪海廈《人間道·64卦易圖》與《斷易天機》。這不是原典全文，也不是完整的倪師學說，未逐條核對原話；沒有逐爻爻辭。'});
-Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Text excerpt', hex_ni:'Third-party Tianji summary', hex_advice:'Verdict', hex_detail_source:'These are short summaries compiled by the third-party project Renhuai123/ziwei-doushu (code under MIT, taken from upstream version 1059c34), which says it draws on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji. They are not the original texts or Master Ni\'s complete teaching, have not been checked line by line, and do not include the individual line texts.'});
-Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Kutipan teks', hex_ni:'Ringkasan Tianji pihak ketiga', hex_advice:'Petunjuk', hex_detail_source:'Ini ringkasan singkat dari proyek pihak ketiga Renhuai123/ziwei-doushu (kode berlisensi MIT, dari versi upstream 1059c34), yang menyatakan merujuk kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji. Ini bukan teks asli atau ajaran lengkap Guru Ni, belum diperiksa baris demi baris, dan tidak memuat teks tiap garis.'});
+Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'經文節錄', hex_ni:'第三方天紀摘要', hex_advice:'占斷', hex_detail_source:'未核既有摘要與經文節錄來自第三方專案 Renhuai123/ziwei-doushu 整理的簡短摘要（程式 MIT 授權，取自上游 1059c34 版），上游自述參考倪海廈《人間道·64卦易圖》與《斷易天機》。這不是原典全文，也不是完整的倪師學說，未逐條核對原話；沒有逐爻爻辭。'});
+Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Text excerpt', hex_ni:'Third-party Tianji summary', hex_advice:'Verdict', hex_detail_source:'The unreviewed legacy summaries and text excerpts are compiled by the third-party project Renhuai123/ziwei-doushu (code under MIT, taken from upstream version 1059c34), which says it draws on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji. They are not the original texts or Master Ni\'s complete teaching, have not been checked line by line, and do not include the individual line texts.'});
+Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Kutipan teks', hex_ni:'Ringkasan Tianji pihak ketiga', hex_advice:'Petunjuk', hex_detail_source:'Ringkasan lama dan kutipan teks yang belum ditinjau berasal dari proyek pihak ketiga Renhuai123/ziwei-doushu (kode berlisensi MIT, dari versi upstream 1059c34), yang menyatakan merujuk kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji. Ini bukan teks asli atau ajaran lengkap Guru Ni, belum diperiksa baris demi baris, dan tidak memuat teks tiap garis.'});
 Object.assign(dict.zh, {zw_err_year:'目前只能排 1900～2100 年出生的命盤（有選出生地時，以換算真太陽時後的日期為準）。', ai_too_large:'這次要給 AI 的資料太多，超過上限，所以沒有送出。上面的本地結果仍然有效。', zw_err_input:'出生日期、時間或性別的格式不正確，請重新選擇', zw_ev_title:'格局依據', zw_ev_required:'成立條件', zw_ev_bonus:'加分', zw_ev_breaking:'破格警示', zw_ev_source:'出處', zw_ev_has_break:'有破格警示', zw_ev_zh_only:'', zw_ev_note:'格局由第三方程式 Renhuai123/ziwei-doushu 依規則判定，出處為上游標註，未逐條核對原典；只列已成立的格局。', zw_lv_excellent:'大吉', zw_lv_good:'吉', zw_lv_neutral:'中性', zw_lv_caution:'需留意'});
 Object.assign(dict.en, {zw_err_year:'Charts can only be made for births from 1900 to 2100 (with a birthplace, the date after true solar time conversion counts).', ai_too_large:'There was too much data to send to the AI, so it was not sent. The results above are still valid.', zw_err_input:'The birth date, time or gender is not valid. Please choose again.', zw_ev_title:'Pattern Evidence', zw_ev_required:'Conditions met', zw_ev_bonus:'Bonus', zw_ev_breaking:'Breaking warnings', zw_ev_source:'Source', zw_ev_has_break:'Has warnings', zw_ev_zh_only:'The detailed conditions, warnings and classical sources are only available in Chinese. Switch to Chinese to read them.', zw_ev_note:'Patterns are detected by rules in the third-party program Renhuai123/ziwei-doushu; sources are as labelled upstream and have not been checked against the classics line by line. Only patterns that are met are listed.', zw_lv_excellent:'Very good', zw_lv_good:'Good', zw_lv_neutral:'Neutral', zw_lv_caution:'Take care'});
 Object.assign(dict.id, {zw_err_year:'Bagan hanya bisa dibuat untuk kelahiran tahun 1900 sampai 2100 (bila tempat lahir dipilih, yang dihitung adalah tanggal setelah konversi waktu matahari sejati).', ai_too_large:'Data untuk AI terlalu banyak sehingga tidak dikirim. Hasil di atas tetap berlaku.', zw_err_input:'Tanggal, jam atau jenis kelamin tidak valid. Silakan pilih lagi.', zw_ev_title:'Dasar Pola', zw_ev_required:'Syarat terpenuhi', zw_ev_bonus:'Nilai tambah', zw_ev_breaking:'Peringatan pematah', zw_ev_source:'Sumber', zw_ev_has_break:'Ada peringatan', zw_ev_zh_only:'Rincian syarat, peringatan, dan sumber klasik hanya tersedia dalam bahasa Mandarin. Ganti ke bahasa Mandarin untuk membacanya.', zw_ev_note:'Pola dideteksi oleh aturan program pihak ketiga Renhuai123/ziwei-doushu; sumber sesuai label upstream dan belum diperiksa dengan teks klasik baris demi baris. Hanya pola yang terpenuhi yang dicantumkan.', zw_lv_excellent:'Sangat baik', zw_lv_good:'Baik', zw_lv_neutral:'Netral', zw_lv_caution:'Perlu hati-hati'});
@@ -991,16 +992,28 @@ function manualLinesReady(){
 }
 document.getElementById('yijing-cast').addEventListener('change', showYijingCast);
 
+// Source themes and editorial conditions stay separately labelled in every language.
+Object.assign(dict.zh, {yj_source_theme:'書面卦理主題（有限校讀）', yj_editor:'編輯適用限制（非來源原話）', yj_review_note:'第三方轉寫，非核實官方定本；僅8卦一般主題，非預測實證。之卦不是確定未來；未核動爻取用，不作逐爻推演。', yj_unreviewed:'此卦尚未按本批書面來源校讀；下列既有摘要未核。', yj_source_error:'來源資料未能載入，請重新整理後再試。', yj_source_link:'來源・PDF頁', yj_editor_short:'僅依明示情境反思，未知就保留條件；不保證結果，不推醫療、訴訟或投資結論。', yj_recovery:'只有明示困境初解才談恢復；否則保留假設，不宣稱已解決。'});
+Object.assign(dict.en, {yj_source_theme:'Written principle theme (limited review)', yj_editor:'Editorial limits (not source wording)', yj_review_note:'Third-party transcription, not a verified official edition. Only eight general themes reviewed, not empirical prediction evidence. The changed hexagram is not a certain future; line-use rules are unreviewed, so no line-based inference.', yj_unreviewed:'Not reviewed against this written source; the existing summaries below are unverified.', yj_source_error:'Source data could not load. Refresh and try again.', yj_source_link:'Source · PDF pages', yj_editor_short:'Reflect only on stated circumstances; keep unknowns conditional. No guaranteed outcomes or medical, legal or investment conclusions.', yj_recovery:'Discuss recovery only if the user states that difficulties have just eased; otherwise keep it hypothetical, not resolved.'});
+Object.assign(dict.id, {yj_source_theme:'Tema prinsip tertulis (tinjauan terbatas)', yj_editor:'Batas editorial (bukan kata-kata sumber)', yj_review_note:'Transkripsi pihak ketiga, bukan edisi resmi terverifikasi. Hanya delapan tema umum ditinjau, bukan bukti empiris prediksi. Heksagram perubahan bukan masa depan yang pasti; aturan penggunaan garis belum ditinjau, jadi tidak ada penalaran berdasarkan garis.', yj_unreviewed:'Belum ditinjau menurut sumber tertulis ini; ringkasan lama di bawah belum terverifikasi.', yj_source_error:'Data sumber gagal dimuat. Muat ulang dan coba lagi.', yj_source_link:'Sumber · halaman PDF', yj_editor_short:'Refleksi hanya berdasarkan keadaan yang dinyatakan; hal yang belum diketahui tetap bersyarat. Tidak menjamin hasil atau kesimpulan medis, hukum, maupun investasi.', yj_recovery:'Bahas pemulihan hanya jika pengguna menyatakan kesulitan baru mereda; jika tidak, tetap sebagai kemungkinan, bukan sudah selesai.'});
+Object.assign(LOCAL_READING_TRANSLATIONS.en, {'改正偏差，避免反覆。':'Correct deviations and avoid repeating them.', '節制耗散，積累學識能力。':'Limit waste and build knowledge and ability.', '正當原則可守，方法可變。':'Sound principles can endure while methods can change.', '強勢須自制，避免僵局。':'Strength calls for self-restraint to avoid a deadlock.', '自律、規則與溝通。':'Self-discipline, rules and communication.', '遇阻先衡量風險。':'When facing obstacles, assess risks first.', '困境初解，重在恢復。':'When difficulties have just eased, focus on recovery.', '相互支持，發現錯誤即調整。':'Support one another and adjust when errors are found.'});
+Object.assign(LOCAL_READING_TRANSLATIONS.id, {'改正偏差，避免反覆。':'Perbaiki penyimpangan dan hindari pengulangannya.', '節制耗散，積累學識能力。':'Batasi pemborosan dan bangun pengetahuan serta kemampuan.', '正當原則可守，方法可變。':'Prinsip yang baik dapat dipertahankan, metode dapat berubah.', '強勢須自制，避免僵局。':'Kekuatan memerlukan pengendalian diri agar tidak buntu.', '自律、規則與溝通。':'Disiplin diri, aturan dan komunikasi.', '遇阻先衡量風險。':'Saat menghadapi hambatan, nilai risikonya dahulu.', '困境初解，重在恢復。':'Ketika kesulitan baru mereda, utamakan pemulihan.', '相互支持，發現錯誤即調整。':'Saling mendukung dan sesuaikan langkah saat menemukan kesalahan.'});
+function hexTheme(num){ return YijingEvidence.lookup(num)?.sourceTheme || HEX_TEXT[num]; }
 // 卦象詳解：卦象組成、經文節錄（卦辭，部分卦含象辭）、第三方天紀摘要、占斷（資料見 yijing-hexagrams.js）
 function hexDetailHTML(labelKey, num){
-  const d = HEX_DETAIL[num];
-  return `<div class="hex-detail"><div class="hex-detail-head">${uiText(labelKey)} · ${readingText(HEX_NAMES[num]+'卦')} <span>${readingText(d.image)}</span></div>`
+  const d = HEX_DETAIL[num], item = YijingEvidence.lookup(num);
+  const head = `<div class="hex-detail"><div class="hex-detail-head">${uiText(labelKey)} · ${readingText(HEX_NAMES[num]+'卦')} <span>${readingText(d.image)}</span></div>`;
+  if (item) return head
+    + `<p><b>${uiText('yj_source_theme')}</b> ${readingText(item.sourceTheme)}</p>`
+    + `<p><a href="${YijingEvidence.sourceUrl}" target="_blank" rel="noopener noreferrer">${uiText('yj_source_link')} ${item.pdfPages.join('–')}</a></p>`
+    + `<p><b>${uiText('yj_editor')}</b> ${uiText('yj_editor_short')} ${num===40?uiText('yj_recovery'):''}</p></div>`;
+  return head + `<p class="hint">${uiText('yj_unreviewed')}</p>`
     + ['text','ni','advice'].map(k => `<p><b>${uiText('hex_'+k)}</b> ${readingText(d[k])}</p>`).join('') + `</div>`;
 }
 function hexDetailCardHTML(hexNum, changedNum){
   return `<div class="smart-card hex-detail-card"><div class="smart-title">— ${uiText('hex_detail_title')} —</div>`
     + hexDetailHTML('hex_orig', hexNum) + (changedNum !== hexNum ? hexDetailHTML('hex_change', changedNum) : '')
-    + `<div class="hint">${uiText('hex_detail_source')}</div></div>`;
+    + `<div class="hint">${uiText('yj_review_note')}</div><div class="hint">${uiText('hex_detail_source')}</div></div>`;
 }
 function hexDetailFact(num){
   const d = HEX_DETAIL[num];
@@ -1008,6 +1021,10 @@ function hexDetailFact(num){
 }
 
 onRitual('yijing-btn','yijing', ()=>{
+  if (typeof YijingEvidence === 'undefined') {
+    document.getElementById('yijing-result').innerHTML = `<div class="empty" role="alert">${uiText('yj_source_error')}</div>`;
+    return;
+  }
   const question = document.getElementById('yijing-question').value.trim();
   const manual = manualLines();
   const lines = manual || [];
@@ -1033,9 +1050,9 @@ onRitual('yijing-btn','yijing', ()=>{
   let html = question ? `<div class="question-echo">「${esc(question)}」</div>` : '';
   html += `<div class="hex-pair">${renderHex(lines, 'hex_orig', hexNum)}${renderHex(lines, 'hex_change', changedNum, true)}</div>`;
   html += `<div class="meta-card">`;
-  html += `<div class="meta-row"><span>${uiText('label_now')}</span><strong>${readingText(HEX_NAMES[hexNum])}｜${readingText(HEX_TEXT[hexNum])}</strong></div>`;
+  html += `<div class="meta-row"><span>${uiText('label_now')}</span><strong>${readingText(HEX_NAMES[hexNum])}｜${readingText(hexTheme(hexNum))}</strong></div>`;
   html += `<div class="meta-row"><span>${uiText('label_moving')}</span><strong class="moving">${moving.length?moving.map(i=>readingText(lineLabel(i))).join('、'):uiText('label_none')}</strong></div>`;
-  html += `<div class="meta-row"><span>${uiText('label_after')}</span><strong>${readingText(HEX_NAMES[changedNum])}｜${readingText(HEX_TEXT[changedNum])}</strong></div>`;
+  html += `<div class="meta-row"><span>${uiText('label_after')}</span><strong>${readingText(HEX_NAMES[changedNum])}｜${readingText(hexTheme(changedNum))}</strong></div>`;
   html += `</div>`;
   html += hexDetailCardHTML(hexNum, changedNum);
 
@@ -1045,7 +1062,7 @@ onRitual('yijing-btn','yijing', ()=>{
   const resContainer = document.getElementById('yijing-result');
   resContainer.innerHTML = html;
 
-  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None', SourceNote: '經文節錄（卦辭，部分卦含象辭）與天紀摘要是第三方 Renhuai123/ziwei-doushu 的簡短整理，不是原典全文或完整倪師學說；沒有逐爻爻辭', CastMethod: manual ? '使用者自己擲錢、手動填入六爻' : '程式自動擲錢' };
+  const facts = YijingEvidence.pack({ PresentHexagram: HEX_NAMES[hexNum], FutureHexagram: HEX_NAMES[changedNum], MovingLines: moving.length ? moving.map(lineLabel) : 'None', CastMethod: manual ? '使用者自己擲錢、手動填入六爻' : '程式自動擲錢' }, hexNum, changedNum, { PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum) });
   fillAiExplain(aiHex.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });
