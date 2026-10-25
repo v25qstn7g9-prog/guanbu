@@ -1,7 +1,8 @@
-// 易經六十四卦詳解：卦象組成、卦辭原文、倪師要義、占斷。
-// 資料整理自 Renhuai123/ziwei-doushu lib/nihai/tianji.ts（MIT，參考倪海廈《人間道·64卦易圖》與《斷易天機》），轉為正體並補英文／印尼文。
+// 易經六十四卦詳解：卦象組成、卦辭節錄、第三方天紀摘要、占斷。
+// 資料整理自 Renhuai123/ziwei-doushu lib/nihai/tianji.ts（程式 MIT；上游 1059c347231c636bd86ddb78fd8ed430d5de8d2a，2026-10-20），轉為正體並補英文／印尼文。
+// 這是第三方的簡短整理（上游自述參考倪海廈《人間道·64卦易圖》與《斷易天機》），不是原典全文、不是完整倪師學說，沒有逐爻爻辭。
 // 只是顯示與給 AI 參考的文字，不影響起卦的計算。
-// 每卦：[卦號, 卦象, 上卦, 下卦, 原文, 倪師要義, 占斷, 原文EN, 要義EN, 占斷EN, 原文ID, 要義ID, 占斷ID]
+// 每卦：[卦號, 卦象, 上卦, 下卦, 原文, 第三方天紀摘要, 占斷, 原文EN, 要義EN, 占斷EN, 原文ID, 要義ID, 占斷ID]
 const HEX_DETAIL_ROWS = [
   [1,'乾為天','乾','乾','元亨利貞，天行健，君子以自強不息','純陽之卦，剛健中正，至大至剛','大吉大利，但需注意亢龍有悔',
     'Supreme success, favourable if steadfast. Heaven moves with strength; the wise keep improving themselves without rest.','Pure yang: firm, upright and as strong as it gets.','Very lucky, but beware of going too far and regretting it at the top.',
