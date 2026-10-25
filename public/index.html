@@ -177,6 +177,22 @@
   .yj-manual[hidden]{display:none;}
   .smart-text p.reading-head{margin:16px 0 4px;color:var(--gold);font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;}
   .smart-text p.reading-head:first-child{margin-top:4px;}
+  html:not([lang="zh-Hant"]) .zw-evidence .zw-zh-only{display:none;}
+  html[lang="zh-Hant"] .zw-evidence .zw-non-zh-only{display:none;}
+  .zw-evidence .zw-ev{border-top:1px solid var(--panel-border);}
+  .zw-ev summary{cursor:pointer;min-height:44px;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:6px 0;list-style:none;}
+  .zw-ev summary::-webkit-details-marker{display:none;}
+  .zw-ev summary::before{content:'＋';color:var(--sub);font-size:13px;}
+  .zw-ev[open] summary::before{content:'−';}
+  html:not([lang="zh-Hant"]) .zw-ev summary{cursor:default;}
+  html:not([lang="zh-Hant"]) .zw-ev summary::before{content:none;}
+  .zw-ev-name{color:var(--gold);font-family:'Noto Serif TC',serif;font-size:15px;font-weight:600;}
+  .zw-ev-level{padding:0 7px;border:1px solid var(--panel-border);border-radius:999px;color:var(--sub);font-size:12px;line-height:1.6;}
+  .zw-ev-warn{padding:0 7px;border:1px solid rgba(217,140,151,.6);border-radius:999px;color:#D98C97;font-size:12px;line-height:1.6;}
+  .zw-ev p{margin:6px 0;color:var(--text);font-size:14px;line-height:1.7;overflow-wrap:anywhere;}
+  .zw-ev p b{margin-right:4px;color:#E8D4F5;font-size:13px;}
+  .zw-ev p.warn,.zw-ev p.warn b{color:#D98C97;}
+  .zw-ev p.zw-ev-desc,.zw-ev p.zw-ev-src{color:var(--sub);font-size:13px;}
   .hex-detail{padding:10px 0;border-top:1px solid var(--panel-border);}
   .hex-detail:first-of-type{border-top:0;padding-top:4px;}
   .hex-detail-head{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;font-weight:600;margin-bottom:4px;overflow-wrap:anywhere;}
@@ -385,7 +401,7 @@
   <!-- Ziwei Panel -->
   <div class="panel" id="panel-ziwei">
     <div class="section-title cn" i18n="title_ziwei">紫微斗數排盤</div>
-    <div class="field"><label i18n="lbl_dob">出生日期（國曆）</label><input class="input" type="date" id="zw-date" /></div>
+    <div class="field"><label i18n="lbl_dob">出生日期（國曆）</label><input class="input" type="date" id="zw-date" min="1900-01-01" /></div>
     <div class="mini-grid">
       <div class="field"><label i18n="lbl_tob">出生時間</label><input class="input" type="time" id="zw-hour" /></div>
       <div class="field"><label i18n="lbl_gender">性別</label>
@@ -786,6 +802,8 @@ async function fillAiExplain(id, module, question, facts, titleKey = 'ai_title')
       body: JSON.stringify({ module, question: question || '', facts, lang: currentLang }),
     });
     const data = await res.json().catch(() => null);
+    // 資料太多（413）重試也一樣，直接說明、不放「再請教一次」
+    if (res.status === 413 && data?.error === 'Facts too large') { el.innerHTML = `${head()}<div class="smart-text" style="color:var(--sub);">${uiText('ai_too_large')}</div>`; return; }
     if (!res.ok || !data?.ok || !data.explanation) throw new Error(data?.error || `HTTP ${res.status}`);
     el.innerHTML = `${head()}${readingBodyHtml(data.explanation, module === 'ziwei')}<div class="oracle-actions"><button type="button" class="btn secondary small" data-act="share">${uiText('share')}</button></div>`;
     el.querySelector('[data-act="share"]').onclick = () => shareReading(question, data.explanation);
@@ -837,7 +855,7 @@ function attachChatSection(containerId, moduleName, question, facts) {
       const res = await fetch('/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ module: moduleName, question, facts, history, message: msgText, lang: currentLang })
+        body: JSON.stringify({ module: moduleName, question, facts, history: history.slice(-6), message: msgText, lang: currentLang })
       });
       const data = await res.json().catch(() => null);
       if (generation !== chatGeneration) return;
@@ -847,7 +865,7 @@ function attachChatSection(containerId, moduleName, question, facts) {
         history.push({ role: 'user', content: msgText });
         history.push({ role: 'assistant', content: data.reply });
       } else {
-        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${uiText('chat_fail')}</div>`);
+        historyEl.insertAdjacentHTML('beforeend', `<div class="bubble-err">${uiText(data?.error === 'Facts too large' ? 'ai_too_large' : 'chat_fail')}</div>`);
       }
     } catch (e) {
       if (generation !== chatGeneration) return;
@@ -878,9 +896,12 @@ Object.assign(dict.id, {birth_future:'Tanggal lahir tidak boleh di masa depan', 
 Object.assign(dict.zh, {lbl_yj_cast:'起卦方式', opt_yj_auto:'自動擲錢', opt_yj_manual:'手動填爻（自己擲錢）', yj_manual_hint:'三枚硬幣擲一次：正面算 3、反面算 2，三枚加起來（6～9）就是這一爻，其中 9 和 6 是會變的爻。從第 1 爻（最下面）依序擲到第 6 爻（最上面）。', yj_pick:'請選', yj_v9:'9 老陽·變', yj_v8:'8 少陰', yj_v7:'7 少陽', yj_v6:'6 老陰·變', yj_line_1:'第1爻（初爻，最下）', yj_line_2:'第2爻', yj_line_3:'第3爻', yj_line_4:'第4爻', yj_line_5:'第5爻', yj_line_6:'第6爻（上爻，最上）', yj_err_lines:'手動填爻要把第 1～6 爻都選好，才能起卦'});
 Object.assign(dict.en, {lbl_yj_cast:'How to cast', opt_yj_auto:'Automatic coin toss', opt_yj_manual:'Enter lines myself (my own coins)', yj_manual_hint:'Toss three coins at once: heads count 3, tails count 2. The total (6 to 9) is that line; 9 and 6 (marked *) are changing lines. Start with line 1 (bottom) and finish with line 6 (top).', yj_pick:'Choose', yj_v9:'9 Yang*', yj_v8:'8 Yin', yj_v7:'7 Yang', yj_v6:'6 Yin*', yj_line_1:'Line 1 (bottom)', yj_line_2:'Line 2', yj_line_3:'Line 3', yj_line_4:'Line 4', yj_line_5:'Line 5', yj_line_6:'Line 6 (top)', yj_err_lines:'For manual casting, choose all six lines (1 to 6) first.'});
 Object.assign(dict.id, {lbl_yj_cast:'Cara melempar', opt_yj_auto:'Lempar koin otomatis', opt_yj_manual:'Isi garis sendiri (koin sendiri)', yj_manual_hint:'Lempar tiga koin sekaligus: gambar dihitung 3, angka dihitung 2. Jumlahnya (6 sampai 9) adalah garis itu; 9 dan 6 (bertanda *) adalah garis yang berubah. Mulai dari garis 1 (paling bawah) sampai garis 6 (paling atas).', yj_pick:'Pilih', yj_v9:'9 Yang*', yj_v8:'8 Yin', yj_v7:'7 Yang', yj_v6:'6 Yin*', yj_line_1:'Garis 1 (paling bawah)', yj_line_2:'Garis 2', yj_line_3:'Garis 3', yj_line_4:'Garis 4', yj_line_5:'Garis 5', yj_line_6:'Garis 6 (paling atas)', yj_err_lines:'Untuk cara manual, pilih keenam garis (1 sampai 6) dulu.'});
-Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'原文', hex_ni:'倪師要義', hex_advice:'占斷', hex_detail_source:'卦象資料整理自 Renhuai123/ziwei-doushu（MIT 授權），參考倪海廈《人間道·64卦易圖》與《斷易天機》。'});
-Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Original text', hex_ni:'Master Ni\'s key point', hex_advice:'Verdict', hex_detail_source:'Hexagram notes from Renhuai123/ziwei-doushu (MIT licence), based on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji.'});
-Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Teks asli', hex_ni:'Inti ajaran Guru Ni', hex_advice:'Petunjuk', hex_detail_source:'Catatan heksagram dari Renhuai123/ziwei-doushu (lisensi MIT), berdasarkan kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji.'});
+Object.assign(dict.zh, {hex_detail_title:'卦象詳解', hex_text:'經文節錄', hex_ni:'第三方天紀摘要', hex_advice:'占斷', hex_detail_source:'以上是第三方專案 Renhuai123/ziwei-doushu 整理的簡短摘要（程式 MIT 授權，取自上游 1059c34 版），上游自述參考倪海廈《人間道·64卦易圖》與《斷易天機》。這不是原典全文，也不是完整的倪師學說，未逐條核對原話；沒有逐爻爻辭。'});
+Object.assign(dict.en, {hex_detail_title:'Hexagram Details', hex_text:'Text excerpt', hex_ni:'Third-party Tianji summary', hex_advice:'Verdict', hex_detail_source:'These are short summaries compiled by the third-party project Renhuai123/ziwei-doushu (code under MIT, taken from upstream version 1059c34), which says it draws on Ni Hai Xia\'s 64-hexagram lectures and the Duan Yi Tian Ji. They are not the original texts or Master Ni\'s complete teaching, have not been checked line by line, and do not include the individual line texts.'});
+Object.assign(dict.id, {hex_detail_title:'Rincian Heksagram', hex_text:'Kutipan teks', hex_ni:'Ringkasan Tianji pihak ketiga', hex_advice:'Petunjuk', hex_detail_source:'Ini ringkasan singkat dari proyek pihak ketiga Renhuai123/ziwei-doushu (kode berlisensi MIT, dari versi upstream 1059c34), yang menyatakan merujuk kuliah 64 heksagram Ni Hai Xia dan Duan Yi Tian Ji. Ini bukan teks asli atau ajaran lengkap Guru Ni, belum diperiksa baris demi baris, dan tidak memuat teks tiap garis.'});
+Object.assign(dict.zh, {zw_err_year:'目前只能排 1900～2100 年出生的命盤（有選出生地時，以換算真太陽時後的日期為準）。', ai_too_large:'這次要給 AI 的資料太多，超過上限，所以沒有送出。上面的本地結果仍然有效。', zw_err_input:'出生日期、時間或性別的格式不正確，請重新選擇', zw_ev_title:'格局依據', zw_ev_required:'成立條件', zw_ev_bonus:'加分', zw_ev_breaking:'破格警示', zw_ev_source:'出處', zw_ev_has_break:'有破格警示', zw_ev_zh_only:'', zw_ev_note:'格局由第三方程式 Renhuai123/ziwei-doushu 依規則判定，出處為上游標註，未逐條核對原典；只列已成立的格局。', zw_lv_excellent:'大吉', zw_lv_good:'吉', zw_lv_neutral:'中性', zw_lv_caution:'需留意'});
+Object.assign(dict.en, {zw_err_year:'Charts can only be made for births from 1900 to 2100 (with a birthplace, the date after true solar time conversion counts).', ai_too_large:'There was too much data to send to the AI, so it was not sent. The results above are still valid.', zw_err_input:'The birth date, time or gender is not valid. Please choose again.', zw_ev_title:'Pattern Evidence', zw_ev_required:'Conditions met', zw_ev_bonus:'Bonus', zw_ev_breaking:'Breaking warnings', zw_ev_source:'Source', zw_ev_has_break:'Has warnings', zw_ev_zh_only:'The detailed conditions, warnings and classical sources are only available in Chinese. Switch to Chinese to read them.', zw_ev_note:'Patterns are detected by rules in the third-party program Renhuai123/ziwei-doushu; sources are as labelled upstream and have not been checked against the classics line by line. Only patterns that are met are listed.', zw_lv_excellent:'Very good', zw_lv_good:'Good', zw_lv_neutral:'Neutral', zw_lv_caution:'Take care'});
+Object.assign(dict.id, {zw_err_year:'Bagan hanya bisa dibuat untuk kelahiran tahun 1900 sampai 2100 (bila tempat lahir dipilih, yang dihitung adalah tanggal setelah konversi waktu matahari sejati).', ai_too_large:'Data untuk AI terlalu banyak sehingga tidak dikirim. Hasil di atas tetap berlaku.', zw_err_input:'Tanggal, jam atau jenis kelamin tidak valid. Silakan pilih lagi.', zw_ev_title:'Dasar Pola', zw_ev_required:'Syarat terpenuhi', zw_ev_bonus:'Nilai tambah', zw_ev_breaking:'Peringatan pematah', zw_ev_source:'Sumber', zw_ev_has_break:'Ada peringatan', zw_ev_zh_only:'Rincian syarat, peringatan, dan sumber klasik hanya tersedia dalam bahasa Mandarin. Ganti ke bahasa Mandarin untuk membacanya.', zw_ev_note:'Pola dideteksi oleh aturan program pihak ketiga Renhuai123/ziwei-doushu; sumber sesuai label upstream dan belum diperiksa dengan teks klasik baris demi baris. Hanya pola yang terpenuhi yang dicantumkan.', zw_lv_excellent:'Sangat baik', zw_lv_good:'Baik', zw_lv_neutral:'Netral', zw_lv_caution:'Perlu hati-hati'});
 Object.assign(dict.zh, {btn_clear_panel:'清除重來'});
 Object.assign(dict.en, {btn_clear_panel:'Clear and start over'});
 Object.assign(dict.id, {btn_clear_panel:'Hapus dan mulai lagi'});
@@ -970,7 +991,7 @@ function manualLinesReady(){
 }
 document.getElementById('yijing-cast').addEventListener('change', showYijingCast);
 
-// 卦象詳解：卦象組成、原文、倪師要義、占斷（資料見 yijing-hexagrams.js）
+// 卦象詳解：卦象組成、經文節錄（卦辭，部分卦含象辭）、第三方天紀摘要、占斷（資料見 yijing-hexagrams.js）
 function hexDetailHTML(labelKey, num){
   const d = HEX_DETAIL[num];
   return `<div class="hex-detail"><div class="hex-detail-head">${uiText(labelKey)} · ${readingText(HEX_NAMES[num]+'卦')} <span>${readingText(d.image)}</span></div>`
@@ -983,7 +1004,7 @@ function hexDetailCardHTML(hexNum, changedNum){
 }
 function hexDetailFact(num){
   const d = HEX_DETAIL[num];
-  return `${d.image}；原文：${d.text}；倪師要義：${d.ni}；占斷：${d.advice}`;
+  return `${d.image}；經文節錄：${d.text}；第三方天紀摘要：${d.ni}；占斷：${d.advice}`;
 }
 
 onRitual('yijing-btn','yijing', ()=>{
@@ -1024,7 +1045,7 @@ onRitual('yijing-btn','yijing', ()=>{
   const resContainer = document.getElementById('yijing-result');
   resContainer.innerHTML = html;
 
-  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None', CastMethod: manual ? '使用者自己擲錢、手動填入六爻' : '程式自動擲錢' };
+  const facts = { PresentHexagram: HEX_NAMES[hexNum], PresentMeaning: HEX_TEXT[hexNum], PresentDetail: hexDetailFact(hexNum), FutureHexagram: HEX_NAMES[changedNum], FutureMeaning: HEX_TEXT[changedNum], FutureDetail: hexDetailFact(changedNum), MovingLines: moving.length ? moving.map(lineLabel) : 'None', SourceNote: '經文節錄（卦辭，部分卦含象辭）與天紀摘要是第三方 Renhuai123/ziwei-doushu 的簡短整理，不是原典全文或完整倪師學說；沒有逐爻爻辭', CastMethod: manual ? '使用者自己擲錢、手動填入六爻' : '程式自動擲錢' };
   fillAiExplain(aiHex.id, 'yijing', question, facts);
   attachChatSection('yijing-result', 'yijing', question, facts);
 });
@@ -1119,18 +1140,32 @@ onRitual('daily-btn','daily', ()=>{
 
 // ==================== 紫微斗數 ====================
 // 排盤引擎：Renhuai123/ziwei-doushu（MIT，基於 iztro），打包成 ziwei-engine.js，第一次用到紫微才載入。
-let ziweiEnginePromise = null;
-function ensureZiweiEngine(){
-  if (window.GuanbuZiwei) return Promise.resolve(window.GuanbuZiwei);
-  if (!ziweiEnginePromise) ziweiEnginePromise = new Promise((resolve, reject) => {
+// 引擎檔案改版時換這個版本號，避免手機用到快取的舊引擎
+const ZW_ENGINE_VERSION = '20261025';
+// 每個檔案各自記住載入中的 Promise：一個失敗時不會讓另一個再被重複加入；載入了但內容不對的 script 會移除
+const scriptLoads = {};
+function loadScriptOnce(src, ready){
+  if (ready()) return Promise.resolve();
+  if (!scriptLoads[src]) scriptLoads[src] = new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'ziwei-engine.js';
-    s.onload = () => window.GuanbuZiwei ? resolve(window.GuanbuZiwei) : reject(new Error('Zi Wei engine missing'));
-    s.onerror = () => { ziweiEnginePromise = null; s.remove(); reject(new Error('Zi Wei engine failed to load')); };
+    s.src = src;
+    // 下載失敗才移除、下次重試；已經執行過但內容不對的就留著，不重複加入同一個檔案
+    s.onload = () => ready() ? resolve() : reject(new Error(src + ' missing'));
+    s.onerror = () => { s.remove(); delete scriptLoads[src]; reject(new Error(src + ' failed to load')); };
     document.head.appendChild(s);
   });
-  return ziweiEnginePromise;
+  return scriptLoads[src];
 }
+// 引擎一定要載入；格局條件的正體對照表（ziwei-pattern-terms.js）載不到時命盤照畫，條件文字維持原文
+function ensureZiweiEngine(){
+  return Promise.all([
+    loadScriptOnce('ziwei-engine.js?v=' + ZW_ENGINE_VERSION, () => typeof window.GuanbuZiwei?.validateBirth === 'function'),
+    loadScriptOnce('ziwei-pattern-terms.js?v=' + ZW_ENGINE_VERSION, () => typeof zwPatternText === 'function').catch(() => {}),
+  ]).then(() => window.GuanbuZiwei);
+}
+function zwPt(s){ return typeof zwPatternText === 'function' ? zwPatternText(s) : String(s || ''); }
+// 格局名稱：先用星名對照表（有英文／印尼文翻譯），沒有才用格局對照表
+function zwPatternName(n){ return ZW_S2T[n] || zwPt(n); }
 document.querySelector('[data-t=ziwei]').addEventListener('click', () => { ensureZiweiEngine().catch(() => {}); });
 
 const ZW_BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
@@ -1146,6 +1181,11 @@ const ZW_SIHUA_ORDER=['禄','权','科','忌'];
 const ZW_STAR_ORDER={major:0,lucky:1,sha:2,minor:3};
 // 引擎輸出簡體，轉成畫面與翻譯表用的正體
 function zwTerm(s){ return ZW_S2T[s] || s; }
+
+// 引擎的錯誤換成看得懂的提示：年份超出範圍（含真太陽時換算後跨到 1899 年）另外說明
+function zwInputErrorKey(e){ return /year must be/.test(e?.message||'') ? 'zw_err_year' : 'zw_err_input'; }
+// 有些瀏覽器的時間會帶秒，先去掉；其餘檢查交給引擎的 validateBirth（只有一套規則）
+function zwNormalizeTime(t){ return /^\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(t) ? t.slice(0,5) : t; }
 
 function buildZiweiReading(engine, dateVal, timeVal, gender, place){
   // 有出生地就先換成真太陽時，再交給引擎（引擎照樣處理 23 點換日）
@@ -1207,10 +1247,46 @@ function ziweiExplainHTML(z){
   return html+'</div>';
 }
 
+// 格局依據：上游 patterns.ts 判定的成立條件、加分、破格警示與出處（條件文字只有中文）
+const ZW_LEVEL_ORDER={caution:0,excellent:1,good:2,neutral:3};
+function ziweiPatternsSorted(patterns){
+  // 有破格警示的排前面，其次依等級；同等級保持引擎原本順序
+  return patterns.map((p,i)=>({p,i})).sort((a,b)=>(b.p.breaking.length>0)-(a.p.breaking.length>0)||(ZW_LEVEL_ORDER[a.p.level]??9)-(ZW_LEVEL_ORDER[b.p.level]??9)||a.i-b.i).map(x=>x.p);
+}
+function ziweiEvidenceHTML(patterns){
+  if(!patterns.length) return '';
+  const list=(key,items,cls)=>items.length?'<p class="zw-ev-row'+(cls?' '+cls:'')+'"><b>'+uiText(key)+'</b> '+items.map(x=>esc(zwPt(x))).join('；')+'</p>':'';
+  let html='<div class="smart-card zw-evidence"><div class="smart-title">— '+uiText('zw_ev_title')+' —</div><p class="hint zw-non-zh-only">'+uiText('zw_ev_zh_only')+'</p>';
+  ziweiPatternsSorted(patterns).forEach(p=>{
+    html+='<details class="zw-ev"'+(p.breaking.length?' open':'')+'><summary><span class="zw-ev-name">'+readingText(zwPatternName(p.name))+'</span><span class="zw-ev-level lv-'+esc(p.level)+'">'+uiText('zw_lv_'+p.level)+'</span>'+(p.breaking.length?'<span class="zw-ev-warn">'+uiText('zw_ev_has_break')+'</span>':'')+'</summary>'
+      +'<div class="zw-zh-only">'+list('zw_ev_required',p.required)+list('zw_ev_bonus',p.bonus)+list('zw_ev_breaking',p.breaking,'warn')
+      +(p.description?'<p class="zw-ev-desc">'+esc(zwPt(p.description))+'</p>':'')
+      +(p.source?'<p class="zw-ev-src"><b>'+uiText('zw_ev_source')+'</b> '+esc(zwPt(p.source))+'</p>':'')+'</div></details>';
+  });
+  return html+'<p class="hint">'+uiText('zw_ev_note')+'</p></div>';
+}
+// AI 事實資料上限（要和 functions/ask.js 的 MAX_FACTS_LEN 相同，測試把關）：先放命盤，再依序放格局依據（有破格警示的優先），放不下的整筆不送並註明筆數，不切半筆
+const ZW_FACTS_LIMIT=2500;
+function packZiweiFacts(base, patterns){
+  const facts={...base, PatternEvidence:[]};
+  // 命盤本身就超過上限時不放任何格局（伺服器會回 413，畫面會說明資料太多）
+  if(JSON.stringify({...facts,PatternEvidenceOmitted:patterns.length}).length>ZW_FACTS_LIMIT){ if(patterns.length) facts.PatternEvidenceOmitted=patterns.length; return facts; }
+  let omitted=0;
+  for(const p of ziweiPatternsSorted(patterns)){
+    const entry={格局:zwPatternName(p.name),等級:p.level,出處:zwPt(p.source),成立:p.required.map(zwPt)};
+    if(p.bonus.length) entry.加分=p.bonus.map(zwPt);
+    if(p.breaking.length) entry.破格警示=p.breaking.map(zwPt);
+    facts.PatternEvidence.push(entry);
+    if(JSON.stringify({...facts,PatternEvidenceOmitted:patterns.length}).length>ZW_FACTS_LIMIT){ facts.PatternEvidence.pop(); omitted++; }
+  }
+  if(omitted) facts.PatternEvidenceOmitted=omitted;
+  return facts;
+}
+
 function ziweiFactStar(s){ return zwTerm(s.name)+(s.brightnessRaw?zwTerm(s.brightnessRaw):'')+(s.siHua?'化'+zwTerm(s.siHua):''); }
 
 onRitual('ziwei-btn','ziwei', async () => {
-  const dateVal=document.getElementById('zw-date').value, timeVal=document.getElementById('zw-hour').value, gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
+  const dateVal=document.getElementById('zw-date').value, timeVal=zwNormalizeTime(document.getElementById('zw-hour').value), gender=document.getElementById('zw-gender').value, resultEl=document.getElementById('ziwei-result');
   if(!dateVal||!timeVal){resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_err_date')+'</div>';return;}
   const countryVal=document.getElementById('zw-country').value, place=countryVal?zwFindPlace(countryVal,document.getElementById('zw-city').value):null;
   if(countryVal&&!place){resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_err_city')+'</div>';return;}
@@ -1218,6 +1294,9 @@ onRitual('ziwei-btn','ziwei', async () => {
   let engine;
   try{ engine=await ensureZiweiEngine(); }
   catch{ resultEl.innerHTML='<div class="empty" role="alert">'+uiText('zw_engine_error')+'</div>'; return; }
+  // 換算真太陽時之前先驗證（不存在的日期不能被換算「修正」成另一天）
+  try{ engine.validateBirth({date:dateVal,time:timeVal,gender}); }
+  catch(e){ resultEl.innerHTML='<div class="empty" role="alert">'+uiText(zwInputErrorKey(e))+'</div>'; return; }
   try{
     const z=buildZiweiReading(engine,dateVal,timeVal,gender,place), c=z.c, cur=z.cur, tst=z.tst, ai=aiCardPlaceholder('zwx_summary_title');
     const genderLabel=gender==='F'?dict[currentLang].opt_female:dict[currentLang].opt_male;
@@ -1254,12 +1333,12 @@ onRitual('ziwei-btn','ziwei', async () => {
     html+='</div></div><div class="meta-card"><div class="meta-row"><span>'+uiText('zw_four')+'</span><strong>'+z.four.map(x=>readingText(zwTerm(x[0]))+uiText('transform_connector')+readingText(zwTerm(x[1]))).join(' / ')+'</strong></div>';
     html+='<div class="meta-row"><span>'+uiText('zw_current_daxian')+'</span><strong>'+(cur?cur.startAge+'–'+cur.endAge+uiText('age_unit')+' | '+readingText(zwTerm(cur.palaceName))+' | '+readingText(ZW_BRANCHES[cur.palaceBranch]):uiText('label_none'))+'</strong></div>';
     html+='<div class="meta-row"><span>'+uiText('zw_patterns')+'</span><strong>'+(z.r.patterns.length?z.r.patterns.map(p=>readingText(zwTerm(p.name))).join(' / '):uiText('label_none'))+'</strong></div></div>';
-    html+='<div class="hint">'+uiText('zw_engine_hint')+'</div>'+ziweiExplainHTML(z)+ai.html;
+    html+='<div class="hint">'+uiText('zw_engine_hint')+'</div>'+ziweiEvidenceHTML(z.r.patterns)+ziweiExplainHTML(z)+ai.html;
     resultEl.innerHTML=html;
     const chartZoom=resultEl.querySelector('[data-chart-zoom]');
     chartZoom.onclick=()=>{const expanded=resultEl.querySelector('.chart-scroll').classList.toggle('expanded');chartZoom.setAttribute('aria-pressed',String(expanded));chartZoom.textContent=readingLayoutLabels()[expanded?'fit':'zoom'];};
     const palaceFact=p=>{const ss=p.stars.filter(s=>s.type!=='minor');return zwTerm(p.name)+'('+ZW_STEMS[p.stem]+ZW_BRANCHES[p.branch]+(p.daXianAge?' '+p.daXianAge[0]+'-'+p.daXianAge[1]:'')+'): '+(ss.length?ss.map(ziweiFactStar).join('、'):'空宮');};
-    const facts={BirthDate:dateVal,BirthTime:timeVal,...(tst?{BirthPlace:place.country.name[0]+' '+place.city[0],TrueSolarTime:tst.date+' '+tst.time}:{}),ChartDate:z.r.chartDate,Gender:genderLabel,YinYang:zwTerm(c.yinYangGender),
+    const baseFacts={BirthDate:dateVal,BirthTime:timeVal,...(tst?{BirthPlace:place.country.name[0]+' '+place.city[0],TrueSolarTime:tst.date+' '+tst.time}:{}),ChartDate:z.r.chartDate,Gender:genderLabel,YinYang:zwTerm(c.yinYangGender),
       LunarDate:li.lunarYear+'-'+(li.isLeapMonth?'閏':'')+Math.abs(li.lunarMonth)+'-'+li.lunarDay,FourPillars:(li.fourPillarsLunar||li.fourPillars||[]).join(' '),
       Bureau:zwTerm(c.wuxingJuName),LifePalace:ZW_BRANCHES[c.mingGongBranch],BodyPalace:ZW_BRANCHES[c.shenGongBranch]+' '+zwTerm(z.shen.name),
       MingZhu:zwTerm(c.mingZhu),ShenZhu:zwTerm(c.shenZhu),
@@ -1267,9 +1346,11 @@ onRitual('ziwei-btn','ziwei', async () => {
       FourTransformations:z.four.map(x=>zwTerm(x[0])+'化'+zwTerm(x[1])),
       CurrentDecadal:cur?cur.startAge+'-'+cur.endAge+'歲 '+zwTerm(cur.palaceName):'童限',CurrentAge:c.currentAge,
       Patterns:z.r.patterns.map(p=>zwTerm(p.name)+'('+p.level+')'),
+      PatternSource:'Renhuai123/ziwei-doushu patterns.ts（第三方程式判定；出處為上游標註，未逐條核對原典）',
       ChartStatus:'ziwei-doushu engine (iztro): 14 main + auxiliary stars, brightness, four transformations, decadal cycles, patterns'};
+    const facts=packZiweiFacts(baseFacts,z.r.patterns);
     fillAiExplain(ai.id,'ziwei','',facts,'zwx_summary_title'); attachChatSection('ziwei-result','ziwei','Zi Wei Chart Analysis',facts);
-  }catch(e){resultEl.innerHTML='<div class="empty">'+esc(e.message||'Chart calculation failed')+'</div>';}
+  }catch(e){resultEl.innerHTML='<div class="empty" role="alert">'+(/^invalid /.test(e?.message||'')?uiText(zwInputErrorKey(e)):esc(e.message||'Chart calculation failed'))+'</div>';}
 });
 </script>
 </body>

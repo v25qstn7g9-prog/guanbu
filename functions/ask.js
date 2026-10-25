@@ -1,7 +1,7 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-3.3";
+const ASK_VERSION = "guanbu-ask-3.4";
 // 主、副 AI 都用各家的「平衡型」：Cloudflare 上的 DeepSeek V4 Flash、Google 的 Gemini Flash
 const PRIMARY_MODEL = "@cf/deepseek-ai/deepseek-v4-flash-0731";
 const PRIMARY_LABEL = "Cloudflare Workers AI · DeepSeek V4 Flash";
@@ -49,7 +49,7 @@ function jsonResponse(data, status = 200) {
 }
 
 const PERSONA_INTRO = {
-  yijing: `你是「觀卜」App 中一位精通易經、承襲千年道法的易經仙師，讀卦觀象、閱盡人世起落。你的任務是把系統排出的卦象與爻辭，轉化成溫暖、白話、一聽就懂的開示。`,
+  yijing: `你是「觀卜」App 中一位精通易經、承襲千年道法的易經仙師，讀卦觀象、閱盡人世起落。你的任務是把系統排出的卦象（含動爻位置），轉化成溫暖、白話、一聽就懂的開示。`,
   tarot: `你是「觀卜」App 中一位資深的塔羅占卜師，常年鑽研西洋塔羅牌義與牌面象徵，觀人無數。你的任務是把系統抽到的塔羅牌組，轉化成溫暖、白話、一聽就懂的解讀。`,
   runes: `你是「觀卜」App 中一位通曉北歐盧恩符文的符文賢者，傳承著古老部落流傳下來的符文智慧。你的任務是把系統抽到的符文，轉化成溫暖、白話、一聽就懂的解讀。`,
   ziwei: `你是「觀卜」App 中一位專精紫微斗數的命理師，熟悉十二宮位、十四主星與四化飛星的排盤邏輯。你的任務是把系統排出的命盤資料，轉化成溫暖、白話、一聽就懂的解讀。`,
@@ -57,6 +57,15 @@ const PERSONA_INTRO = {
 };
 
 // 個別模組的額外任務（放在核心原則後面，與核心原則衝突時以這裡為準）
+// 解讀與追問都適用的資料規則（避免追問時忘了來源限制）
+const MODULE_DATA_RULES = {
+  yijing: "事實資料有本 App 的白話卦意（PresentMeaning／FutureMeaning）、每卦的經文節錄（卦辭，部分卦含象辭）、第三方天紀摘要與占斷，以及動爻位置；沒有逐爻爻辭。不要自己引用或編造爻辭、古書原文，也不要把第三方摘要說成倪師原話。",
+  ziwei: "格局只依事實資料的 PatternEvidence 說明：講它的成立條件代表什麼；有破格警示的一定要講出來、說明會打折扣的地方，不能只講好話；出處只能引用資料裡寫的，不要自己加古書原文。若有 PatternEvidenceOmitted，代表還有幾個格局沒送來，不要猜它們的內容。",
+};
+function dataRules(mod) {
+  return MODULE_DATA_RULES[mod] ? `\n\n【資料規則】（優先於以上所有字數、取捨與排版規定）${MODULE_DATA_RULES[mod]}` : "";
+}
+
 const MODULE_TASK = {
   ziwei: `
 
@@ -77,7 +86,7 @@ App 畫面已經逐宮列出每一宮的星曜說明，你負責最後的「綜�
 【工作與事業】適合的工作型態或環境、做事風格、發展建議。
 【感情與人際】在感情裡和跟朋友、同事相處的樣子（參考夫妻宮、僕役宮）。
 【生活與身心】作息、壓力與心情怎麼照顧（參考疾厄宮、福德宮）。
-【現在這十年】目前大限走到哪一宮、這幾年的重點和機會；若還沒進入大限就說明童限階段。若有格局，在這段或【整體來看】順帶說明它的白話意思。
+【現在這十年】目前大限走到哪一宮、這幾年的重點和機會；若還沒進入大限就說明童限階段。若有格局，在這段或【整體來看】說明它的白話意思；有破格警示的一定要一起講（見最後的資料規則）。
 【給你的建議】列出 5～7 條，每條單獨一行，用「1.」「2.」這樣編號；每條都要是具體能做的行動（做什麼、怎麼做、什麼時候），並用半句話說明是依據命盤哪一點；避免「保持正向」這種空泛的話。
 
 長度：繁體中文約 900～1300 字；英文或印尼文約 550～800 words。不必提到事實資料的每一項，但一定要把話講完整，不能寫到一半。`,
@@ -106,6 +115,14 @@ async function runPrimary(ai, messages, limits) {
   return text;
 }
 
+// 事實資料整份序列化；超過上限就回 413、不呼叫 AI（以前是切前 2500 字，會切壞 JSON 卻照樣回答）
+function factsToText(facts) {
+  if (!facts || typeof facts !== "object" || Array.isArray(facts)) return { status: 400, error: "Missing facts" };
+  const text = JSON.stringify(facts);
+  if (text.length > MAX_FACTS_LEN) return { status: 413, error: "Facts too large" };
+  return { text };
+}
+
 function personaIntro(mod) {
   return PERSONA_INTRO[mod] || PERSONA_INTRO[DEFAULT_MODULE];
 }
@@ -122,7 +139,7 @@ function buildSystemPrompt(mod) {
 6. 語言回應規定:
    - 若 lang 為 "en"，請全程使用溫暖自然、用詞簡單的英文 (English) 回應。
    - 若 lang 為 "id"，請全程使用溫暖自然、用詞簡單的印尼文 (Bahasa Indonesia) 回應。
-   - 若 lang 為 "zh"，請全程使用淺顯白話的繁體中文回應。${MODULE_TASK[mod] || ""}`;
+   - 若 lang 為 "zh"，請全程使用淺顯白話的繁體中文回應。${MODULE_TASK[mod] || ""}${dataRules(mod)}`;
 }
 
 function buildChatSystemPrompt(mod) {
@@ -132,7 +149,7 @@ function buildChatSystemPrompt(mod) {
 1. 緊扣占卜事實：回答必須嚴格圍繞著剛才算出的「事實資料」（牌義、卦象、星曜、意圖），不得給出矛盾的推測，也不能自己發明事實資料裡沒有的情境或細節。
 2. 用詞淺顯、口語化：像朋友聊天一樣溫暖、直接自然；絕對不要用「孩子」「施主」「汝」「爾」等老派、說教感的稱呼稱呼使用者，也避免文言文、成語堆砌或生僻字；引導使用者聚焦在「自己能控制的行動」上。
 3. 精煉流暢：每次回覆控制在 100 ~ 180 字之間（外文 60 ~ 100 words），務必把話講完整，不要留半句。
-4. 語言回應規定：請嚴格根據指示的語言 (English, Bahasa Indonesia, 或 繁體中文) 回答，且用詞都要簡單易懂。`;
+4. 語言回應規定：請嚴格根據指示的語言 (English, Bahasa Indonesia, 或 繁體中文) 回答，且用詞都要簡單易懂。${dataRules(mod)}`;
 }
 
 function buildUserPrompt(mod, question, factsText, lang) {
@@ -197,10 +214,9 @@ export async function onRequestPost(context) {
     if (!ALLOWED_MODULES.has(mod)) return jsonResponse({ error: "Invalid module" }, 400);
 
     const question = String(body?.question || "").slice(0, MAX_QUESTION_LEN).trim();
-    const facts = body?.facts;
-    if (!facts || typeof facts !== "object") return jsonResponse({ error: "Missing facts" }, 400);
-
-    const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
+    const packed = factsToText(body?.facts);
+    if (packed.error) return jsonResponse({ error: packed.error, version: ASK_VERSION }, packed.status);
+    const factsText = packed.text;
     const userPromptText = buildUserPrompt(mod, question, factsText, lang);
     const systemPrompt = buildSystemPrompt(mod);
     const limits = moduleLimits(mod);
@@ -245,10 +261,10 @@ export async function onRequestPostChat(context) {
           .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_HISTORY_MSG_LEN) }))
       : [];
 
-    if (!ALLOWED_LANGS.has(lang)) return jsonResponse({ error: "Invalid language" }, 400);
-    if (!userMessage || !facts) return jsonResponse({ error: "Missing input" }, 400);
-
-    const factsText = JSON.stringify(facts).slice(0, MAX_FACTS_LEN);
+    if (!userMessage) return jsonResponse({ error: "Missing input" }, 400);
+    const packed = factsToText(facts);
+    if (packed.error) return jsonResponse({ error: packed.error, version: ASK_VERSION }, packed.status);
+    const factsText = packed.text;
     let langInstruct = "\n請以繁體中文回應。";
     if (lang === "en") langInstruct = "\nIMPORTANT: Reply in English.";
     if (lang === "id") langInstruct = "\nPENTING: Harap jawab dalam Bahasa Indonesia.";

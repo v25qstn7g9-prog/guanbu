@@ -36,7 +36,7 @@ test('every term the Zi Wei engine can show has Traditional Chinese, English and
   return [...terms].filter(s=>!ZW_S2T[s]||!LOCAL_READING_TRANSLATIONS.en[ZW_S2T[s]]||!LOCAL_READING_TRANSLATIONS.id[ZW_S2T[s]]);});
   assert.deepEqual(missing,[]);}finally{await p.close();}});
 test('a birth after 23:00 is charted on the next day and the chart says so',async()=>{const p=await page();try{await ziweiChart(p,'1990-05-09','23:30');assert.match(await p.locator('#ziwei-result').innerText(),/隔天子時/);assert.ok(await p.locator('.zw-grid').count()===1);}finally{await p.close();}});
-test('if the Zi Wei engine cannot load the panel explains it and asks no AI',async()=>{const p=await page();try{let requests=0;p.on('request',r=>{if(r.url().endsWith('/ask'))requests++;});await p.route('**/ziwei-engine.js',r=>r.fulfill({status:500,body:''}));await ziweiChart(p,'1990-01-01','12:00');assert.match(await p.locator('#ziwei-result').innerText(),/引擎載入失敗/);assert.equal(await p.locator('.zw-grid').count(),0);assert.equal(requests,0);}finally{await p.close();}});
+test('if the Zi Wei engine cannot load the panel explains it and asks no AI',async()=>{const p=await page();try{let requests=0;p.on('request',r=>{if(r.url().endsWith('/ask'))requests++;});await p.route('**/ziwei-engine.js*',r=>r.fulfill({status:500,body:''}));await ziweiChart(p,'1990-01-01','12:00');assert.match(await p.locator('#ziwei-result').innerText(),/引擎載入失敗/);assert.equal(await p.locator('.zw-grid').count(),0);assert.equal(requests,0);}finally{await p.close();}});
 test('clear and start over resets a panel after a result and stays hidden otherwise',async()=>{const p=await page(390);try{
   assert.equal(await p.locator('[data-clear=ziwei]').isVisible(),false);
   await ziweiChart(p,'1985-03-04','10:20','F');
@@ -63,7 +63,7 @@ test('the chart explains all twelve palaces from the Life Palace and ends with t
   const names=await p.locator('.zw-ex-palace .zw-ex-name').allInnerTexts();assert.deepEqual(names.map(n=>n.split(' · ')[0]),['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母']);
   assert.equal(await p.locator('.zw-ex-palace[open]').count(),1);const life=await p.locator('.zw-ex-palace[open]').innerText();assert.match(life,/個性/);assert.match(life,/天機/);assert.match(life,/化科/);
   assert.ok(await p.locator('.zw-ex-stars li').count()>=14);
-  const order=await p.locator('#ziwei-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('zw-explain')?'explain':e.classList.contains('oracle')?'summary':'chat'));assert.deepEqual(order,['explain','summary','chat']);
+  const order=await p.locator('#ziwei-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('zw-evidence')?'evidence':e.classList.contains('zw-explain')?'explain':e.classList.contains('oracle')?'summary':'chat'));assert.deepEqual(order,['evidence','explain','summary','chat']);
   assert.match(await p.locator('#ziwei-result .oracle .smart-title').innerText(),/綜合總結/);
   for(const lang of ['en','id']){await p.locator('#lang-toggle').click();assert.doesNotMatch(await p.locator('.zw-explain').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('.zw-meta').innerText(),/[㐀-鿿]/);assert.doesNotMatch(await p.locator('#zw-country').evaluate(e=>e.textContent),/[㐀-鿿]/);assert.equal(await p.locator('#zw-country').inputValue(),'tw');}
 }finally{await p.close();}});
@@ -75,10 +75,10 @@ test('hexagram details match the cast lines and have three languages',async()=>{
     for(const lang of ['en','id'])for(const k of ['image','text','ni','advice'])if(!LOCAL_READING_TRANSLATIONS[lang][d[k]])out.push(lang+' '+num+' '+k);}
   return out.concat(Object.keys(HEX_DETAIL).length===64?[]:['count']);});assert.deepEqual(problems,[]);}finally{await p.close();}});
 test('an I Ching reading shows hexagram details before the AI card and sends them to AI',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});await draw(p,'yijing');
-  const card=p.locator('.hex-detail-card');assert.equal(await card.count(),1);const text=await card.innerText();assert.match(text,/原文/);assert.match(text,/倪師要義/);assert.match(text,/占斷/);
+  const card=p.locator('.hex-detail-card');assert.equal(await card.count(),1);const text=await card.innerText();assert.match(text,/經文節錄/);assert.match(text,/第三方天紀摘要/);assert.match(text,/占斷/);
   const order=await p.locator('#yijing-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('hex-detail-card')?'detail':e.classList.contains('oracle')?'ai':'chat'));assert.deepEqual(order,['detail','ai','chat']);
-  assert.match(asks[0].facts.PresentDetail,/原文：.+倪師要義：.+占斷：/);assert.match(asks[0].facts.FutureDetail,/占斷：/);
-  await p.locator('#lang-toggle').click();assert.doesNotMatch(await card.innerText(),/[㐀-鿿]/);assert.match(await card.innerText(),/Verdict/);}finally{await p.close();}});
+  assert.match(asks[0].facts.PresentDetail,/經文節錄：.+第三方天紀摘要：.+占斷：/);assert.match(asks[0].facts.FutureDetail,/占斷：/);
+  await p.locator('#lang-toggle').click();assert.doesNotMatch(await card.innerText(),/[㐀-鿿]/);assert.match(await card.innerText(),/Verdict/);assert.match(await card.innerText(),/Third-party Tianji summary/);}finally{await p.close();}});
 test('manual I Ching casting uses the six numbers the user entered, from line 1 at the bottom',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});
   assert.equal(await p.locator('#yj-manual').isVisible(),false);await p.locator('#yijing-cast').selectOption('manual');assert.equal(await p.locator('#yj-manual').isVisible(),true);
   await p.locator('#yj-line-1').selectOption('9');await p.locator('#yj-line-2').selectOption('7');await draw(p,'yijing');
@@ -99,3 +99,36 @@ test('the Zi Wei summary shows every section in full with its headings',async()=
   assert.match(await card.innerText(),/2\. 重要決定先睡一晚再說/);assert.doesNotMatch(await card.innerText(),/【/);
   await draw(p,'tarot');assert.equal(await p.locator('#tarot-result .reading-head').count(),0);}finally{await p.close();}});
 test('manual line fields stay two per row on a narrow phone',async()=>{const p=await page(320);try{await p.locator('#yijing-cast').selectOption('manual');const rows=await p.locator('#yj-manual select').evaluateAll(a=>new Set(a.map(e=>Math.round(e.getBoundingClientRect().top))).size);assert.equal(rows,3);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth-innerWidth),0);}finally{await p.close();}});
+test('Zi Wei shows pattern evidence with breaking warnings and sends it to AI within the facts limit',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});
+  await ziweiChart(p,'1940-08-15','10:00');const card=p.locator('.zw-evidence');assert.equal(await card.count(),1);
+  const fx=card.locator('details.zw-ev',{hasText:'府相朝垣'});assert.equal(await fx.getAttribute('open'),'');
+  const text=await fx.innerText();assert.match(text,/有破格警示/);assert.match(text,/破格警示 命宮坐煞星；三方四正煞星過多/);assert.match(text,/出處 《紫微斗數全書/);
+  // 整張卡再轉一次正體不會有任何改變＝沒有殘留簡體字
+  const cardText=await card.innerText();assert.equal(await p.evaluate(t=>zwPatternText(t)===t,cardText),true);
+  const order=await p.locator('#ziwei-result > .smart-card').evaluateAll(a=>a.map(e=>e.classList.contains('zw-evidence')?'evidence':e.classList.contains('zw-explain')?'explain':e.classList.contains('oracle')?'summary':'chat'));assert.deepEqual(order,['evidence','explain','summary','chat']);
+  const facts=asks[0].facts;assert.ok(JSON.stringify(facts).length<=2500);const ev=facts.PatternEvidence.find(e=>e.格局==='府相朝垣');assert.deepEqual(ev.破格警示,['命宮坐煞星','三方四正煞星過多']);assert.equal(facts.PatternEvidence[0].破格警示?.length>0,true);
+  for(const lang of ['en','id']){await p.locator('#lang-toggle').click();const t=await card.innerText();assert.doesNotMatch(t,/[㐀-鿿]/);assert.match(t,lang==='en'?/only available in Chinese/:/hanya tersedia/);}
+}finally{await p.close();}});
+test('the facts packer drops whole pattern entries, keeps warnings first and says how many were left out',async()=>{const p=await page();try{await p.locator('[data-t=ziwei]').click();await p.evaluate(()=>ensureZiweiEngine());
+  const r=await p.evaluate(()=>{const mk=(i,brk)=>({name:'格局'+i,level:'good',palaces:[],description:'',required:['條件'.repeat(60)],bonus:[],breaking:brk?['警示'+i]:[],source:'《出處》'});
+    const ps=[...Array(12)].map((_,i)=>mk(i,i===11));const f=packZiweiFacts({Base:'命盤'.repeat(300)},ps);return {len:JSON.stringify(f).length,first:f.PatternEvidence[0].格局,n:f.PatternEvidence.length,omitted:f.PatternEvidenceOmitted,whole:f.PatternEvidence.every(e=>e.成立[0].length===120)};});
+  assert.ok(r.len<=2500,JSON.stringify(r));assert.equal(r.first,'格局11');assert.ok(r.omitted>0);assert.equal(r.n+r.omitted,12);assert.equal(r.whole,true);}finally{await p.close();}});
+test('an invalid gender value is rejected before charting or asking AI',async()=>{const p=await page();try{let asks=0;p.on('request',r=>{if(r.url().endsWith('/ask'))asks++;});await p.locator('[data-t=ziwei]').click();
+  await p.evaluate(()=>{const s=document.getElementById('zw-gender');s.add(new Option('X','X'));s.value='X';});await p.locator('#zw-date').fill('1990-05-09');await p.locator('#zw-hour').fill('10:00');await draw(p,'ziwei');
+  assert.match(await p.locator('#ziwei-result').innerText(),/格式不正確/);assert.equal(await p.locator('.zw-grid').count(),0);assert.equal(asks,0);}finally{await p.close();}});
+test('I Ching details are labelled as a third-party summary and the AI is told what is missing',async()=>{const p=await page(390);try{const asks=[];p.on('request',r=>{if(r.url().endsWith('/ask'))asks.push(r.postDataJSON());});await draw(p,'yijing');
+  const t=await p.locator('.hex-detail-card').innerText();assert.match(t,/第三方天紀摘要/);assert.match(t,/不是原典全文/);assert.doesNotMatch(t,/倪師要義/);
+  assert.match(asks[0].facts.PresentDetail,/第三方天紀摘要：/);assert.match(asks[0].facts.SourceNote,/沒有逐爻爻辭/);}finally{await p.close();}});
+test('a too-large AI request explains itself and offers no retry that would fail again',async()=>{const p=await page(390);try{await p.unroute('**/ask');let asks=0;await p.route('**/ask',r=>{asks++;r.fulfill({status:413,contentType:'application/json',body:'{"error":"Facts too large"}'});});
+  await draw(p,'yijing');await p.waitForFunction(()=>!document.querySelector('.oracle .thinking'));const card=p.locator('.oracle');assert.match(await card.innerText(),/資料太多/);assert.equal(await card.locator('[data-act=retry]').count(),0);assert.equal(asks,1);}finally{await p.close();}});
+test('if the pattern table fails to load the chart still draws, and a later try loads it without loading the engine twice',async()=>{const p=await page();try{await p.route('**/ziwei-pattern-terms.js*',r=>r.fulfill({status:404,body:''}));
+  await ziweiChart(p,'1940-08-15','10:00');assert.equal(await p.locator('.zw-grid').count(),1);assert.match(await p.locator('.zw-evidence').innerText(),/命宫坐煞星/);
+  await p.unroute('**/ziwei-pattern-terms.js*');await draw(p,'ziwei');assert.equal(await p.locator('.zw-grid').count(),1);assert.match(await p.locator('.zw-evidence').innerText(),/命宮坐煞星/);
+  assert.equal(await p.locator('script[src^="ziwei-engine.js"]').count(),1);assert.equal(await p.locator('script[src^="ziwei-pattern-terms.js"]').count(),1);}finally{await p.close();}});
+test('a birthplace that moves a 1900-01-01 birth into 1899 gets a clear year message, not an engine error',async()=>{const p=await page();try{await p.locator('[data-t=ziwei]').click();await p.locator('#zw-country').selectOption('cn');await p.locator('#zw-city').selectOption('0');
+  await ziweiChart(p,'1900-01-01','00:10');const t=await p.locator('#ziwei-result').innerText();assert.match(t,/1900～2100/);assert.doesNotMatch(t,/invalid|year must/);}finally{await p.close();}});
+test('chat only sends recent history and does not call a long chat a facts problem',async()=>{const p=await page(390);try{const bodies=[];await p.route('**/chat',r=>{bodies.push(r.request().postDataJSON());r.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reply":"好"}'});});
+  await draw(p,'yijing');const chat=p.locator('.chat-card');for(let i=0;i<5;i++){await chat.locator('input').fill('問題'+i);await chat.locator('[id$="-send"]').click();await p.waitForFunction(n=>document.querySelectorAll('.bubble-sage').length>=n,i+1);}
+  assert.equal(bodies.at(-1).history.length,6);
+  await p.unroute('**/chat');await p.route('**/chat',r=>r.fulfill({status:413,contentType:'application/json',body:'{"error":"Request too large"}'}));await chat.locator('input').fill('再問');await chat.locator('[id$="-send"]').click();await p.waitForSelector('.bubble-err');
+  assert.doesNotMatch(await chat.locator('.bubble-err').innerText(),/資料太多/);}finally{await p.close();}});

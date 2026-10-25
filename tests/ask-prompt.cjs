@@ -20,6 +20,7 @@ test('the Zi Wei AI writes a whole-chart summary instead of repeating every pala
   assert.match(ziwei,/不要逐宮照抄/);
   assert.match(ziwei,/【給你的建議】/);
   assert.match(ziwei,/900～1300 字/);
+  assert.match(ziwei,/破格警示/);
   for(const other of ['yijing','tarot','runes','daily']) assert.doesNotMatch(await systemPromptFor(other),/綜合總結任務/);
   assert.ok(sentTokens.ziwei>=4000,'Zi Wei summary needs room for a long answer');
   for(const other of ['yijing','tarot','runes','daily']) assert.equal(sentTokens[other],2000);
@@ -37,4 +38,26 @@ test('when the main AI fails, the reading still comes from Gemini Flash',async()
     assert.equal(data.explanation,'備援的解讀');assert.match(data.provider,/Gemini/);
     assert.match(geminiUrl,/gemini-3\.6-flash:generateContent/);assert.equal(geminiBody.generationConfig.maxOutputTokens,6000);
   }finally{global.fetch=realFetch;}
+});
+test('facts that are too large are refused with 413 instead of being cut in half, and the AI is not called',async()=>{
+  const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
+  let calls=0;const env={AI:{run:async()=>{calls++;return {response:'ok'};}}};
+  const big={Note:'字'.repeat(2600)};
+  const post=(fn,body)=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify(body)}),env});
+  assert.equal((await post(onRequestPost,{module:'ziwei',lang:'zh',facts:big})).status,413);
+  assert.equal((await post(onRequestPostChat,{module:'ziwei',lang:'zh',message:'hi',facts:big})).status,413);
+  assert.equal((await post(onRequestPost,{module:'ziwei',lang:'zh',facts:['a']})).status,400);
+  assert.equal(calls,0);
+  assert.equal((await post(onRequestPost,{module:'ziwei',lang:'zh',facts:{Note:'字'.repeat(2400)}})).status,200);
+  assert.equal(calls,1);
+});
+test('source rules apply to follow-up chat too, and I Ching is told there are no line texts',async()=>{
+  const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
+  const prompts=[];const env={AI:{run:async(m,i)=>{prompts.push(i.messages[0].content);return {response:'ok'};}}};
+  const post=(fn,body)=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify(body)}),env});
+  await post(onRequestPostChat,{module:'ziwei',lang:'zh',message:'格局好嗎',facts:{A:1}});
+  await post(onRequestPost,{module:'yijing',lang:'zh',facts:{A:1}});
+  await post(onRequestPostChat,{module:'yijing',lang:'zh',message:'動爻呢',facts:{A:1}});
+  assert.match(prompts[0],/破格警示的一定要講/);
+  for(const pr of prompts.slice(1)){assert.match(pr,/沒有逐爻爻辭/);assert.doesNotMatch(pr,/卦象與爻辭/);}
 });
