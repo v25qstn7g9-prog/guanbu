@@ -11,7 +11,7 @@ const opencc = OpenCC.Converter({ from: 'cn', to: 'tw' });
 // 紫微的用字修正：OpenCC 會把地支「丑」轉成「醜」、天干的「干」轉成「乾／幹」、副詞「只」轉成「隻」。
 // 丑、只一律保留；干在天干語境（前一字 天年月日時宮陰陽換，或後一字 支對換化）保留，其他（例如 骨干→骨幹）照 OpenCC。
 const KEEP_ALWAYS = new Set(['丑', '只']);
-const keepGan = (text, i) => '天年月日时宫阴阳换'.includes(text[i - 1] || '') || '支对换化'.includes(text[i + 1] || '');
+const keepGan = (text, i) => (i > 0 && '天年月日时宫阴阳换'.includes(text[i - 1])) || (i + 1 < text.length && '支对换化'.includes(text[i + 1]));
 export function convert(text) {
   const tw = opencc(text);
   // 長度不同時無法逐字對齊：醜 在紫微裡一定是地支 丑，可以直接改；含 只／干 的就停下來請人處理，不要默默轉錯

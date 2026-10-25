@@ -61,3 +61,23 @@ test('source rules apply to follow-up chat too, and I Ching is told there are no
   assert.match(prompts[0],/破格警示的一定要講/);
   for(const pr of prompts.slice(1)){assert.match(pr,/沒有逐爻爻辭/);assert.doesNotMatch(pr,/卦象與爻辭/);}
 });
+test('both I Ching paths in all languages enforce conditional, non-predictive evidence rules',async()=>{
+  const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
+  for(const lang of ['zh','en','id'])for(const fn of [onRequestPost,onRequestPostChat]){
+    let messages;const env={AI:{run:async(m,i)=>{messages=i.messages;return {response:'synthetic fixture; not a model evaluation'};}}};
+    const response=await fn({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang,facts:{PresentNumber:40},message:'問題尚未解決',question:'問題尚未解決'})}),env});
+    assert.equal(response.status,200);const system=messages[0].content;
+    for(const term of [/InterpretationEvidence/,/EditorAdaptation/,/之卦不等於確定未來/,/未核/,/不得.*醫療/,/圖占.*陽宅.*四柱/,/條件/,/沒有逐爻爻辭/])assert.match(system,term);
+    assert.doesNotMatch(system,/事實資料是唯一真相/);
+  }
+});
+test('I Ching request errors do not call AI or leak partial evidence',async()=>{
+ const {onRequestPost,onRequestPostChat}=await import('../functions/ask.js');let calls=0;const env={AI:{run:async()=>{calls++;throw Error('synthetic provider failure');}}};
+ for(const lang of ['zh','en','id'])for(const fn of [onRequestPost,onRequestPostChat]){
+  const post=body=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang,message:'follow up',...body})}),env});
+  assert.equal((await post({facts:{EditorAdaptation:'限制'.repeat(1500)}})).status,413);
+  assert.equal((await post({facts:[]})).status,400);
+ }
+ assert.equal(calls,0);
+ const failed=await onRequestPost({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang:'zh',facts:{PresentNumber:40}})}),env});assert.equal(failed.status,500);assert.equal((await failed.json()).error,'AI Error');assert.equal(calls,1);
+});
