@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-forma-theme="guanbu-quiet">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -320,11 +320,17 @@
     .coin,.deck .back,.orb,.ritual-text,.tcard,.reveal > *{animation:none !important;}
   }
 </style>
+<link rel="stylesheet" href="themes.css" />
+<script src="themes.js"></script>
 </head>
 <body>
 <div class="app">
   <div class="top-bar">
-    <div></div>
+    <select class="forma-theme-select" id="forma-theme-select" aria-label="版面主題">
+      <option value="guanbu-ink">① 東方留白</option>
+      <option value="guanbu-quiet" selected>② 靜謐精品</option>
+      <option value="guanbu-editorial">③ 現代編輯</option>
+    </select>
     <button class="lang-btn" id="lang-toggle">中文 / EN / ID</button>
   </div>
 

@@ -1,0 +1,82 @@
+/* Guanbu's approved three directions. Opt-in Forma role tokens, no data/logic changes.
+   Shared light neutrals reuse Forma training-light-sage / sihub / training-light-sea.
+   This isolated token block is also the proposed central Forma theme record. */
+[data-forma-theme="guanbu-quiet"] {
+  color-scheme: dark;
+  --bg:#181b18; --panel:#222722; --panel-border:#454d43;
+  --text:#f0eee5; --sub:#b8bdb0; --gold:#d0bd91;
+  --forma-surface:#1d211d; --forma-accent:#acbca1;
+  --forma-action:#c9b98b; --forma-action-text:#20251f;
+  --forma-danger:#f0a8a3; --forma-radius:18px;
+}
+[data-forma-theme="guanbu-ink"] {
+  color-scheme: light;
+  --bg:#f6f6ee; --panel:#ffffff; --panel-border:#c8cec1;
+  --text:#2f2d29; --sub:#59554e; --gold:#485c48;
+  --forma-surface:#f3f4e5; --forma-accent:#485c48;
+  --forma-action:#485c48; --forma-action-text:#ffffff;
+  --forma-danger:#a32c27; --forma-radius:8px;
+}
+[data-forma-theme="guanbu-editorial"] {
+  color-scheme: light;
+  --bg:#fbfbfa; --panel:#ffffff; --panel-border:#c8cdd3;
+  --text:#1d2421; --sub:#5a6b80; --gold:#1b325f;
+  --forma-surface:#eef3f7; --forma-accent:#1b325f;
+  --forma-action:#1b325f; --forma-action-text:#ffffff;
+  --forma-danger:#a32c27; --forma-radius:2px;
+}
+[data-forma-theme] {
+  --jade:var(--forma-accent); --crimson:var(--forma-danger);
+  --runic:var(--forma-accent); --violet:var(--forma-accent);
+  background:var(--bg); color:var(--text);
+}
+[data-forma-theme] body { background:var(--bg); }
+[data-forma-theme] .app { max-width:760px; padding:20px 16px 40px; }
+[data-forma-theme] .top-bar { gap:12px; align-items:center; margin-bottom:28px; }
+[data-forma-theme] .forma-theme-select { min-width:0; max-width:100%; width:174px; min-height:44px; padding:8px; font:inherit; font-size:16px; border:1px solid var(--panel-border); border-radius:8px; background:var(--panel); color:var(--text); }
+[data-forma-theme] .lang-btn { flex-shrink:0; background:var(--panel); border-color:var(--panel-border); color:var(--sub); }
+[data-forma-theme] .hero { margin-bottom:24px; }
+[data-forma-theme] .hero .mark { font-size:10px; letter-spacing:.3em; margin-bottom:12px; }
+[data-forma-theme] .hero h1 { color:var(--gold); background:none; font-size:36px; letter-spacing:.16em; padding-left:.16em; }
+[data-forma-theme] .hero .tagline { color:var(--text); margin:12px 0 8px; }
+[data-forma-theme] .hero p { line-height:1.7; }
+[data-forma-theme] .daily-quote { max-width:440px; padding:14px 16px; background:var(--forma-surface); color:var(--sub); border-color:var(--panel-border); border-radius:var(--forma-radius); }
+[data-forma-theme] .tabs { gap:6px; padding:10px 0; margin-bottom:8px; }
+[data-forma-theme] .tab { border-radius:8px; background:transparent; }
+[data-forma-theme] .tab.active { background:var(--forma-surface); color:var(--gold); border-color:var(--gold); box-shadow:none; }
+[data-forma-theme] .panel { padding:22px; border-radius:var(--forma-radius); }
+[data-forma-theme] .section-title { margin-bottom:22px; letter-spacing:.16em; }
+[data-forma-theme] .field { margin-bottom:18px; }
+[data-forma-theme] .field label { font-size:13px; }
+[data-forma-theme] .input, [data-forma-theme] .select { background:var(--forma-surface); color:var(--text); border-color:var(--panel-border); color-scheme:inherit; }
+[data-forma-theme] input:is([type="date"],[type="time"]).input { color-scheme:inherit; }
+[data-forma-theme] .input:focus, [data-forma-theme] .select:focus { box-shadow:none; }
+[data-forma-theme] :is(button, select, input, summary):focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
+[data-forma-theme] .chip { background:var(--panel); color:var(--sub); border-radius:8px; }
+[data-forma-theme] .btn:not(.secondary), [data-forma-theme] #ziwei-btn { background:var(--forma-action) !important; color:var(--forma-action-text) !important; box-shadow:none; }
+[data-forma-theme] .btn.secondary { background:var(--forma-surface); color:var(--sub); }
+[data-forma-theme] :is(.meta-card,.hex-box,.smart-chip,.zw-cell,.bubble-sage,.toast) { background:var(--forma-surface); }
+[data-forma-theme] :is(.smart-card,.smart-card.oracle,.zw-center,.tcard) { background:var(--forma-surface); border-color:var(--panel-border); box-shadow:none; }
+[data-forma-theme] :is(.smart-card,.meta-card,.hex-box) { border-radius:var(--forma-radius); }
+[data-forma-theme] :is(.question-echo,.ritual-text,.hero .tagline) { color:var(--text); }
+[data-forma-theme] :is(.zw-cell .zw-star.main,.zw-ev p b,.hex-detail p b,.zw-ex-main,.zw-ex-palace p.zw-ex-note,.chat-card .smart-title,.tcard .t-star) { color:var(--gold); }
+[data-forma-theme] :is(.zw-ev-warn,.zw-ev p.warn,.zw-ev p.warn b,.zw-cell .zw-star.sha,.bubble-err) { color:var(--forma-danger); }
+[data-forma-theme] :is(.tag,.bubble-me) { background:var(--panel); color:var(--gold); border:1px solid var(--panel-border); }
+[data-forma-theme] .rune-glyph { text-shadow:none; }
+[data-forma-theme] .yj-manual .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+[data-forma-theme="guanbu-ink"] .hero { padding:12px 0; }
+[data-forma-theme="guanbu-ink"] .daily-quote { border-width:0 0 0 2px; text-align:center; }
+[data-forma-theme="guanbu-editorial"] .hero { text-align:left; border-bottom:2px solid var(--text); padding-bottom:20px; }
+[data-forma-theme="guanbu-editorial"] .hero h1 { padding:0; letter-spacing:.04em; }
+[data-forma-theme="guanbu-editorial"] .daily-quote { margin-left:0; max-width:none; border:0; border-radius:0; }
+[data-forma-theme="guanbu-editorial"] :is(.tab,.btn,.chip) { border-radius:2px; }
+@media(max-width:380px) {
+  [data-forma-theme] .app { padding:14px 10px 32px; }
+  [data-forma-theme] .top-bar { gap:8px; }
+  [data-forma-theme] .forma-theme-select { width:158px; }
+  [data-forma-theme] .lang-btn { padding:8px; }
+  [data-forma-theme] .panel { padding:14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  [data-forma-theme] *, [data-forma-theme] *::before, [data-forma-theme] *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}
