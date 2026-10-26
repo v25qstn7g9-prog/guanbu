@@ -106,6 +106,7 @@ test('all themes fit all modules on mobile and desktop, with two-column manual l
         for (const mod of modules) {
           await p.locator(`[data-t=${mod}]`).click();
           assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width} ${theme} ${mod}`);
+          await p.evaluate(() => window.scrollTo(0, 0));
           if ([375, 1280].includes(width)) await p.screenshot({ path: path.join(screenshots, `${theme}-${width}-${mod}.png`), fullPage: true });
           const small = await p.locator('button,input,select').evaluateAll(nodes => nodes.filter(node => node.getBoundingClientRect().width).filter(node => node.getBoundingClientRect().height < 44 || (['INPUT', 'SELECT'].includes(node.tagName) && parseFloat(getComputedStyle(node).fontSize) < 16)).map(node => node.id || node.textContent));
           assert.deepEqual(small, [], `${width} ${theme} ${mod}`);
