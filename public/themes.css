@@ -49,6 +49,7 @@
 [data-forma-theme] .field { margin-bottom:18px; }
 [data-forma-theme] .field label { font-size:13px; }
 [data-forma-theme] .input, [data-forma-theme] .select { background:var(--forma-surface); color:var(--text); border-color:var(--panel-border); color-scheme:inherit; }
+[data-forma-theme] input:is([type="date"],[type="time"]).input { color-scheme:inherit; }
 [data-forma-theme] .input:focus, [data-forma-theme] .select:focus { box-shadow:none; }
 [data-forma-theme] :is(button, select, input, summary):focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
 [data-forma-theme] .chip { background:var(--panel); color:var(--sub); border-radius:8px; }

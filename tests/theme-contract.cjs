@@ -54,3 +54,7 @@ test('theme selection survives blocked persistent storage', () => {
   app.change('guanbu-ink');
   assert.equal(app.element.dataset.formaTheme, 'guanbu-ink');
 });
+test('date and time controls override the legacy dark-only native control scheme', () => {
+  const css = fs.readFileSync(path.join(root, 'themes.css'), 'utf8');
+  assert.match(css, /\[data-forma-theme\] input:is\(\[type="date"\],\[type="time"\]\)\.input\s*\{\s*color-scheme:inherit/);
+});

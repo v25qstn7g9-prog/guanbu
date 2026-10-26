@@ -101,6 +101,8 @@ test('all themes fit all modules on mobile and desktop, with two-column manual l
       await p.setViewportSize({ width, height: 900 });
       for (const theme of themes) {
         await p.locator('#forma-theme-select').selectOption(theme);
+        const schemes = await p.locator('input[type=date],input[type=time]').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).colorScheme));
+        assert.ok(schemes.every(scheme => scheme === (theme === 'guanbu-quiet' ? 'dark' : 'light')), `${theme} native control scheme: ${schemes}`);
         for (const mod of modules) {
           await p.locator(`[data-t=${mod}]`).click();
           assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width} ${theme} ${mod}`);
