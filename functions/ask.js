@@ -1,12 +1,12 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-3.5";
-// 主、副 AI 都用各家的「平衡型」：Cloudflare 上的 DeepSeek V4.1 Flash、Google 的 Gemini Flash
-const PRIMARY_MODEL = "@cf/deepseek-ai/deepseek-v4.1-flash-1017";
-const PRIMARY_LABEL = "Cloudflare Workers AI · DeepSeek V4.1 Flash";
-// 先想一下再回答，但不要想太久（思考也會算在輸出長度裡）
-const PRIMARY_REASONING = "low";
+const ASK_VERSION = "guanbu-ask-4.0";
+// 主 AI：Anthropic Claude Sonnet 5.5；副 AI：Google Gemini Flash（不使用中國模型）
+const PRIMARY_MODEL = "claude-sonnet-5-5";
+const PRIMARY_LABEL = "Anthropic Claude Sonnet 5.5";
+const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_VERSION = "2023-06-01";
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GEMINI_LABEL = "Google Gemini 3.6 Flash (Fallback)";
 
@@ -102,11 +102,37 @@ function moduleLimits(mod) {
   return MODULE_LIMITS[mod] || DEFAULT_LIMITS;
 }
 
+// Anthropic Messages API 包成跟 Workers AI 一樣的 run(model, {messages, max_completion_tokens}) 介面
+function anthropicClient(env) {
+  const apiKey = env?.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  return {
+    async run(model, { messages, max_completion_tokens }) {
+      const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+      const rest = messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
+      const response = await fetch(ANTHROPIC_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION },
+        body: JSON.stringify({ model, max_tokens: max_completion_tokens, system, messages: rest }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error?.message || "Anthropic API Error");
+      const text = (data?.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+      return { response: text };
+    },
+  };
+}
+
+// 測試可用 env.PRIMARY_AI 換掉真正的 API
+function primaryClient(env) {
+  return env?.PRIMARY_AI || anthropicClient(env);
+}
+
 // 呼叫主 AI，回傳文字；失敗或沒內容就丟錯，讓外面改用 Gemini
 async function runPrimary(ai, messages, limits) {
-  if (!ai) throw new Error("No Workers AI Binding");
+  if (!ai) throw new Error("ANTHROPIC_API_KEY Missing");
   const result = await withTimeout(
-    ai.run(PRIMARY_MODEL, { messages, max_completion_tokens: limits.maxTokens, reasoning_effort: PRIMARY_REASONING }),
+    ai.run(PRIMARY_MODEL, { messages, max_completion_tokens: limits.maxTokens }),
     limits.primaryTimeoutMs,
     "Primary AI"
   );
@@ -225,7 +251,7 @@ export async function onRequestPost(context) {
     let usedProvider = PRIMARY_LABEL;
 
     try {
-      explanation = await runPrimary(context.env.AI, [
+      explanation = await runPrimary(primaryClient(context.env), [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPromptText },
       ], limits);
@@ -276,7 +302,7 @@ export async function onRequestPostChat(context) {
     let usedProvider = PRIMARY_LABEL;
 
     try {
-      reply = await runPrimary(context.env.AI, [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory], CHAT_LIMITS);
+      reply = await runPrimary(primaryClient(context.env), [{ role: "system", content: sysPromptWithFacts }, ...conversationHistory], CHAT_LIMITS);
     } catch (primaryErr) {
       reply = String(await callGeminiFallback(context.env, sysPromptWithFacts, conversationHistory, CHAT_LIMITS) || "").trim();
       if (!reply) throw new Error("Fallback AI Empty");

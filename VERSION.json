@@ -3,10 +3,10 @@
   "lastUpdated": "2026-11-18",
   "runtime": {
     "worker": "worker.js",
-    "ask": "guanbu-ask-3.5"
+    "ask": "guanbu-ask-4.0"
   },
   "ai": {
-    "primary": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
+    "primary": "claude-sonnet-5-5",
     "fallback": "gemini-3.6-flash"
   }
 }
