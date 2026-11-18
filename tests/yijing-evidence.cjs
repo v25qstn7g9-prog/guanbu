@@ -11,7 +11,7 @@ test('real packed evidence reaches ask/chat primary and fallback in all language
  const realFetch=global.fetch;
  try{for(const lang of ['zh','en','id'])for(const [a,b,question] of [[32,40,'困境剛緩解'],[40,37,'問題尚未解決'],[26,1,'我應該投資嗎'],[39,42,'下一步呢']])for(const fn of [onRequestPost,onRequestPostChat])for(const fallback of [false,true]){
   const facts=e.pack({PresentHexagram:String(a),FutureHexagram:String(b),MovingLines:['初爻'],CastMethod:'manual'},a,b,{PresentMeaning:'legacy guarantee',FutureDetail:'legacy detail'});let captured;
-  const env={GEMINI_API_KEY:'synthetic-test-key',AI:{run:async(m,i)=>{if(fallback)throw Error('synthetic failure');captured=i.messages;return {response:'synthetic response'};}}};
+  const env={GEMINI_API_KEY:'synthetic-test-key',PRIMARY_AI:{run:async(m,i)=>{if(fallback)throw Error('synthetic failure');captured=i.messages;return {response:'synthetic response'};}}};
   global.fetch=async(url,opts)=>{const b=JSON.parse(opts.body);captured=[{content:b.systemInstruction.parts[0].text},...b.contents.map(x=>({content:x.parts[0].text}))];return new Response(JSON.stringify({candidates:[{content:{parts:[{text:'synthetic fallback'}]}}]}));};
   const response=await fn({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang,question,message:question,facts})}),env});assert.equal(response.status,200);
   const payload=captured.map(x=>x.content).join('\n');const sent=JSON.parse(payload.match(/<facts>\n([\s\S]*?)\n<\/facts>/)[1]);assert.deepEqual(sent,JSON.parse(JSON.stringify(facts)));assert.match(payload,/EditorAdaptation/);assert.doesNotMatch(payload,/legacy guarantee/);if(b!==1)assert.doesNotMatch(payload,/legacy detail/);assert.ok(payload.includes(question));

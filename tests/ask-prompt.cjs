@@ -7,7 +7,7 @@ const sentTokens={};let sentModel,sentReasoning;
 async function systemPromptFor(module){
   const {onRequestPost}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
   let sent;
-  const env={AI:{run:async(model,input)=>{sent=input.messages[0].content;sentTokens[module]=input.max_completion_tokens;sentModel=model;sentReasoning=input.reasoning_effort;return {response:'ok'};}}};
+  const env={PRIMARY_AI:{run:async(model,input)=>{sent=input.messages[0].content;sentTokens[module]=input.max_completion_tokens;sentModel=model;sentReasoning=input.reasoning_effort;return {response:'ok'};}}};
   const request=new Request('http://x/ask',{method:'POST',body:JSON.stringify({module,lang:'zh',facts:{A:1}})});
   const res=await onRequestPost({request,env});
   assert.equal(res.status,200);
@@ -24,7 +24,7 @@ test('the Zi Wei AI writes a whole-chart summary instead of repeating every pala
   for(const other of ['yijing','tarot','runes','daily']) assert.doesNotMatch(await systemPromptFor(other),/綜合總結任務/);
   assert.ok(sentTokens.ziwei>=4000,'Zi Wei summary needs room for a long answer');
   for(const other of ['yijing','tarot','runes','daily']) assert.equal(sentTokens[other],2000);
-  assert.equal(sentModel,'@cf/deepseek-ai/deepseek-v4-flash-0731');assert.equal(sentReasoning,'low');
+  assert.equal(sentModel,'claude-sonnet-5-5');
 });
 
 test('when the main AI fails, the reading still comes from Gemini Flash',async()=>{
@@ -32,7 +32,7 @@ test('when the main AI fails, the reading still comes from Gemini Flash',async()
   const realFetch=global.fetch;let geminiUrl,geminiBody;
   global.fetch=async(url,init)=>{geminiUrl=String(url);geminiBody=JSON.parse(init.body);return new Response(JSON.stringify({candidates:[{content:{parts:[{text:'備援的解讀'}]}}]}),{status:200});};
   try{
-    const env={GEMINI_API_KEY:'test',AI:{run:async()=>{throw new Error('model not found');}}};
+    const env={GEMINI_API_KEY:'test',PRIMARY_AI:{run:async()=>{throw new Error('model not found');}}};
     const request=new Request('http://x/ask',{method:'POST',body:JSON.stringify({module:'ziwei',lang:'zh',facts:{A:1}})});
     const data=await (await onRequestPost({request,env})).json();
     assert.equal(data.explanation,'備援的解讀');assert.match(data.provider,/Gemini/);
@@ -41,7 +41,7 @@ test('when the main AI fails, the reading still comes from Gemini Flash',async()
 });
 test('facts that are too large are refused with 413 instead of being cut in half, and the AI is not called',async()=>{
   const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
-  let calls=0;const env={AI:{run:async()=>{calls++;return {response:'ok'};}}};
+  let calls=0;const env={PRIMARY_AI:{run:async()=>{calls++;return {response:'ok'};}}};
   const big={Note:'字'.repeat(2600)};
   const post=(fn,body)=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify(body)}),env});
   assert.equal((await post(onRequestPost,{module:'ziwei',lang:'zh',facts:big})).status,413);
@@ -53,7 +53,7 @@ test('facts that are too large are refused with 413 instead of being cut in half
 });
 test('source rules apply to follow-up chat too, and I Ching is told there are no line texts',async()=>{
   const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
-  const prompts=[];const env={AI:{run:async(m,i)=>{prompts.push(i.messages[0].content);return {response:'ok'};}}};
+  const prompts=[];const env={PRIMARY_AI:{run:async(m,i)=>{prompts.push(i.messages[0].content);return {response:'ok'};}}};
   const post=(fn,body)=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify(body)}),env});
   await post(onRequestPostChat,{module:'ziwei',lang:'zh',message:'格局好嗎',facts:{A:1}});
   await post(onRequestPost,{module:'yijing',lang:'zh',facts:{A:1}});
@@ -64,7 +64,7 @@ test('source rules apply to follow-up chat too, and I Ching is told there are no
 test('both I Ching paths in all languages enforce conditional, non-predictive evidence rules',async()=>{
   const {onRequestPost,onRequestPostChat}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
   for(const lang of ['zh','en','id'])for(const fn of [onRequestPost,onRequestPostChat]){
-    let messages;const env={AI:{run:async(m,i)=>{messages=i.messages;return {response:'synthetic fixture; not a model evaluation'};}}};
+    let messages;const env={PRIMARY_AI:{run:async(m,i)=>{messages=i.messages;return {response:'synthetic fixture; not a model evaluation'};}}};
     const response=await fn({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang,facts:{PresentNumber:40},message:'問題尚未解決',question:'問題尚未解決'})}),env});
     assert.equal(response.status,200);const system=messages[0].content;
     for(const term of [/InterpretationEvidence/,/EditorAdaptation/,/之卦不等於確定未來/,/未核/,/不得.*醫療/,/圖占.*陽宅.*四柱/,/條件/,/沒有逐爻爻辭/])assert.match(system,term);
@@ -72,7 +72,7 @@ test('both I Ching paths in all languages enforce conditional, non-predictive ev
   }
 });
 test('I Ching request errors do not call AI or leak partial evidence',async()=>{
- const {onRequestPost,onRequestPostChat}=await import('../functions/ask.js');let calls=0;const env={AI:{run:async()=>{calls++;throw Error('synthetic provider failure');}}};
+ const {onRequestPost,onRequestPostChat}=await import('../functions/ask.js');let calls=0;const env={PRIMARY_AI:{run:async()=>{calls++;throw Error('synthetic provider failure');}}};
  for(const lang of ['zh','en','id'])for(const fn of [onRequestPost,onRequestPostChat]){
   const post=body=>fn({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang,message:'follow up',...body})}),env});
   assert.equal((await post({facts:{EditorAdaptation:'限制'.repeat(1500)}})).status,413);
@@ -80,4 +80,27 @@ test('I Ching request errors do not call AI or leak partial evidence',async()=>{
  }
  assert.equal(calls,0);
  const failed=await onRequestPost({request:new Request('http://x',{method:'POST',body:JSON.stringify({module:'yijing',lang:'zh',facts:{PresentNumber:40}})}),env});assert.equal(failed.status,500);assert.equal((await failed.json()).error,'AI Error');assert.equal(calls,1);
+});
+
+test('the main AI is Claude Sonnet 5.5 through the Anthropic API, with the system prompt sent separately',async()=>{
+  const {onRequestPost}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
+  const realFetch=global.fetch;let url,headers,body;
+  global.fetch=async(u,init)=>{url=String(u);headers=init.headers;body=JSON.parse(init.body);return new Response(JSON.stringify({content:[{type:'text',text:'Claude 的解讀'}]}),{status:200});};
+  try{
+    const env={ANTHROPIC_API_KEY:'synthetic-test-key',GEMINI_API_KEY:'synthetic-test-key'};
+    const data=await (await onRequestPost({request:new Request('http://x/ask',{method:'POST',body:JSON.stringify({module:'tarot',lang:'zh',facts:{A:1}})}),env})).json();
+    assert.equal(data.explanation,'Claude 的解讀');assert.match(data.provider,/Claude Sonnet 5\.5/);
+    assert.equal(url,'https://api.anthropic.com/v1/messages');assert.equal(headers['x-api-key'],'synthetic-test-key');assert.equal(headers['anthropic-version'],'2023-06-01');
+    assert.equal(body.model,'claude-sonnet-5-5');assert.equal(body.max_tokens,2000);assert.ok(body.system.length>0);
+    assert.ok(body.messages.every(m=>m.role!=='system'));
+  }finally{global.fetch=realFetch;}
+});
+test('without an Anthropic key the reading falls back to Gemini',async()=>{
+  const {onRequestPost}=await import(pathToFileURL(path.join(__dirname,'../functions/ask.js')).href);
+  const realFetch=global.fetch;let urls=[];
+  global.fetch=async(u)=>{urls.push(String(u));return new Response(JSON.stringify({candidates:[{content:{parts:[{text:'備援'}]}}]}),{status:200});};
+  try{
+    const data=await (await onRequestPost({request:new Request('http://x/ask',{method:'POST',body:JSON.stringify({module:'tarot',lang:'zh',facts:{A:1}})}),env:{GEMINI_API_KEY:'k'}})).json();
+    assert.equal(data.explanation,'備援');assert.ok(urls.every(u=>!u.includes('anthropic')));
+  }finally{global.fetch=realFetch;}
 });
