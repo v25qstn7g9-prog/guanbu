@@ -1,10 +1,10 @@
 /**
  * functions/ask.js — 觀卜 AI 白話說明與對話 API（支援 中/英/印尼 三語切換 + Gemini 備援）
  */
-const ASK_VERSION = "guanbu-ask-3.4";
-// 主、副 AI 都用各家的「平衡型」：Cloudflare 上的 DeepSeek V4 Flash、Google 的 Gemini Flash
-const PRIMARY_MODEL = "@cf/deepseek-ai/deepseek-v4-flash-0731";
-const PRIMARY_LABEL = "Cloudflare Workers AI · DeepSeek V4 Flash";
+const ASK_VERSION = "guanbu-ask-3.5";
+// 主、副 AI 都用各家的「平衡型」：Cloudflare 上的 DeepSeek V4.1 Flash、Google 的 Gemini Flash
+const PRIMARY_MODEL = "@cf/deepseek-ai/deepseek-v4.1-flash-1017";
+const PRIMARY_LABEL = "Cloudflare Workers AI · DeepSeek V4.1 Flash";
 // 先想一下再回答，但不要想太久（思考也會算在輸出長度裡）
 const PRIMARY_REASONING = "low";
 const GEMINI_MODEL = "gemini-3.6-flash";

@@ -5,10 +5,10 @@
 ## 目前版本
 
 - App：`2.5.0`
-- AI API：`guanbu-ask-3.4`
-- Primary AI：`@cf/deepseek-ai/deepseek-v4-flash-0731`（平衡型，reasoning_effort: low；需 Workers Paid 方案）
+- AI API：`guanbu-ask-3.5`
+- Primary AI：`@cf/deepseek-ai/deepseek-v4.1-flash-1017`（平衡型，reasoning_effort: low；需 Workers Paid 方案）
 - Gemini fallback：`gemini-3.6-flash`
-- 最後版本同步：2026-10-25
+- 最後版本同步：2026-11-18
 
 ## Runtime
 

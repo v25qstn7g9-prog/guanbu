@@ -24,7 +24,7 @@ test('the Zi Wei AI writes a whole-chart summary instead of repeating every pala
   for(const other of ['yijing','tarot','runes','daily']) assert.doesNotMatch(await systemPromptFor(other),/綜合總結任務/);
   assert.ok(sentTokens.ziwei>=4000,'Zi Wei summary needs room for a long answer');
   for(const other of ['yijing','tarot','runes','daily']) assert.equal(sentTokens[other],2000);
-  assert.equal(sentModel,'@cf/deepseek-ai/deepseek-v4-flash-0731');assert.equal(sentReasoning,'low');
+  assert.equal(sentModel,'@cf/deepseek-ai/deepseek-v4.1-flash-1017');assert.equal(sentReasoning,'low');
 });
 
 test('when the main AI fails, the reading still comes from Gemini Flash',async()=>{

@@ -1,12 +1,12 @@
 {
   "app": "2.5.0",
-  "lastUpdated": "2026-10-25",
+  "lastUpdated": "2026-11-18",
   "runtime": {
     "worker": "worker.js",
-    "ask": "guanbu-ask-3.4"
+    "ask": "guanbu-ask-3.5"
   },
   "ai": {
-    "primary": "@cf/deepseek-ai/deepseek-v4-flash-0731",
+    "primary": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
     "fallback": "gemini-3.6-flash"
   }
 }
